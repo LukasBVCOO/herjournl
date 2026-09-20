@@ -43,7 +43,7 @@ export default defineConfig({
         // The app's own files only. Her notes are never stored here: they live
         // in the phone's database (see notes-store.ts), and nothing from
         // Supabase is cached, so nobody's writing ends up in the wrong place.
-        globPatterns: ["**/*.{js,css,html,woff2,png,svg}"],
+        globPatterns: ["**/*.{js,css,html,woff2,png,svg,jpg}"],
         // Any web address opens the app, including a refresh on a note and the
         // return trip from Google sign-in.
         navigateFallback: "/index.html",

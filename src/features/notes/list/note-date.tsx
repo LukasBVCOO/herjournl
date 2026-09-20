@@ -1,21 +1,10 @@
-"use client";
-
-import { useSyncExternalStore } from "react";
 import { formatNoteDate } from "../dates";
 
-const subscribe = () => () => {};
-
-// The server doesn't know her time zone, so the date is filled in on her phone.
+// The date is worked out on her phone, so it is in her own time zone.
 export default function NoteDate({ iso }: { iso: string }) {
-  const text = useSyncExternalStore(
-    subscribe,
-    () => formatNoteDate(iso),
-    () => "",
-  );
-
   return (
     <time dateTime={iso} className="block h-4">
-      {text}
+      {formatNoteDate(iso)}
     </time>
   );
 }

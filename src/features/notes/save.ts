@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { noteToLines, titleFromLines } from "./content";
 
 // Saving a note. Runs on her phone. Creating and updating are the same call:
@@ -6,7 +6,6 @@ import { noteToLines, titleFromLines } from "./content";
 // copies of a note.
 export async function saveNoteContent(id: string, doc: unknown) {
   const title = titleFromLines(noteToLines(doc));
-  const supabase = createClient();
   const { error } = await supabase
     .from("notes")
     .upsert({ id, title, content: doc });

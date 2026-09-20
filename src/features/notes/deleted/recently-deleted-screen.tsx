@@ -1,18 +1,35 @@
-import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import { BackIcon } from "@/components/icons";
 import EmptyMessage from "../empty-message";
-import { fetchDeletedNotes } from "../queries";
+import { fetchDeletedNotes } from "../notes-api";
+import type { DeletedNoteSummary } from "../types";
 import DeletedNoteCard from "./deleted-note-card";
 
 // Deleted notes wait here for 30 days before they are removed for good.
-export default async function RecentlyDeletedScreen() {
-  const { notes, failed } = await fetchDeletedNotes();
+export default function RecentlyDeletedScreen() {
+  const [notes, setNotes] = useState<DeletedNoteSummary[] | null>(null);
+  const [failed, setFailed] = useState(false);
+  // Bumped by "Try again", which is what asks for another go.
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    let current = true;
+    void fetchDeletedNotes().then((result) => {
+      if (!current) return;
+      setNotes(result.notes);
+      setFailed(result.failed);
+    });
+    return () => {
+      current = false;
+    };
+  }, [attempt]);
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6 pb-12">
       <header className="flex items-center gap-1 pt-[max(1.25rem,env(safe-area-inset-top))] pb-2">
         <Link
-          href="/"
+          to="/"
           aria-label="Back to notes"
           className="-ml-3 flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
         >
@@ -27,14 +44,15 @@ export default async function RecentlyDeletedScreen() {
       {failed ? (
         <EmptyMessage>
           We couldn&rsquo;t load your deleted notes.{" "}
-          <Link
-            href="/recently-deleted"
+          <button
+            type="button"
+            onClick={() => setAttempt((count) => count + 1)}
             className="font-medium text-ink underline underline-offset-4"
           >
             Try again
-          </Link>
+          </button>
         </EmptyMessage>
-      ) : notes.length === 0 ? (
+      ) : notes === null ? null : notes.length === 0 ? (
         <EmptyMessage>Nothing here.</EmptyMessage>
       ) : (
         <ul className="flex flex-col gap-4">

@@ -8,7 +8,6 @@
 // is what lets the back button respond instantly.
 
 import { isEmptyDoc } from "./content";
-import { markNotesChanged } from "./list-sync";
 import { saveNoteContent } from "./save";
 
 const SAVE_DELAY_MS = 1000;
@@ -111,7 +110,6 @@ export function flushNote(id: string): Promise<void> {
         return;
       }
 
-      markNotesChanged();
       setStored(entry, true);
     }
     setStatus(entry, entry.stored ? "saved" : "idle");

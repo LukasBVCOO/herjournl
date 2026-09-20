@@ -1,7 +1,5 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import { deleteNoteForever, restoreNote } from "../actions";
+import { deleteNoteForever, restoreNote } from "../notes-api";
 import type { DeletedNoteSummary } from "../types";
 
 // Delete forever can't be undone, so it asks for a second tap.
@@ -24,7 +22,7 @@ export default function DeletedNoteCard({ note }: { note: DeletedNoteSummary }) 
     setFailed(false);
     const ok = await action(note.id);
     if (ok) {
-      // The screen refreshes itself; hide the card straight away meanwhile.
+      // The note has moved, so the card goes with it.
       setGone(true);
       return;
     }

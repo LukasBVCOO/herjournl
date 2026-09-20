@@ -1,0 +1,13 @@
+# How Netlify builds and serves the app. Keeping this in the repo means the
+# build settings live with the code instead of in the Netlify website.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# The app is one page that swaps screens itself, so every web address has to be
+# served that same page. Without this, refreshing on a note, or coming back from
+# Google sign-in, would show Netlify's "page not found".
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

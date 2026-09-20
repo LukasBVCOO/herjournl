@@ -1,5 +1,3 @@
-"use client";
-
 import { useEditorState, type Editor } from "@tiptap/react";
 import {
   BoldIcon,

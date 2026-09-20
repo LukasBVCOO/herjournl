@@ -1,5 +1,3 @@
-"use client";
-
 import { SearchIcon } from "../note-icons";
 
 type Props = {

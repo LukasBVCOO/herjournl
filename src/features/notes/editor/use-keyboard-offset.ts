@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 
 // How far the on-screen keyboard covers the bottom of the page, so the

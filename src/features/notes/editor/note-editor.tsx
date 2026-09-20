@@ -1,14 +1,11 @@
-"use client";
-
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Link, useNavigate } from "react-router";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { Placeholder } from "@tiptap/extensions";
 import { BackIcon } from "@/components/icons";
-import { deleteNote, pinNote } from "../actions";
+import { deleteNote, pinNote } from "../notes-api";
 import {
   flushNote,
   getStatus,
@@ -33,8 +30,9 @@ const statusText: Record<SaveStatus, string> = {
 const NOTICE_MS = 4000;
 
 type Props = {
-  // null for a brand new note
-  noteId: string | null;
+  noteId: string;
+  // False for a note she has not written anything in yet.
+  exists: boolean;
   initialContent: unknown;
   initialPinned: boolean;
 };
@@ -48,14 +46,15 @@ function isDoc(value: unknown): value is { type: "doc" } {
 }
 
 export default function NoteEditor({
-  noteId,
+  noteId: id,
+  exists,
   initialContent,
   initialPinned,
 }: Props) {
-  const router = useRouter();
-  const isNew = noteId === null;
-  // A new note gets its id on her phone, so saving is always the same call.
-  const [id] = useState(() => noteId ?? crypto.randomUUID());
+  const navigate = useNavigate();
+  // A new note's id was chosen on her phone before this screen opened, so
+  // saving is always the same call and never makes two copies of a note.
+  const isNew = !exists;
   const [pinned, setPinned] = useState(initialPinned);
   // A short message in place of the save status, e.g. "Couldn't delete."
   const [notice, setNotice] = useState<string | null>(null);
@@ -84,11 +83,6 @@ export default function NoteEditor({
     // Leaving the screen saves straight away rather than waiting for the timer.
     return () => void flushNote(id);
   }, [id, isNew]);
-
-  // Once a brand new note exists, a refresh reopens it instead of a blank one.
-  useEffect(() => {
-    if (isNew && stored) window.history.replaceState(null, "", `/notes/${id}`);
-  }, [id, isNew, stored]);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -132,7 +126,7 @@ export default function NoteEditor({
   function goBack(event: React.MouseEvent) {
     event.preventDefault();
     void flushNote(id);
-    router.push("/");
+    navigate("/");
   }
 
   async function togglePin() {
@@ -153,14 +147,14 @@ export default function NoteEditor({
       showNotice("Couldn't delete the note.");
       return;
     }
-    router.push("/");
+    navigate("/");
   }
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-6">
       <header className="sticky top-0 z-10 flex items-center justify-between bg-paper pt-[max(1.25rem,env(safe-area-inset-top))] pb-3">
         <Link
-          href="/"
+          to="/"
           onClick={goBack}
           aria-label="Back to notes"
           className="-ml-3 flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"

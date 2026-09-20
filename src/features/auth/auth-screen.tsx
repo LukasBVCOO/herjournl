@@ -1,9 +1,6 @@
-"use client";
-
-import Link from "next/link";
-import { useActionState, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { logIn, signUp } from "./actions";
+import { useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router";
+import { supabase } from "@/lib/supabase/client";
 
 const copy = {
   login: {
@@ -38,36 +35,89 @@ const fieldClass =
 
 type Props = {
   mode: "login" | "signup";
-  initialError?: string;
 };
 
-export default function AuthForm({ mode, initialError }: Props) {
+export default function AuthScreen({ mode }: Props) {
   const isSignup = mode === "signup";
   const text = copy[mode];
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const [state, formAction, pending] = useActionState(
-    isSignup ? signUp : logIn,
-    undefined,
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState<string | undefined>(
+    // Set when a Google sign-in was sent back here because it didn't work.
+    searchParams.get("error") === "google"
+      ? "Google sign-in didn't work. Please try again."
+      : undefined,
   );
-  const [googleError, setGoogleError] = useState<string | undefined>(
-    initialError,
-  );
+  const [notice, setNotice] = useState<string | undefined>(undefined);
+  const [pending, setPending] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const error = state?.error ?? googleError;
-  const notice = state?.notice;
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const enteredEmail = String(form.get("email") ?? "").trim();
+    const password = String(form.get("password") ?? "");
+    setEmail(enteredEmail);
+    setError(undefined);
+    setNotice(undefined);
+
+    if (isSignup) {
+      if (!enteredEmail) return setError("Enter your email address.");
+      if (password.length < 8) {
+        return setError("Choose a password with at least 8 characters.");
+      }
+    } else if (!enteredEmail || !password) {
+      return setError("Enter your email and password.");
+    }
+
+    setPending(true);
+    if (isSignup) {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: enteredEmail,
+        password,
+      });
+      if (signUpError) {
+        setPending(false);
+        setError(
+          signUpError.code === "user_already_exists"
+            ? "That email already has an account. Log in instead."
+            : "We couldn't create your account. Please try again.",
+        );
+        return;
+      }
+      // With email confirmation on, there is no session until she confirms.
+      if (!data.session) {
+        setPending(false);
+        setNotice("Check your email to confirm your account, then log in.");
+        return;
+      }
+    } else {
+      const { error: logInError } = await supabase.auth.signInWithPassword({
+        email: enteredEmail,
+        password,
+      });
+      if (logInError) {
+        setPending(false);
+        setError("That email and password don't match. Try again.");
+        return;
+      }
+    }
+
+    navigate("/", { replace: true });
+  }
 
   async function continueWithGoogle() {
-    setGoogleError(undefined);
+    setError(undefined);
     setGoogleBusy(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { error: googleError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
-    if (error) {
-      setGoogleError("Google sign-in didn't work. Please try again.");
+    if (googleError) {
+      setError("Google sign-in didn't work. Please try again.");
       setGoogleBusy(false);
     }
   }
@@ -89,7 +139,7 @@ export default function AuthForm({ mode, initialError }: Props) {
         </div>
 
         <section className="rounded-t-sheet bg-surface px-6 pt-7 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-sheet sm:mx-6 sm:rounded-sheet sm:p-8 sm:shadow-soft">
-          <form action={formAction} className="flex flex-col gap-5">
+          <form onSubmit={submit} className="flex flex-col gap-5">
             <div>
               <label htmlFor="email" className={labelClass}>
                 Email
@@ -100,7 +150,7 @@ export default function AuthForm({ mode, initialError }: Props) {
                 name="email"
                 autoComplete="email"
                 inputMode="email"
-                defaultValue={state?.email}
+                defaultValue={email}
                 required
                 className={fieldClass}
               />
@@ -172,7 +222,7 @@ export default function AuthForm({ mode, initialError }: Props) {
           <p className="mt-2 text-center text-[15px] text-ink-soft">
             {text.switchPrompt}{" "}
             <Link
-              href={text.switchHref}
+              to={text.switchHref}
               className="inline-block py-1.5 font-medium text-ink underline underline-offset-4"
             >
               {text.switchLabel}

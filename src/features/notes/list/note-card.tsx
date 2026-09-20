@@ -1,11 +1,11 @@
-import Link from "next/link";
+import { Link } from "react-router";
 import type { NoteSummary } from "../types";
 import NoteDate from "./note-date";
 
 export default function NoteCard({ note }: { note: NoteSummary }) {
   return (
     <Link
-      href={`/notes/${note.id}`}
+      to={`/notes/${note.id}`}
       className="block rounded-card bg-card px-5 py-4 shadow-soft transition-opacity duration-200 active:opacity-80"
     >
       {note.title ? (

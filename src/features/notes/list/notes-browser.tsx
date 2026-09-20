@@ -1,5 +1,3 @@
-"use client";
-
 import { useDeferredValue, useMemo, useState } from "react";
 import EmptyMessage from "../empty-message";
 import SearchBox from "../search/search-box";

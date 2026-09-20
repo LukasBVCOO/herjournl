@@ -1,5 +1,13 @@
 @import "tailwindcss";
-@import "../features/notes/editor/editor.css";
+@import "./features/notes/editor/editor.css";
+
+/* The two fonts, loaded from the app itself (see main.tsx) rather than from
+   Google, so they work with no internet and nothing is sent to a third party.
+   These two names are used by --font-serif and --font-sans just below. */
+:root {
+  --font-cormorant: "Cormorant Garamond", Georgia, serif;
+  --font-dm-sans: "DM Sans Variable", system-ui, sans-serif;
+}
 
 @theme inline {
   --color-paper: #faf7f2;

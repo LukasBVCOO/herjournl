@@ -2,19 +2,17 @@
 //
 //   content.ts        reading and writing note content (pure, no database)
 //   dates.ts          how a note's date is shown, and the 30-day deleted timer
-//   queries.ts        reading notes from the database (server)
-//   actions.ts        pin, delete, restore, delete forever (server)
-//   save.ts           saving a note's writing (on her phone)
-//   list-sync.ts      tells the list to refresh after an edit
-//   list/             the notes list screen, its note cards and search filtering
+//   notes-api.ts      reading and changing notes in the database
+//   save.ts           saving a note's writing
+//   save-queue.ts     writing that hasn't reached the database yet
+//   list/             the notes list screen and its note cards
 //   search/           the search bar and how notes are matched
 //   editor/           the writing screen, formatting bar, menu and its styles
 //   deleted/          the Recently deleted screen
 //
-// The rest of the app only uses the screens below. Files in src/app are thin
-// route files that show one of them: Next.js needs those files there because
-// a page's folder is its web address.
+// The rest of the app only uses the screens below. src/app.tsx says which web
+// address opens which one.
 export { default as NotesListScreen } from "./list/notes-list";
-export { default as NewNoteScreen } from "./editor/new-note-screen";
 export { default as EditNoteScreen } from "./editor/edit-note-screen";
+export { default as NewNoteRedirect } from "./editor/new-note-redirect";
 export { default as RecentlyDeletedScreen } from "./deleted/recently-deleted-screen";

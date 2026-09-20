@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { formatNoteDate } from "@/lib/notes";
+import { formatNoteDate } from "../dates";
 
 const subscribe = () => () => {};
 

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { consumeNotesChanged } from "@/lib/notes-client";
+import { consumeNotesChanged } from "../list-sync";
 
 // The list can appear from memory when she swipes back from a note. If she
 // changed something in the editor, this fetches the list again, once.

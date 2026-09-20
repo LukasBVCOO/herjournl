@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "../auth/actions";
-import { BackIcon } from "../icons";
+import { BackIcon } from "@/components/icons";
 
 export default async function SettingsPage() {
   const supabase = await createClient();

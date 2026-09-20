@@ -1,5 +1,5 @@
-import NoteEditor from "../note-editor";
+import { NewNoteScreen } from "@/features/notes";
 
 export default function NewNotePage() {
-  return <NoteEditor noteId={null} initialContent={null} />;
+  return <NewNoteScreen />;
 }

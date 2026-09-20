@@ -7,7 +7,7 @@ import {
   HeadingIcon,
   NumberedListIcon,
   TickBoxIcon,
-} from "../icons";
+} from "./format-icons";
 import { useKeyboardOffset } from "./use-keyboard-offset";
 
 // Slim bar pinned just above the keyboard.

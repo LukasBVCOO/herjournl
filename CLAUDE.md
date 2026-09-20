@@ -125,6 +125,15 @@ Everything else (auth, notes, to-dos, notifications, PWA shell) is ours.
 - **Birth time may be missing.** Every chart calculation must handle that path.
 - **Cost awareness.** Placement, transit, and Claude calls cost money per user per day. Cache aggressively — a user's natal chart never changes, and transits are the same for everyone on a given day.
 
+### Code layout: one folder per feature
+
+Everything about one feature lives in one folder under `src/features/<name>/`: its logic, database reads, saving, screens, small components, icons, and styles. `src/features/notes/` is the model to copy.
+
+- Each feature folder has an `index.ts` that exports only its screens. The rest of the app imports from that entry point and never reaches into a feature's inner files.
+- Files in `src/app/` are **thin route files** (a few lines that show one screen from a feature). Next.js requires page files there because a page's folder is its web address; no logic goes in them.
+- Inside a feature, one job per file (content helpers, database reads, saving, each screen). Features don't import from each other's inner files.
+- Only things used by several features go in shared places: `src/components/` (shared UI such as base icons) and `src/lib/` (Supabase connection and other cross-feature tools).
+
 ---
 
 ## Open decisions — ask the founder before choosing

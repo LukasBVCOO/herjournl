@@ -1,7 +1,7 @@
-// Helpers for reading and writing note content.
+// Pure helpers for reading and writing note content. No database, no screens.
 //
 // A note's content is stored as JSON in the shape the editor (Tiptap) uses, so
-// the real editor in step 1.5 can open every note written before it existed.
+// every note written earlier can still be opened when the editor grows.
 
 export type NoteNode = {
   type?: string;
@@ -44,21 +44,6 @@ export function noteToLines(content: unknown): string[] {
   return lines.flatMap((line) => line.split("\n"));
 }
 
-export function linesToContent(lines: string[]) {
-  return {
-    type: "doc",
-    content: lines.map((line) =>
-      line
-        ? { type: "paragraph", content: [{ type: "text", text: line }] }
-        : { type: "paragraph" },
-    ),
-  };
-}
-
-export function textToLines(text: string): string[] {
-  return text.replace(/\r\n/g, "\n").trimEnd().split("\n");
-}
-
 // The first line with writing on it is the note's title.
 function firstWrittenIndex(lines: string[]) {
   return lines.findIndex((line) => line.trim() !== "");
@@ -82,20 +67,20 @@ export function previewFromLines(lines: string[]) {
     .slice(0, PREVIEW_MAX_LENGTH);
 }
 
+// All the writing in a note on one line, title included. Used by search.
+export function textFromLines(lines: string[]) {
+  return lines
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join(" ");
+}
+
+export function isEmptyDoc(doc: unknown) {
+  return titleFromLines(noteToLines(doc)) === "";
+}
+
 export function isNoteId(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
     value,
   );
-}
-
-// "Sep 20", or "Sep 20, 2025" for a note from another year. Uses the phone's
-// own time zone, so it has to run on her device, not on the server.
-export function formatNoteDate(iso: string, now = new Date()) {
-  const date = new Date(iso);
-  const sameYear = date.getFullYear() === now.getFullYear();
-  return date.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: sameYear ? undefined : "numeric",
-  });
 }

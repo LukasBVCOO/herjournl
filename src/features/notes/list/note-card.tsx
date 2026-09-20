@@ -1,12 +1,6 @@
 import Link from "next/link";
+import type { NoteSummary } from "../types";
 import NoteDate from "./note-date";
-
-export type NoteSummary = {
-  id: string;
-  title: string;
-  preview: string;
-  updatedAt: string;
-};
 
 export default function NoteCard({ note }: { note: NoteSummary }) {
   return (

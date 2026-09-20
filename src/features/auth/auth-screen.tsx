@@ -138,7 +138,7 @@ export default function AuthScreen({ mode }: Props) {
     <main className="flex flex-1 animate-fade-in flex-col">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col sm:justify-center">
         <p className="px-6 pt-[max(1.25rem,env(safe-area-inset-top))] font-serif text-2xl font-medium sm:pt-0">
-          HerJournl
+          Becomely
         </p>
 
         <div className="flex flex-1 flex-col justify-end px-6 pt-6 pb-7 sm:flex-none sm:pt-8">

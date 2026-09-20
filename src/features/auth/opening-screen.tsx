@@ -3,7 +3,7 @@
 export default function OpeningScreen() {
   return (
     <main className="flex flex-1 items-center justify-center px-6">
-      <p className="font-serif text-2xl font-medium text-muted">HerJournl</p>
+      <p className="font-serif text-2xl font-medium text-muted">Becomely</p>
     </main>
   );
 }

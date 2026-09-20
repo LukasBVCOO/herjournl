@@ -33,6 +33,8 @@ function publish(next: Session) {
 // Who was signed in last time. The login library can't confirm a login while
 // the phone is offline and the login has gone stale, and would report "signed
 // out". That must not lock her out of her own notes, so we remember her here.
+// Named after the app's first name on purpose: it never shows on screen, and
+// changing it would forget who was signed in on every phone.
 const LAST_USER_KEY = "herjournl:last-user";
 
 type KnownUser = { userId: string; email?: string };

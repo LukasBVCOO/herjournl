@@ -10,12 +10,12 @@ export default function OnboardingScreen() {
     <main className="flex flex-1 animate-fade-in flex-col">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
         <p className="px-6 pt-[max(1.25rem,env(safe-area-inset-top))] font-serif text-2xl font-medium">
-          HerJournl
+          Becomely
         </p>
 
         <div className="flex flex-1 flex-col justify-center px-6 pb-16">
           <h1 className="font-serif text-[length:clamp(2.5rem,7.5dvh,3.5rem)] leading-[1.02] font-medium text-balance [&_em]:font-normal">
-            Welcome to <em>HerJournl.</em>
+            Welcome to <em>Becomely.</em>
           </h1>
           <p className="mt-4 max-w-[30ch] text-[17px] text-ink-soft">
             Your account is ready. Let&rsquo;s get you to your notes.

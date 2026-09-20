@@ -25,7 +25,7 @@ End each step with:
 
 ## The product
 
-**HerJournl** — a mobile web app that helps women who believe in manifestation turn their beliefs into daily action, using their astrological placements and current transits to tell them what to focus on today.
+**Becomely** — a mobile web app that helps women who believe in manifestation turn their beliefs into daily action, using their astrological placements and current transits to tell them what to focus on today.
 
 The core loop: the app tells her what area of life is lit up today, she sets an intention around it in the morning, and reviews it at night. That loop is the product.
 

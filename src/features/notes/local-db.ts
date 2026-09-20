@@ -32,6 +32,9 @@ interface Schema extends DBSchema {
 let dbPromise: Promise<IDBPDatabase<Schema> | null> | null = null;
 
 function database() {
+  // Still named after the app's first name on purpose. It never shows on
+  // screen, and changing it would make every phone forget its saved notes and
+  // any writing not yet uploaded.
   dbPromise ??= openDB<Schema>("herjournl", 1, {
     upgrade(db) {
       db.createObjectStore("notes", { keyPath: "id" });

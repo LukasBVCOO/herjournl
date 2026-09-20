@@ -69,7 +69,7 @@ export default function CheckEmailScreen() {
     <main className="flex flex-1 animate-fade-in flex-col">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
         <p className="px-6 pt-[max(1.25rem,env(safe-area-inset-top))] font-serif text-2xl font-medium">
-          HerJournl
+          Becomely
         </p>
 
         <div className="flex flex-1 flex-col justify-center px-6 pb-16">

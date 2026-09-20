@@ -17,8 +17,8 @@ export default defineConfig({
       registerType: "prompt",
       includeAssets: ["apple-touch-icon.png"],
       manifest: {
-        name: "HerJournl",
-        short_name: "HerJournl",
+        name: "Becomely",
+        short_name: "Becomely",
         description: "Turn your intentions into daily action.",
         start_url: "/",
         scope: "/",

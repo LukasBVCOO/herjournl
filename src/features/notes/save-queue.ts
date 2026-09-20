@@ -184,9 +184,13 @@ export function flushAll() {
 }
 
 // Tries to save everything and waits to see how it went. Used before logging
-// out, so nothing she wrote is lost.
+// out and before the app reloads for an update, so nothing she wrote is lost.
+// Her writing is on the phone before this returns, even if the internet isn't
+// there for the upload.
 export async function flushEverything() {
-  await Promise.all([...entries.keys()].map((id) => flushNote(id)));
+  const ids = [...entries.keys()];
+  await Promise.all(ids.map((id) => persistLocally(id)));
+  await Promise.all(ids.map((id) => flushNote(id)));
 }
 
 // The fallbacks are for a note the queue hasn't heard about yet.

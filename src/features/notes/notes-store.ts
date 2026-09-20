@@ -12,6 +12,7 @@
 //   3. Every change she makes shows up here first, then goes to the database.
 //      If the internet is down, it waits in the save queue and goes up later.
 
+import { registerBeforeReload } from "@/lib/before-reload";
 import { getSession, registerSignOutHandler, subscribe as subscribeToSession } from "@/lib/session";
 import {
   isEmptyDoc,
@@ -408,6 +409,12 @@ registerSignOutHandler({
     await localDb.wipeAll();
     reset();
   },
+});
+
+// Before the app reloads itself for an update, get her writing onto the phone.
+registerBeforeReload(async () => {
+  persistNow();
+  await flushEverything();
 });
 
 function onSessionChange() {

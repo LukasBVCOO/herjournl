@@ -10,7 +10,13 @@
     <meta name="theme-color" content="#faf7f2" />
     <title>HerJournl</title>
     <meta name="description" content="Turn your intentions into daily action." />
-    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="/icon-192.png" />
+
+    <!-- iPhone ignores the app manifest, so it needs its own few lines -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="HerJournl" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   </head>
   <body class="flex min-h-dvh flex-col">
     <div id="root" class="flex min-h-dvh flex-col"></div>

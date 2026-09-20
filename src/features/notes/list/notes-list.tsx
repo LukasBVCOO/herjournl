@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router";
 import { PlusIcon, SettingsIcon } from "@/components/icons";
+import { InstallButton } from "@/features/install";
 import EmptyMessage from "../empty-message";
 import { TrashIcon } from "../note-icons";
 import { retrySync } from "../notes-store";
@@ -27,6 +28,7 @@ export default function NotesListScreen() {
         <header className="flex items-center justify-between pt-[max(1.25rem,env(safe-area-inset-top))] pb-5">
           <h1 className="font-serif text-[28px] font-medium">HerJournl</h1>
           <nav className="-mr-3 flex items-center">
+            <InstallButton />
             <Link
               to="/recently-deleted"
               aria-label="Recently deleted"

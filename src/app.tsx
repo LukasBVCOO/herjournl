@@ -6,6 +6,7 @@ import {
   RequireSession,
   SettingsScreen,
 } from "@/features/auth";
+import { UpdatePrompt } from "@/features/install";
 import {
   EditNoteScreen,
   NewNoteRedirect,
@@ -80,6 +81,7 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <UpdatePrompt />
     </BrowserRouter>
   );
 }

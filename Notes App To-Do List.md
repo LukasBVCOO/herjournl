@@ -18,9 +18,9 @@ Your tasks before Claude Code starts building.
 Tick each step only after you have tested it on your phone.
 
 - [✅] **1.1 Foundation.** App, colors, fonts, Supabase connection, live on Netlify. Test: the live link opens on your phone in the new look.
-- [ ] **1.2 Login.** Email and Google sign in. Test: sign up, log out, log back in.
-- [ ] **1.3 Notes database.** Notes table with privacy rules. Test: a second account sees none of the first account's notes.
-- [ ] **1.4 Notes list.** List of notes and the new note button. Test: create three notes and see them listed.
+- [✅] **1.2 Login.** Email and Google sign in. Test: sign up, log out, log back in.
+- [✅] **1.3 Notes database.** Notes table with privacy rules. Test: a second account sees none of the first account's notes.
+- [✅] **1.4 Notes list.** List of notes and the new note button. Test: create three notes and see them listed.
 - [ ] **1.5 Editor.** Full screen writing, formatting bar, autosave. Test: write a note with bullets and tick boxes, close the app, reopen, it is all there.
 - [ ] **1.6 Pin, delete, Recently deleted.** Test: delete a note, restore it from Recently deleted.
 - [ ] **1.7 Search.** Test: find a word from an old note.

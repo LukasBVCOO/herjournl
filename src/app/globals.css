@@ -44,7 +44,8 @@ body {
     background: rgb(196 166 155 / 0.35);
   }
 
-  input {
+  input,
+  textarea {
     caret-color: var(--color-ink);
   }
 

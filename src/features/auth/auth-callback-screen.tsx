@@ -1,15 +1,16 @@
 import { Navigate } from "react-router";
 import { useSession } from "./use-session";
 
-// Where Google sends her back after she approves. The Supabase library spots the
-// one-time code in the web address and swaps it for a real login on its own,
-// before this screen even appears — so all this does is wait, then move her on.
+// Where Google, and the link in the confirmation email, send her back. The
+// Supabase library spots the one-time code in the web address and swaps it for a
+// real login on its own, before this screen even appears — so all this does is
+// wait, then move her on.
 export default function AuthCallbackScreen() {
   const session = useSession();
 
   if (session.status === "signed-in") return <Navigate to="/" replace />;
   if (session.status === "signed-out") {
-    return <Navigate to="/login?error=google" replace />;
+    return <Navigate to="/login?error=callback" replace />;
   }
 
   return (

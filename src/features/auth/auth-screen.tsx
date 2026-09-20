@@ -45,9 +45,12 @@ export default function AuthScreen({ mode }: Props) {
 
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | undefined>(
-    // Set when a Google sign-in was sent back here because it didn't work.
-    searchParams.get("error") === "google"
-      ? "Google sign-in didn't work. Please try again."
+    // Set when a Google sign-in or an email confirmation link was sent back
+    // here because it didn't work. A confirmation link that is opened in a
+    // different browser from the one she signed up in can fail even though the
+    // email did get confirmed, so the message points her at logging in.
+    searchParams.get("error") === "callback"
+      ? "Sign-in didn't work. If you just confirmed your email, you can log in below."
       : undefined,
   );
   const [notice, setNotice] = useState<string | undefined>(undefined);
@@ -78,6 +81,9 @@ export default function AuthScreen({ mode }: Props) {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: enteredEmail,
         password,
+        // The confirmation link brings her back to wherever she signed up: the
+        // live site from her phone, localhost while building.
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       });
       if (signUpError) {
         setPending(false);

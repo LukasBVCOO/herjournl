@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Runs on every page request: keeps her login fresh and sends logged-out
-// visitors to /login. Only /login and /auth/* are open to everyone.
+// visitors to /login. Only /login, /sign-up and /auth/* are open to everyone.
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -30,13 +30,13 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const signedIn = Boolean(data?.claims);
   const { pathname } = request.nextUrl;
-  const isLoginPage = pathname === "/login";
+  const isEntryPage = pathname === "/login" || pathname === "/sign-up";
   const isAuthRoute = pathname.startsWith("/auth");
 
-  if (!signedIn && !isLoginPage && !isAuthRoute) {
+  if (!signedIn && !isEntryPage && !isAuthRoute) {
     return redirectTo(request, "/login", response);
   }
-  if (signedIn && isLoginPage) {
+  if (signedIn && isEntryPage) {
     return redirectTo(request, "/", response);
   }
 

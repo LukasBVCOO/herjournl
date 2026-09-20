@@ -1,5 +1,5 @@
-import NoteForm from "../note-form";
+import NoteEditor from "../note-editor";
 
 export default function NewNotePage() {
-  return <NoteForm id={null} initialText="" />;
+  return <NoteEditor noteId={null} initialContent={null} />;
 }

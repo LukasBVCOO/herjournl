@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { noteToLines, previewFromLines, titleFromLines } from "@/lib/notes";
 import { PlusIcon, SettingsIcon } from "./icons";
+import ListRefresh from "./list-refresh";
 import NoteCard, { type NoteSummary } from "./note-card";
 
 type NoteRow = {
@@ -23,6 +24,9 @@ function toSummary(row: NoteRow): NoteSummary {
 
 export default async function NotesPage() {
   const supabase = await createClient();
+  // A note she emptied out has nothing in it, so it is removed automatically.
+  await supabase.from("notes").delete().eq("title", "").is("deleted_at", null);
+
   // The database only ever returns her own notes, so no filtering by owner here.
   const { data, error } = await supabase
     .from("notes")
@@ -37,6 +41,7 @@ export default async function NotesPage() {
 
   return (
     <>
+      <ListRefresh />
       <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6 pb-32">
         <header className="flex items-center justify-between pt-[max(1.25rem,env(safe-area-inset-top))] pb-5">
           <h1 className="font-serif text-[28px] font-medium">HerJournl</h1>

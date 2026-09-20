@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { isNoteId, noteToLines } from "@/lib/notes";
-import NoteForm from "../note-form";
+import { isNoteId } from "@/lib/notes";
+import NoteEditor from "../note-editor";
 
 export default async function NotePage({ params }: PageProps<"/notes/[id]">) {
   const { id } = await params;
@@ -17,5 +17,5 @@ export default async function NotePage({ params }: PageProps<"/notes/[id]">) {
     .maybeSingle();
   if (!data) notFound();
 
-  return <NoteForm id={id} initialText={noteToLines(data.content).join("\n")} />;
+  return <NoteEditor noteId={id} initialContent={data.content} />;
 }

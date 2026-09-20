@@ -24,6 +24,7 @@ Tick each step only after you have tested it on your phone.
 - [✅] **1.5 Editor.** Full screen writing, formatting bar, autosave. Test: write a note with bullets and tick boxes, close the app, reopen, it is all there.
 - [✅] **1.6 Pin, delete, Recently deleted.** Test: delete a note, restore it from Recently deleted.
 - [✅] **1.7 Search.** Test: find a word from an old note.
+- [ ] **1.71 Instant opening.** Opening a note and going back feel instant. Built in four small parts, tested one at a time. Test: tap a note and it is there with no waiting, tap back and the list is there at once, nothing you wrote is lost.
 - [ ] **1.8 Bad connection.** Test: turn on airplane mode, write, turn it off, the note saves.
 - [ ] **1.9 Installable app and bottom bar.** Test: add to the home screen and open it full screen.
 - [ ] **1.10 Polish.** Test: go through every screen and compare it with the Design Blueprint.

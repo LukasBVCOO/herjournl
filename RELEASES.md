@@ -46,6 +46,9 @@ The full build plan in three releases. Build them in order.
   Test: delete a note, find it in Recently deleted, restore it.
 - [ ] **1.7 Search.** One search box, results update as she types, ignores capital letters.
   Test: search for a word from an old note.
+- [ ] **1.71 Instant opening.** Opening a note and going back must feel instant. The notes list keeps her notes in the phone's memory and opens the writing screen straight from it, with no server wait. The web address still changes so back, refresh and shared links keep working. Saving moves into a queue that outlives the editor, so leaving a note never waits on, or loses, a save.
+  Built in four parts: (a) instant back and a save queue, (b) the list remembers her notes, (c) instant open, (d) leftovers such as loading skeletons and background cleanup.
+  Test: tap a note and it is there with no waiting; tap back and the list is there at once; write, leave straight away, reopen, nothing is lost.
 - [ ] **1.8 Bad connection.** If the connection drops, text stays on the phone and saves when the connection returns.
   Test: turn on airplane mode, write, turn it off, confirm the note saved.
 - [ ] **1.9 Installable app and bottom bar.** PWA with name, icon and full screen mode. Bottom bar has two tabs: Notes and Search. Settings screen shows her email and a log out button.

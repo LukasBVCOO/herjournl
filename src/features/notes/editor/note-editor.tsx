@@ -2,26 +2,28 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { Placeholder } from "@tiptap/extensions";
 import { BackIcon } from "@/components/icons";
 import { deleteNote, pinNote } from "../actions";
-import { isEmptyDoc } from "../content";
-import { markNotesChanged } from "../list-sync";
-import { saveNoteContent } from "../save";
+import {
+  flushNote,
+  getStatus,
+  isStored,
+  queueSave,
+  registerNote,
+  subscribe,
+  type SaveStatus,
+} from "../save-queue";
 import FormatBar from "./format-bar";
 import NoteMenu from "./note-menu";
 
 const PLACEHOLDER = "Write your intention, a script, or anything on your mind.";
-const SAVE_DELAY_MS = 1000;
-const RETRY_DELAY_MS = 4000;
 
-type Status = "idle" | "saving" | "saved" | "error";
-
-const statusText: Record<Status, string> = {
+const statusText: Record<SaveStatus, string> = {
   idle: "",
   saving: "Saving…",
   saved: "Saved",
@@ -54,20 +56,39 @@ export default function NoteEditor({
   const isNew = noteId === null;
   // A new note gets its id on her phone, so saving is always the same call.
   const [id] = useState(() => noteId ?? crypto.randomUUID());
-  const [status, setStatus] = useState<Status>(isNew ? "idle" : "saved");
   const [pinned, setPinned] = useState(initialPinned);
-  // Pin and Delete need a note that exists, so they wait for the first save.
-  const [canManage, setCanManage] = useState(!isNew);
   // A short message in place of the save status, e.g. "Couldn't delete."
   const [notice, setNotice] = useState<string | null>(null);
-
   const noticeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const dirty = useRef(false);
-  const running = useRef<Promise<void> | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  // True once the note exists in the database.
-  const stored = useRef(!isNew);
-  const saveRef = useRef<() => Promise<void>>(() => Promise.resolve());
+
+  // Saving is handled by the save queue, which keeps going even after this
+  // screen is closed. This screen only shows what the queue reports.
+  const subscribeToQueue = useCallback(
+    (onChange: () => void) => subscribe(id, onChange),
+    [id],
+  );
+  const status = useSyncExternalStore(
+    subscribeToQueue,
+    () => getStatus(id, isNew ? "idle" : "saved"),
+    () => (isNew ? "idle" : "saved"),
+  );
+  // Pin and Delete need a note that exists, so they wait for the first save.
+  const stored = useSyncExternalStore(
+    subscribeToQueue,
+    () => isStored(id, !isNew),
+    () => !isNew,
+  );
+
+  useEffect(() => {
+    registerNote(id, !isNew);
+    // Leaving the screen saves straight away rather than waiting for the timer.
+    return () => void flushNote(id);
+  }, [id, isNew]);
+
+  // Once a brand new note exists, a refresh reopens it instead of a blank one.
+  useEffect(() => {
+    if (isNew && stored) window.history.replaceState(null, "", `/notes/${id}`);
+  }, [id, isNew, stored]);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -95,71 +116,8 @@ export default function NoteEditor({
       attributes: { class: "note-prose", "aria-label": "Note" },
       scrollMargin: { top: 72, bottom: 120, left: 0, right: 0 },
     },
-    onUpdate: () => {
-      dirty.current = true;
-      setStatus("saving");
-      clearTimeout(timer.current);
-      timer.current = setTimeout(() => void saveRef.current(), SAVE_DELAY_MS);
-    },
+    onUpdate: ({ editor }) => queueSave(id, editor.getJSON()),
   });
-
-  // Saves whatever is in the note now. If a save is already under way it waits
-  // for it, and the running save picks up anything typed in the meantime.
-  const save = useCallback((): Promise<void> => {
-    clearTimeout(timer.current);
-    if (running.current) return running.current;
-    if (!editor || !dirty.current) return Promise.resolve();
-
-    running.current = (async () => {
-      while (dirty.current) {
-        dirty.current = false;
-        const doc = editor.getJSON();
-
-        // Nothing written and never saved: don't create an empty note.
-        if (!stored.current && isEmptyDoc(doc)) continue;
-
-        const ok = await saveNoteContent(id, doc);
-        if (!ok) {
-          dirty.current = true;
-          setStatus("error");
-          timer.current = setTimeout(() => void saveRef.current(), RETRY_DELAY_MS);
-          return;
-        }
-
-        markNotesChanged();
-        if (!stored.current) {
-          stored.current = true;
-          setCanManage(true);
-          // A refresh now reopens this note instead of a blank one.
-          window.history.replaceState(null, "", `/notes/${id}`);
-        }
-      }
-      setStatus(stored.current ? "saved" : "idle");
-    })().finally(() => {
-      running.current = null;
-    });
-
-    return running.current;
-  }, [editor, id]);
-
-  useEffect(() => {
-    saveRef.current = save;
-  }, [save]);
-
-  // Save right away when she switches apps or closes the page, and when she leaves.
-  useEffect(() => {
-    const flush = () => void saveRef.current();
-    const onVisibility = () => {
-      if (document.visibilityState === "hidden") flush();
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("pagehide", flush);
-    return () => {
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("pagehide", flush);
-      flush();
-    };
-  }, []);
 
   function showNotice(message: string) {
     clearTimeout(noticeTimer.current);
@@ -169,11 +127,11 @@ export default function NoteEditor({
 
   useEffect(() => () => clearTimeout(noticeTimer.current), []);
 
-  async function goBack(event: React.MouseEvent) {
+  // Going back doesn't wait for the save. The queue finishes it, and retries
+  // if the connection is bad, after this screen has gone.
+  function goBack(event: React.MouseEvent) {
     event.preventDefault();
-    await save();
-    // If the save failed, stay here so her writing isn't lost.
-    if (dirty.current) return;
+    void flushNote(id);
     router.push("/");
   }
 
@@ -189,7 +147,7 @@ export default function NoteEditor({
 
   async function moveToRecentlyDeleted() {
     // Keep whatever she just typed, in case she restores the note later.
-    await save();
+    await flushNote(id);
     const ok = await deleteNote(id);
     if (!ok) {
       showNotice("Couldn't delete the note.");
@@ -199,7 +157,7 @@ export default function NoteEditor({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6">
+    <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-6">
       <header className="sticky top-0 z-10 flex items-center justify-between bg-paper pt-[max(1.25rem,env(safe-area-inset-top))] pb-3">
         <Link
           href="/"
@@ -218,7 +176,7 @@ export default function NoteEditor({
           </p>
           <NoteMenu
             pinned={pinned}
-            disabled={!canManage}
+            disabled={!stored}
             onTogglePin={togglePin}
             onDelete={moveToRecentlyDeleted}
           />

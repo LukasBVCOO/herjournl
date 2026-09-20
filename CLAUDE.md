@@ -9,7 +9,7 @@ Guidance for Claude Code working in this repository.
 1. **The founder is not technical.** Explain everything in plain language. No jargon without a one-line explanation. When you name a tool, library, or service, say what it does and why it's here.
 2. **Work in small steps.** Finish one step, tell the founder exactly how to test it (what to open, what to click, what they should see), then stop and wait. Do not chain several steps together.
 3. **Ask before big decisions.** Anything that costs money, locks in a vendor, changes the data model, changes the visual direction, or affects user privacy — ask first and give a short recommendation with the trade-off.
-4. **Commit to GitHub after every finished step.** One step = one commit with a plain-English message. Push it.
+
 
 ### What "a small step" looks like
 Good: "the onboarding name screen now saves the name and moves to the next screen."

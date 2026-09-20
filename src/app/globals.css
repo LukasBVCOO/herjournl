@@ -7,12 +7,26 @@
   --color-ink: #3a3531;
   --color-muted: #8a8178;
   --color-accent: #c4a69b;
+  --color-alert: #9a5b4f;
 
   --font-serif: var(--font-cormorant), Georgia, serif;
   --font-sans: var(--font-dm-sans), system-ui, sans-serif;
 
   --radius-card: 20px;
   --shadow-soft: 0 2px 12px rgb(58 53 49 / 0.06);
+}
+
+@theme {
+  --animate-fade-in: fade-in 200ms ease-out;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 }
 
 body {

@@ -32,7 +32,7 @@ The full build plan in three releases. Build them in order.
 
 **Steps**
 
-- [ ] **1.1 Foundation.** Next.js app with Tailwind, the colors and fonts above, connected to Supabase, live on Netlify. Environment keys are stored in Netlify, not in the code.
+- [x] **1.1 Foundation.** Next.js app with Tailwind, the colors and fonts above, connected to Supabase, live on Netlify. Environment keys are stored in Netlify, not in the code.
   Test: open the live link on a phone and see a blank page in the new look.
 - [ ] **1.2 Login.** Sign up, log in and log out with email and Google. Logged out users only see the login page.
   Test: create an account, log out, log back in.

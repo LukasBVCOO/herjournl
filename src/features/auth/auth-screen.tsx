@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { supabase } from "@/lib/supabase/client";
+import { confirmationRedirectUrl } from "./confirm-redirect";
 
 const copy = {
   login: {
@@ -53,7 +54,6 @@ export default function AuthScreen({ mode }: Props) {
       ? "Sign-in didn't work. If you just confirmed your email, you can log in below."
       : undefined,
   );
-  const [notice, setNotice] = useState<string | undefined>(undefined);
   const [pending, setPending] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -65,7 +65,6 @@ export default function AuthScreen({ mode }: Props) {
     const password = String(form.get("password") ?? "");
     setEmail(enteredEmail);
     setError(undefined);
-    setNotice(undefined);
 
     if (isSignup) {
       if (!enteredEmail) return setError("Enter your email address.");
@@ -81,23 +80,24 @@ export default function AuthScreen({ mode }: Props) {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: enteredEmail,
         password,
-        // The confirmation link brings her back to wherever she signed up: the
-        // live site from her phone, localhost while building.
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+        options: { emailRedirectTo: confirmationRedirectUrl() },
       });
       if (signUpError) {
         setPending(false);
         setError(
           signUpError.code === "user_already_exists"
             ? "That email already has an account. Log in instead."
-            : "We couldn't create your account. Please try again.",
+            : signUpError.status === 429
+              ? "Too many sign-ups just now. Give it a little while and try again."
+              : "We couldn't create your account. Please try again.",
         );
         return;
       }
-      // With email confirmation on, there is no session until she confirms.
+      // With email confirmation on, there is no session until she confirms, so
+      // she is shown that the link has been sent. With it off, she is signed in
+      // already and carries on below.
       if (!data.session) {
-        setPending(false);
-        setNotice("Check your email to confirm your account, then log in.");
+        navigate("/check-email", { state: { email: enteredEmail } });
         return;
       }
     } else {
@@ -107,12 +107,18 @@ export default function AuthScreen({ mode }: Props) {
       });
       if (logInError) {
         setPending(false);
-        setError("That email and password don't match. Try again.");
+        // Right password, but she hasn't tapped the link in her email yet.
+        setError(
+          logInError.code === "email_not_confirmed"
+            ? "Please confirm your email first. We sent you a link when you signed up."
+            : "That email and password don't match. Try again.",
+        );
         return;
       }
     }
 
-    navigate("/", { replace: true });
+    // A brand new account starts with the welcome; everyone else goes to her notes.
+    navigate(isSignup ? "/onboarding" : "/", { replace: true });
   }
 
   async function continueWithGoogle() {
@@ -198,11 +204,6 @@ export default function AuthScreen({ mode }: Props) {
             {error && (
               <p role="alert" className="animate-fade-in text-sm text-alert">
                 {error}
-              </p>
-            )}
-            {notice && !error && (
-              <p role="status" className="animate-fade-in text-sm text-ink-soft">
-                {notice}
               </p>
             )}
 

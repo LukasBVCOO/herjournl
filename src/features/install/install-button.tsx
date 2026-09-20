@@ -20,7 +20,10 @@ export default function InstallButton() {
         type="button"
         onClick={() => (canPrompt ? void promptInstall() : setHelpOpen(true))}
         aria-label="Add to home screen"
-        className="flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
+        // Only offered on phone-sized screens; on a computer there is no home
+        // screen to add it to. The width, not the device, decides, so it still
+        // shows when a browser window is shrunk to phone size for testing.
+        className="flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink md:hidden"
       >
         <DownloadIcon />
       </button>

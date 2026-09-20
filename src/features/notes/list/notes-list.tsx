@@ -58,7 +58,19 @@ export default function NotesListScreen() {
             </button>
           </EmptyMessage>
         ) : notes.length === 0 ? (
-          <EmptyMessage>Start with a thought.</EmptyMessage>
+          // Nothing written yet: the way in sits in the middle of the screen,
+          // where her eye already is, instead of only in the corner.
+          <div className="flex flex-1 flex-col items-center justify-center text-center">
+            <p className="font-serif text-2xl text-ink-soft">Start with a thought.</p>
+            <button
+              type="button"
+              onClick={newNote}
+              className="mt-6 flex h-12 items-center gap-2 rounded-full bg-accent pr-6 pl-5 font-medium text-ink shadow-soft transition-opacity duration-200 hover:opacity-90 active:opacity-80"
+            >
+              <PlusIcon />
+              Add note
+            </button>
+          </div>
         ) : (
           <NotesBrowser notes={notes} />
         )}

@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import {
   AuthCallbackScreen,
   AuthScreen,
+  CheckEmailScreen,
   RequireNoSession,
   RequireSession,
   SettingsScreen,
@@ -13,6 +14,7 @@ import {
   NotesListScreen,
   RecentlyDeletedScreen,
 } from "@/features/notes";
+import { OnboardingScreen } from "@/features/onboarding";
 
 // Every screen in the app and the web address that opens it. Moving between
 // them never asks the server for a new page, which is what makes it quick.
@@ -72,12 +74,28 @@ export default function App() {
         <Route
           path="/sign-up"
           element={
-            <RequireNoSession>
+            <RequireNoSession to="/onboarding">
               <AuthScreen mode="signup" />
             </RequireNoSession>
           }
         />
+        {/* Shown right after sign-up. Not behind RequireNoSession: it moves
+            her on by itself once the link has been opened. */}
+        <Route path="/check-email" element={<CheckEmailScreen />} />
         <Route path="/auth/callback" element={<AuthCallbackScreen />} />
+        {/* The link in the confirmation email comes back here. */}
+        <Route
+          path="/auth/confirmed"
+          element={<AuthCallbackScreen next="/onboarding" />}
+        />
+        <Route
+          path="/onboarding"
+          element={
+            <RequireSession>
+              <OnboardingScreen />
+            </RequireSession>
+          }
+        />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

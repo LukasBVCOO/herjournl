@@ -19,11 +19,20 @@ export function RequireSession({ children }: { children: React.ReactNode }) {
 }
 
 // The other way round: the login and sign-up screens, which she shouldn't see
-// once she is already signed in.
-export function RequireNoSession({ children }: { children: React.ReactNode }) {
+// once she is already signed in. `to` is where she goes instead. Creating an
+// account signs her in on the spot, so the sign-up screen sends her to the
+// welcome, the same place its own button does; if the two disagreed she would
+// flash through the wrong screen on the way.
+export function RequireNoSession({
+  children,
+  to = "/",
+}: {
+  children: React.ReactNode;
+  to?: string;
+}) {
   const session = useSession();
 
   if (session.status === "loading") return <OpeningScreen />;
-  if (session.status === "signed-in") return <Navigate to="/" replace />;
+  if (session.status === "signed-in") return <Navigate to={to} replace />;
   return children;
 }

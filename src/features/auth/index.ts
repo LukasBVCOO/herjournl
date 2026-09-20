@@ -1,15 +1,17 @@
 // Signing in and out, and who is signed in.
 //
-//   session-store.ts       who is signed in (outside React, one listener)
+//   lib/session.ts         who is signed in (outside React, one listener)
 //   use-session.ts         reading that from a screen
 //   require-session.tsx    which screens need her signed in, and which don't
 //   auth-screen.tsx        the log in / create account screen
-//   auth-callback-screen   where Google sends her back
+//   check-email-screen.tsx "Confirmation link sent", shown right after sign-up
+//   auth-callback-screen   where Google and the email link send her back
 //   settings-screen.tsx    her email and the log out button
 //   opening-screen.tsx     the blink before the app knows who she is
 //
 // The rest of the app uses only what is exported here.
 export { default as AuthScreen } from "./auth-screen";
+export { default as CheckEmailScreen } from "./check-email-screen";
 export { default as AuthCallbackScreen } from "./auth-callback-screen";
 export { default as SettingsScreen } from "./settings-screen";
 export { RequireSession, RequireNoSession } from "./require-session";

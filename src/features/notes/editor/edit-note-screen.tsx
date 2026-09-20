@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router";
 import { BackIcon } from "@/components/icons";
 import { isNoteId } from "../content";
-import { fetchNoteExisting, type ExistingNote } from "../notes-api";
+import { fetchNoteExisting } from "../notes-api";
+import { getStoredNote } from "../notes-store";
+import { useNotesReady } from "../use-notes";
 import NoteEditor from "./note-editor";
 
 type Loaded =
   | { kind: "new" }
-  | { kind: "existing"; note: ExistingNote }
+  | { kind: "existing"; content: unknown; pinned: boolean }
   | { kind: "deleted" }
   | { kind: "missing" };
 
@@ -16,45 +18,60 @@ type Loaded =
 export default function EditNoteScreen() {
   const { id = "" } = useParams();
   const location = useLocation();
-  // The notes list sets this when it has just made the note up, so tapping "+"
-  // opens a blank page immediately instead of asking the database about a note
-  // that cannot exist yet.
+  const ready = useNotesReady();
+  // The notes list sets this when it has just made the note up. It is only a
+  // hint for a note the phone has never seen: it stays on the page through a
+  // refresh, so it must never be trusted over what is actually saved.
   const startedHere = Boolean(
     (location.state as { isNew?: boolean } | null)?.isNew,
   );
+
+  // Waits for the phone's copy of her notes (a blink), then opens from it.
+  if (!ready) return <div className="flex-1" />;
 
   // Keyed on the note, so opening a different one starts completely fresh and
   // nothing from the last note can linger on screen.
   return <OneNote key={id} id={id} startedHere={startedHere} />;
 }
 
+// What the phone already knows about this note, if anything.
+function fromPhone(id: string): Loaded | null {
+  const note = getStoredNote(id);
+  if (!note) return null;
+  return note.deletedAt
+    ? { kind: "deleted" }
+    : { kind: "existing", content: note.content, pinned: note.pinned };
+}
+
 function OneNote({ id, startedHere }: { id: string; startedHere: boolean }) {
   const valid = isNoteId(id);
+  // Read once when the screen opens. Later changes (her own typing) must not
+  // reload the editor underneath her.
   const [loaded, setLoaded] = useState<Loaded | null>(() => {
     if (!valid) return { kind: "missing" };
-    return startedHere ? { kind: "new" } : null;
+    return fromPhone(id) ?? (startedHere ? { kind: "new" } : null);
   });
 
+  // The phone doesn't have this note and she didn't just make it: it may be one
+  // written on another device that hasn't arrived yet, so ask the database.
   useEffect(() => {
-    if (!valid || startedHere) return;
+    if (loaded !== null) return;
 
     let current = true;
     void fetchNoteExisting(id).then((note) => {
       if (!current) return;
       if (!note) {
-        // Nothing here yet: she reopened a note she never wrote in, so this is
-        // still a blank page waiting for her.
-        setLoaded({ kind: "new" });
+        setLoaded({ kind: "missing" });
       } else if (note.deletedAt) {
         setLoaded({ kind: "deleted" });
       } else {
-        setLoaded({ kind: "existing", note });
+        setLoaded({ kind: "existing", content: note.content, pinned: note.pinned });
       }
     });
     return () => {
       current = false;
     };
-  }, [id, valid, startedHere]);
+  }, [id, loaded]);
 
   if (loaded === null) {
     // Reading the note. Blank rather than a spinner, so nothing flashes.
@@ -75,8 +92,8 @@ function OneNote({ id, startedHere }: { id: string; startedHere: boolean }) {
     <NoteEditor
       noteId={id}
       exists={loaded.kind === "existing"}
-      initialContent={loaded.kind === "existing" ? loaded.note.content : null}
-      initialPinned={loaded.kind === "existing" ? loaded.note.pinned : false}
+      initialContent={loaded.kind === "existing" ? loaded.content : null}
+      initialPinned={loaded.kind === "existing" ? loaded.pinned : false}
     />
   );
 }

@@ -1,29 +1,15 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { BackIcon } from "@/components/icons";
 import EmptyMessage from "../empty-message";
-import { fetchDeletedNotes } from "../notes-api";
-import type { DeletedNoteSummary } from "../types";
+import { retrySync } from "../notes-store";
+import { useNotes } from "../use-notes";
 import DeletedNoteCard from "./deleted-note-card";
 
 // Deleted notes wait here for 30 days before they are removed for good.
 export default function RecentlyDeletedScreen() {
-  const [notes, setNotes] = useState<DeletedNoteSummary[] | null>(null);
-  const [failed, setFailed] = useState(false);
-  // Bumped by "Try again", which is what asks for another go.
-  const [attempt, setAttempt] = useState(0);
+  const { ready, hasSynced, syncFailed, deleted } = useNotes();
 
-  useEffect(() => {
-    let current = true;
-    void fetchDeletedNotes().then((result) => {
-      if (!current) return;
-      setNotes(result.notes);
-      setFailed(result.failed);
-    });
-    return () => {
-      current = false;
-    };
-  }, [attempt]);
+  const stillFinding = !ready || (deleted.length === 0 && !hasSynced && !syncFailed);
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6 pb-12">
@@ -41,22 +27,22 @@ export default function RecentlyDeletedScreen() {
         Notes stay here for 30 days, then they&rsquo;re removed for good.
       </p>
 
-      {failed ? (
+      {stillFinding ? null : deleted.length === 0 && !hasSynced ? (
         <EmptyMessage>
           We couldn&rsquo;t load your deleted notes.{" "}
           <button
             type="button"
-            onClick={() => setAttempt((count) => count + 1)}
+            onClick={retrySync}
             className="font-medium text-ink underline underline-offset-4"
           >
             Try again
           </button>
         </EmptyMessage>
-      ) : notes === null ? null : notes.length === 0 ? (
+      ) : deleted.length === 0 ? (
         <EmptyMessage>Nothing here.</EmptyMessage>
       ) : (
         <ul className="flex flex-col gap-4">
-          {notes.map((note) => (
+          {deleted.map((note) => (
             <li key={note.id}>
               <DeletedNoteCard note={note} />
             </li>

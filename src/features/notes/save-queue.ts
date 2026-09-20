@@ -6,14 +6,22 @@
 // in progress and lose her writing. Because the queue is a plain module, it
 // keeps going — including retrying — long after she is back on the list. That
 // is what lets the back button respond instantly.
+//
+// Her writing is also copied onto the phone (the "outbox") a moment after every
+// change. If the internet is down, or she closes the app before a save lands,
+// the copy is still there next time and goes up as soon as it can.
 
 import { isEmptyDoc } from "./content";
+import { putOutbox, removeOutbox } from "./local-db";
 import { saveNoteContent } from "./save";
 
 const SAVE_DELAY_MS = 1000;
 const RETRY_DELAY_MS = 4000;
+const LOCAL_DELAY_MS = 300;
 
-export type SaveStatus = "idle" | "saving" | "saved" | "error";
+// "offline" means her writing is safe on the phone but hasn't gone up yet.
+// "error" means it isn't safe anywhere, which should be very rare.
+export type SaveStatus = "idle" | "saving" | "saved" | "offline" | "error";
 
 type Entry = {
   // The most recent writing, waiting to go to the database.
@@ -21,13 +29,24 @@ type Entry = {
   dirty: boolean;
   // True once the note exists in the database.
   stored: boolean;
+  // True once the latest writing is safely on the phone.
+  localSafe: boolean;
   status: SaveStatus;
   timer?: ReturnType<typeof setTimeout>;
+  localTimer?: ReturnType<typeof setTimeout>;
   running: Promise<void> | null;
   listeners: Set<() => void>;
 };
 
 const entries = new Map<string, Entry>();
+
+// The notes list hears about every change through this, so it can show the new
+// writing straight away, before it has even been saved.
+let editObserver: ((id: string, doc: unknown) => void) | null = null;
+
+export function observeEdits(observer: (id: string, doc: unknown) => void) {
+  editObserver = observer;
+}
 
 function entryFor(id: string): Entry {
   let entry = entries.get(id);
@@ -36,6 +55,7 @@ function entryFor(id: string): Entry {
       doc: null,
       dirty: false,
       stored: false,
+      localSafe: false,
       status: "idle",
       running: null,
       listeners: new Set(),
@@ -63,21 +83,55 @@ export function registerNote(id: string, stored: boolean) {
   ensureFlushListeners();
   const entry = entryFor(id);
   if (stored) setStored(entry, true);
-  if (!entry.dirty && entry.status !== "error") {
+  if (!entry.dirty && entry.status !== "error" && entry.status !== "offline") {
     setStatus(entry, entry.stored ? "saved" : "idle");
   }
   return entry;
 }
 
-// Called on every change in the editor. Holds the writing and saves it about a
-// second after she stops typing.
+// Copies the latest writing onto the phone.
+async function persistLocally(id: string) {
+  const entry = entries.get(id);
+  if (!entry) return;
+  clearTimeout(entry.localTimer);
+  if (!entry.dirty) return;
+
+  const doc = entry.doc;
+  const ok = await putOutbox(id, doc);
+  // Only counts if nothing newer was typed while that was happening.
+  entry.localSafe = ok && entry.doc === doc;
+  if (entry.localSafe && entry.status === "error") setStatus(entry, "offline");
+}
+
+// Called on every change in the editor. Holds the writing, copies it onto the
+// phone almost at once, and saves it about a second after she stops typing.
 export function queueSave(id: string, doc: unknown) {
+  ensureFlushListeners();
   const entry = entryFor(id);
   entry.doc = doc;
   entry.dirty = true;
+  entry.localSafe = false;
   setStatus(entry, "saving");
+  editObserver?.(id, doc);
+
+  clearTimeout(entry.localTimer);
+  entry.localTimer = setTimeout(() => void persistLocally(id), LOCAL_DELAY_MS);
   clearTimeout(entry.timer);
   entry.timer = setTimeout(() => void flushNote(id), SAVE_DELAY_MS);
+}
+
+// Picks up writing that was on the phone but never reached the database, for
+// example because she closed the app while offline.
+export function resumeNote(id: string, doc: unknown) {
+  ensureFlushListeners();
+  const entry = entryFor(id);
+  // If she is already typing in this note, that is newer. Leave it alone.
+  if (entry.dirty) return;
+  entry.doc = doc;
+  entry.dirty = true;
+  entry.localSafe = true;
+  setStatus(entry, "saving");
+  void flushNote(id);
 }
 
 // Saves this note now. If a save is already under way it waits for that one,
@@ -87,6 +141,7 @@ export function flushNote(id: string): Promise<void> {
   if (!entry) return Promise.resolve();
 
   clearTimeout(entry.timer);
+  if (entry.dirty) void persistLocally(id);
   if (entry.running) return entry.running;
   if (!entry.dirty) return Promise.resolve();
 
@@ -97,20 +152,24 @@ export function flushNote(id: string): Promise<void> {
 
       // Nothing written and never saved: don't create an empty note.
       if (!entry.stored && isEmptyDoc(doc)) {
+        void removeOutbox(id);
         setStatus(entry, "idle");
         return;
       }
 
       const ok = await saveNoteContent(id, doc);
       if (!ok) {
-        // Put it back and try again shortly. Her writing stays in the queue.
+        // Put it back and try again shortly. Her writing stays in the queue,
+        // and on the phone.
         entry.dirty = true;
-        setStatus(entry, "error");
+        setStatus(entry, entry.localSafe ? "offline" : "error");
         entry.timer = setTimeout(() => void flushNote(id), RETRY_DELAY_MS);
         return;
       }
 
       setStored(entry, true);
+      // Only clear the phone's copy if nothing newer arrived during the save.
+      if (!entry.dirty) void removeOutbox(id);
     }
     setStatus(entry, entry.stored ? "saved" : "idle");
   })().finally(() => {
@@ -122,6 +181,12 @@ export function flushNote(id: string): Promise<void> {
 
 export function flushAll() {
   entries.forEach((_entry, id) => void flushNote(id));
+}
+
+// Tries to save everything and waits to see how it went. Used before logging
+// out, so nothing she wrote is lost.
+export async function flushEverything() {
+  await Promise.all([...entries.keys()].map((id) => flushNote(id)));
 }
 
 // The fallbacks are for a note the queue hasn't heard about yet.
@@ -139,6 +204,10 @@ export function hasPending(id: string) {
   return Boolean(entry && (entry.dirty || entry.running));
 }
 
+export function hasAnyPending() {
+  return [...entries.keys()].some(hasPending);
+}
+
 export function subscribe(id: string, listener: () => void) {
   const entry = entryFor(id);
   entry.listeners.add(listener);
@@ -147,8 +216,9 @@ export function subscribe(id: string, listener: () => void) {
   };
 }
 
-// Save whenever she switches apps or closes the page. Registered once for the
-// whole app, so it still covers a note she has already navigated away from.
+// Save whenever she switches apps or closes the page, and try again the moment
+// the internet comes back. Registered once for the whole app, so it still
+// covers a note she has already navigated away from.
 let flushListenersRegistered = false;
 
 function ensureFlushListeners() {
@@ -159,4 +229,5 @@ function ensureFlushListeners() {
     if (document.visibilityState === "hidden") flushAll();
   });
   window.addEventListener("pagehide", flushAll);
+  window.addEventListener("online", flushAll);
 }

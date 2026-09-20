@@ -1,90 +1,70 @@
-// Reading and changing notes. Runs on her phone, talking straight to the
-// database. The database only ever returns her own notes, so nothing here
-// filters by owner.
+// Talking to the database. Runs on her phone. The database only ever returns
+// her own notes, so nothing here filters by owner.
+//
+// The screens don't call this directly: they read from the copy of her notes on
+// the phone (notes-store.ts), which uses this to stay up to date.
 import { supabase } from "@/lib/supabase/client";
-import {
-  isNoteId,
-  noteToLines,
-  previewFromLines,
-  textFromLines,
-  titleFromLines,
-} from "./content";
-import { daysLeft } from "./dates";
-import type { DeletedNoteSummary, ListedNote } from "./types";
+import { isNoteId } from "./content";
 
-type NoteRow = {
+export type ServerNote = {
   id: string;
   content: unknown;
   pinned: boolean;
   updated_at: string;
+  deleted_at: string | null;
 };
 
-type DeletedRow = {
-  id: string;
-  content: unknown;
-  deleted_at: string;
-};
+const PAGE_SIZE = 500;
 
-function toListedNote(row: NoteRow): ListedNote {
-  const lines = noteToLines(row.content);
-  return {
-    id: row.id,
-    title: titleFromLines(lines),
-    preview: previewFromLines(lines),
-    text: textFromLines(lines),
-    pinned: row.pinned,
-    updatedAt: row.updated_at,
-  };
+// Notes changed since the given moment (or all of them, the very first time).
+// The moment always comes from the database's clock, never the phone's, so a
+// phone with the wrong date can't make it skip anything. Returns null when the
+// internet didn't cooperate.
+export async function fetchChangedNotes(
+  since: string | null,
+): Promise<ServerNote[] | null> {
+  const all: ServerNote[] = [];
+  try {
+    for (let from = 0; ; from += PAGE_SIZE) {
+      let query = supabase
+        .from("notes")
+        .select("id, content, pinned, updated_at, deleted_at")
+        .order("updated_at", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, from + PAGE_SIZE - 1);
+      // "At or after", so two notes changed in the same instant can't be missed.
+      if (since) query = query.gte("updated_at", since);
+
+      const { data, error } = await query;
+      if (error) return null;
+      const page = (data ?? []) as ServerNote[];
+      all.push(...page);
+      if (page.length < PAGE_SIZE) return all;
+    }
+  } catch {
+    return null;
+  }
 }
 
-function toDeletedSummary(row: DeletedRow): DeletedNoteSummary {
-  const lines = noteToLines(row.content);
-  return {
-    id: row.id,
-    title: titleFromLines(lines),
-    preview: previewFromLines(lines),
-    daysLeft: daysLeft(row.deleted_at),
-  };
-}
-
-// A note she emptied out has nothing in it, so it is removed automatically.
-// Nothing waits for this: it runs quietly after the screen is already drawn.
-export function removeEmptyNotes() {
-  void supabase.from("notes").delete().eq("title", "").is("deleted_at", null);
-}
-
-// Pinned notes first, then newest first.
-export async function fetchNoteList(): Promise<{
-  notes: ListedNote[];
-  failed: boolean;
-}> {
-  const { data, error } = await supabase
-    .from("notes")
-    .select("id, content, pinned, updated_at")
-    .is("deleted_at", null)
-    .order("pinned", { ascending: false })
-    .order("updated_at", { ascending: false });
-
-  if (error) return { notes: [], failed: true };
-  return { notes: ((data ?? []) as NoteRow[]).map(toListedNote), failed: false };
-}
-
-// Most recently deleted first.
-export async function fetchDeletedNotes(): Promise<{
-  notes: DeletedNoteSummary[];
-  failed: boolean;
-}> {
-  const { data, error } = await supabase
-    .from("notes")
-    .select("id, content, deleted_at")
-    .not("deleted_at", "is", null)
-    .order("deleted_at", { ascending: false });
-
-  if (error) return { notes: [], failed: true };
-  return {
-    notes: ((data ?? []) as DeletedRow[]).map(toDeletedSummary),
-    failed: false,
-  };
+// Every note id she has, and nothing else. That is how the phone notices a note
+// was removed for good somewhere else.
+export async function fetchAllNoteIds(): Promise<string[] | null> {
+  const ids: string[] = [];
+  try {
+    for (let from = 0; ; from += PAGE_SIZE) {
+      const { data, error } = await supabase
+        .from("notes")
+        .select("id")
+        .order("id", { ascending: true })
+        .range(from, from + PAGE_SIZE - 1);
+      if (error) return null;
+      const page = (data ?? []) as { id: string }[];
+      ids.push(...page.map((row) => row.id));
+      if (page.length < PAGE_SIZE) return ids;
+    }
+  } catch {
+    return null;
+  }
 }
 
 export type ExistingNote = {
@@ -94,25 +74,43 @@ export type ExistingNote = {
   deletedAt: string | null;
 };
 
-// null when there is no such note, which also covers someone else's note: the
-// database simply doesn't return it. Deleted notes ARE returned, so the writing
-// screen can say where the note went instead of pretending it never existed.
+// For a note the phone doesn't have yet, such as one opened from a link before
+// the first sync. null when there is no such note, which also covers someone
+// else's note: the database simply doesn't return it.
 export async function fetchNoteExisting(
   id: string,
 ): Promise<ExistingNote | null> {
   if (!isNoteId(id)) return null;
 
-  const { data } = await supabase
+  try {
+    const { data } = await supabase
+      .from("notes")
+      .select("content, pinned, deleted_at")
+      .eq("id", id)
+      .maybeSingle();
+    if (!data) return null;
+    return {
+      content: data.content,
+      pinned: data.pinned,
+      deletedAt: data.deleted_at,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// A note she emptied out has nothing in it, so it is removed automatically.
+// Nothing waits for this: it runs quietly in the background.
+export function removeEmptyNotes() {
+  void supabase
     .from("notes")
-    .select("content, pinned, deleted_at")
-    .eq("id", id)
-    .maybeSingle();
-  if (!data) return null;
-  return {
-    content: data.content,
-    pinned: data.pinned,
-    deletedAt: data.deleted_at,
-  };
+    .delete()
+    .eq("title", "")
+    .is("deleted_at", null)
+    .then(
+      () => {},
+      () => {},
+    );
 }
 
 // Pin, delete, restore and delete forever. Each one returns true when it worked.
@@ -125,14 +123,18 @@ async function updateNote(
 ) {
   if (!isNoteId(id)) return false;
 
-  const query = supabase.from("notes").update(fields).eq("id", id);
-  const { data, error } = await (
-    where === "live"
-      ? query.is("deleted_at", null)
-      : query.not("deleted_at", "is", null)
-  ).select("id");
+  try {
+    const query = supabase.from("notes").update(fields).eq("id", id);
+    const { data, error } = await (
+      where === "live"
+        ? query.is("deleted_at", null)
+        : query.not("deleted_at", "is", null)
+    ).select("id");
 
-  return !error && Boolean(data?.length);
+    return !error && Boolean(data?.length);
+  } catch {
+    return false;
+  }
 }
 
 export async function pinNote(id: string, pinned: boolean) {
@@ -140,8 +142,8 @@ export async function pinNote(id: string, pinned: boolean) {
 }
 
 // Moves the note to Recently deleted.
-export async function deleteNote(id: string) {
-  return updateNote(id, { deleted_at: new Date().toISOString() }, "live");
+export async function deleteNote(id: string, deletedAt: string) {
+  return updateNote(id, { deleted_at: deletedAt }, "live");
 }
 
 export async function restoreNote(id: string) {
@@ -152,12 +154,16 @@ export async function restoreNote(id: string) {
 export async function deleteNoteForever(id: string) {
   if (!isNoteId(id)) return false;
 
-  const { data, error } = await supabase
-    .from("notes")
-    .delete()
-    .eq("id", id)
-    .not("deleted_at", "is", null)
-    .select("id");
+  try {
+    const { data, error } = await supabase
+      .from("notes")
+      .delete()
+      .eq("id", id)
+      .not("deleted_at", "is", null)
+      .select("id");
 
-  return !error && Boolean(data?.length);
+    return !error && Boolean(data?.length);
+  } catch {
+    return false;
+  }
 }

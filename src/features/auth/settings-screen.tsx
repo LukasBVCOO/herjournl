@@ -1,17 +1,26 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { BackIcon } from "@/components/icons";
-import { supabase } from "@/lib/supabase/client";
+import { signOut } from "@/lib/session";
 import { useSession } from "./use-session";
 
 export default function SettingsScreen() {
   const session = useSession();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
 
   async function logOut() {
     setBusy(true);
-    await supabase.auth.signOut();
+    setProblem(null);
+    // Refuses, with a reason, if some of her writing hasn't reached the
+    // internet yet, because logging out clears the copy on this phone.
+    const message = await signOut();
+    if (message) {
+      setProblem(message);
+      setBusy(false);
+      return;
+    }
     navigate("/login", { replace: true });
   }
 
@@ -35,11 +44,17 @@ export default function SettingsScreen() {
         </p>
       </section>
 
+      {problem && (
+        <p role="alert" className="mt-6 animate-fade-in text-sm text-alert">
+          {problem}
+        </p>
+      )}
+
       <button
         type="button"
         onClick={logOut}
         disabled={busy}
-        className="mt-6 h-[52px] w-full rounded-full border border-line bg-surface font-medium text-ink transition-colors duration-200 hover:bg-paper disabled:opacity-60"
+        className={`${problem ? "mt-3" : "mt-6"} h-[52px] w-full rounded-full border border-line bg-surface font-medium text-ink transition-colors duration-200 hover:bg-paper disabled:opacity-60`}
       >
         Log out
       </button>

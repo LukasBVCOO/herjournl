@@ -5,7 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { Placeholder } from "@tiptap/extensions";
 import { BackIcon } from "@/components/icons";
-import { deleteNote, pinNote } from "../notes-api";
+import { deleteNote, pinNote } from "../notes-store";
 import {
   flushNote,
   getStatus,
@@ -24,6 +24,8 @@ const statusText: Record<SaveStatus, string> = {
   idle: "",
   saving: "Saving…",
   saved: "Saved",
+  // Her writing is safe on the phone and goes up when the internet is back.
+  offline: "Saved on this phone",
   error: "Not saved. Retrying…",
 };
 

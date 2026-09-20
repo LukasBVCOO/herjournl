@@ -1,37 +1,25 @@
-import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { PlusIcon, SettingsIcon } from "@/components/icons";
 import EmptyMessage from "../empty-message";
 import { TrashIcon } from "../note-icons";
-import { fetchNoteList, removeEmptyNotes } from "../notes-api";
-import type { ListedNote } from "../types";
+import { retrySync } from "../notes-store";
+import { useNotes } from "../use-notes";
 import NotesBrowser from "./notes-browser";
 
 // The notes list screen: search bar, pinned notes, the rest, and the new note button.
 export default function NotesListScreen() {
   const navigate = useNavigate();
-  const [notes, setNotes] = useState<ListedNote[] | null>(null);
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    let current = true;
-    void fetchNoteList().then((result) => {
-      if (!current) return;
-      setNotes(result.notes);
-      setFailed(result.failed);
-      // Tidying up happens after her notes are on screen, never before.
-      if (!result.failed) removeEmptyNotes();
-    });
-    return () => {
-      current = false;
-    };
-  }, []);
+  const { ready, hasSynced, syncFailed, notes } = useNotes();
 
   // A new note's id is chosen here, so the writing screen has a real web
   // address from the first keystroke.
   function newNote() {
     navigate(`/notes/${crypto.randomUUID()}`, { state: { isNew: true } });
   }
+
+  // Blank rather than "Start with a thought." while her notes are still being
+  // found, so it never says she has none when she does.
+  const stillFinding = !ready || (notes.length === 0 && !hasSynced && !syncFailed);
 
   return (
     <>
@@ -56,21 +44,17 @@ export default function NotesListScreen() {
           </nav>
         </header>
 
-        {failed ? (
+        {stillFinding ? null : notes.length === 0 && !hasSynced ? (
           <EmptyMessage>
             We couldn&rsquo;t load your notes.{" "}
             <button
               type="button"
-              onClick={() => window.location.reload()}
+              onClick={retrySync}
               className="font-medium text-ink underline underline-offset-4"
             >
               Try again
             </button>
           </EmptyMessage>
-        ) : notes === null ? (
-          // Still reading her notes. Deliberately blank rather than showing
-          // "Start with a thought." to someone who already has notes.
-          null
         ) : notes.length === 0 ? (
           <EmptyMessage>Start with a thought.</EmptyMessage>
         ) : (

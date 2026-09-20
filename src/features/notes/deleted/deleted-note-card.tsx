@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { deleteNoteForever, restoreNote } from "../notes-api";
+import { deleteNoteForever, restoreNote } from "../notes-store";
 import type { DeletedNoteSummary } from "../types";
 
 // Delete forever can't be undone, so it asks for a second tap.

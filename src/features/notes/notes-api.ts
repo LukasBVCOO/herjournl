@@ -4,7 +4,8 @@
 // The screens don't call this directly: they read from the copy of her notes on
 // the phone (notes-store.ts), which uses this to stay up to date.
 import { supabase } from "@/lib/supabase/client";
-import { isNoteId } from "./content";
+import { isNoteId, parseFocusCard } from "./content";
+import type { FocusCardCopy } from "./types";
 
 export type ServerNote = {
   id: string;
@@ -12,6 +13,9 @@ export type ServerNote = {
   pinned: boolean;
   updated_at: string;
   deleted_at: string | null;
+  // The daily focus card the note was written from. Null for an ordinary note.
+  // Read with parseFocusCard, never trusted as it comes.
+  focus_card: unknown;
 };
 
 const PAGE_SIZE = 500;
@@ -28,7 +32,7 @@ export async function fetchChangedNotes(
     for (let from = 0; ; from += PAGE_SIZE) {
       let query = supabase
         .from("notes")
-        .select("id, content, pinned, updated_at, deleted_at")
+        .select("id, content, pinned, updated_at, deleted_at, focus_card")
         .order("updated_at", { ascending: true })
         .order("id", { ascending: true })
         .range(from, from + PAGE_SIZE - 1);
@@ -72,6 +76,7 @@ export type ExistingNote = {
   pinned: boolean;
   // Set when the note is sitting in Recently deleted.
   deletedAt: string | null;
+  focusCard: FocusCardCopy | null;
 };
 
 // For a note the phone doesn't have yet, such as one opened from a link before
@@ -85,7 +90,7 @@ export async function fetchNoteExisting(
   try {
     const { data } = await supabase
       .from("notes")
-      .select("content, pinned, deleted_at")
+      .select("content, pinned, deleted_at, focus_card")
       .eq("id", id)
       .maybeSingle();
     if (!data) return null;
@@ -93,6 +98,7 @@ export async function fetchNoteExisting(
       content: data.content,
       pinned: data.pinned,
       deletedAt: data.deleted_at,
+      focusCard: parseFocusCard(data.focus_card),
     };
   } catch {
     return null;

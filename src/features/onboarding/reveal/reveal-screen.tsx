@@ -25,7 +25,9 @@ export default function RevealScreen() {
     setSaveFailed(false);
     const saved = await saveOnboarding(getAnswers());
     if (saved) {
-      navigate("/onboarding/focus", { replace: true });
+      // Onboarding is complete. It ends on her first real daily focus card (the
+      // daily focus feature makes it, now that her chart is saved).
+      navigate("/focus", { replace: true });
       return;
     }
     // Her answers are still here, so she can simply try again.

@@ -1,4 +1,4 @@
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState, type ReactNode } from "react";
 import EmptyMessage from "../empty-message";
 import SearchBox from "../search/search-box";
 import { buildIndex, searchNotes } from "../search/search-logic";
@@ -7,7 +7,16 @@ import NoteCard from "./note-card";
 
 // The search bar and the list beneath it. While she types, the list narrows to
 // the notes that match; with the bar empty it shows all her notes.
-export default function NotesBrowser({ notes }: { notes: ListedNote[] }) {
+//
+// `belowSearch` (today's focus card, handed in by the app) sits between the two.
+// It steps aside while she is searching, so the results are all she sees.
+export default function NotesBrowser({
+  notes,
+  belowSearch,
+}: {
+  notes: ListedNote[];
+  belowSearch?: ReactNode;
+}) {
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const index = useMemo(() => buildIndex(notes), [notes]);
@@ -23,6 +32,8 @@ export default function NotesBrowser({ notes }: { notes: ListedNote[] }) {
   return (
     <>
       <SearchBox value={query} onChange={setQuery} />
+
+      {!searching && belowSearch && <div className="mt-6">{belowSearch}</div>}
 
       <div className="mt-6" aria-live="polite">
         {searching ? (

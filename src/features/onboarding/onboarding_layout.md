@@ -28,8 +28,8 @@ through them one at a time.
 | 4 | Birth time | `/onboarding/birth-time` | `questions/birth-time-screen.tsx` | Uses the phone's own time picker (12 or 24 hour, however her phone is set). |
 | 5 | Birthplace | `/onboarding/birthplace` | `questions/birthplace-screen.tsx` | Search as she types. She must pick a place from the list. |
 | 6 | Mapping your chart | `/onboarding/mapping` | `reveal/mapping-screen.tsx` | Makes the chart while a quiet animation plays (at least 2.6 seconds). Moves on by itself. If it fails: "We couldn't create your chart just yet" and **Try again**, with her answers kept. |
-| 7 | Reveal | `/onboarding/reveal` | `reveal/reveal-screen.tsx` | Her Sun, Moon and Rising. **See today's focus** saves everything, then moves on. |
-| 8 | Daily focus | `/onboarding/focus` | `focus/focus-placeholder-screen.tsx` | A stand-in card. **Start writing** opens a new note. |
+| 7 | Reveal | `/onboarding/reveal` | `reveal/reveal-screen.tsx` | Her Sun, Moon and Rising. **See today's focus** saves everything (which is what completes onboarding), then opens her first real daily focus card. |
+| 8 | First daily focus card | `/focus` | `src/features/daily-focus/` | Not part of this folder. The daily focus feature makes her first card from the chart just saved. She reveals it, writes under it and taps **Done**, which turns her answer into her first note. Daily cards are only made once onboarding is complete. |
 
 The first four questions show a thin progress bar (there is no "Step 3 of 7" on
 purpose). If she lands on a screen without the earlier answers (for example,
@@ -62,9 +62,10 @@ it here.
   library, not generated, so it costs nothing per user and reads the same for
   everyone. Edit the wording here.
 
-### `focus/`: where onboarding ends
-`focus-placeholder-screen.tsx`. Example words only, not worked out from her
-chart. The real daily focus card replaces it later.
+### Where onboarding ends
+There is no `focus/` folder any more. The old stand-in card with example words
+was removed. Onboarding now ends on the real first daily focus card, which lives
+in `src/features/daily-focus/` and opens at `/focus`.
 
 ### `chart/`: working out her chart
 - `natal-chart.ts`: the real calculation, done by the `circular-natal-horoscope-js`

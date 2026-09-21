@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
 import { PlusIcon, ProfileIcon, SettingsIcon } from "@/components/icons";
 import { InstallButton } from "@/features/install";
@@ -9,7 +10,11 @@ import { useNotes } from "../use-notes";
 import NotesBrowser from "./notes-browser";
 
 // The notes list screen: search bar, pinned notes, the rest, and the new note button.
-export default function NotesListScreen() {
+//
+// `focusSlot` is a card shown between the search bar and her notes (or at the top
+// when she has none yet). The app puts today's focus card there. It is handed in
+// rather than imported so this feature knows nothing about it.
+export default function NotesListScreen({ focusSlot }: { focusSlot?: ReactNode }) {
   const navigate = useNavigate();
   const { ready, hasSynced, syncFailed, notes } = useNotes();
 
@@ -57,32 +62,39 @@ export default function NotesListScreen() {
         </header>
 
         {stillFinding ? null : notes.length === 0 && !hasSynced ? (
-          <EmptyMessage>
-            We couldn&rsquo;t load your notes.{" "}
-            <button
-              type="button"
-              onClick={retrySync}
-              className="font-medium text-ink underline underline-offset-4"
-            >
-              Try again
-            </button>
-          </EmptyMessage>
+          <>
+            {focusSlot}
+            <EmptyMessage>
+              We couldn&rsquo;t load your notes.{" "}
+              <button
+                type="button"
+                onClick={retrySync}
+                className="font-medium text-ink underline underline-offset-4"
+              >
+                Try again
+              </button>
+            </EmptyMessage>
+          </>
         ) : notes.length === 0 ? (
-          // Nothing written yet: the way in sits in the middle of the screen,
+          // Nothing written yet: there is no search bar, so the focus card sits at
+          // the top, and the way in to a new note in the middle of the screen,
           // where her eye already is, instead of only in the corner.
-          <div className="flex flex-1 flex-col items-center justify-center text-center">
-            <p className="font-serif text-2xl text-ink-soft">Start with a thought.</p>
-            <button
-              type="button"
-              onClick={newNote}
-              className="mt-6 flex h-12 items-center gap-2 rounded-full bg-accent pr-6 pl-5 font-medium text-ink shadow-soft transition-opacity duration-200 hover:opacity-90 active:opacity-80"
-            >
-              <PlusIcon />
-              Add note
-            </button>
-          </div>
+          <>
+            {focusSlot}
+            <div className="flex flex-1 flex-col items-center justify-center text-center">
+              <p className="font-serif text-2xl text-ink-soft">Start with a thought.</p>
+              <button
+                type="button"
+                onClick={newNote}
+                className="mt-6 flex h-12 items-center gap-2 rounded-full bg-accent pr-6 pl-5 font-medium text-ink shadow-soft transition-opacity duration-200 hover:opacity-90 active:opacity-80"
+              >
+                <PlusIcon />
+                Add note
+              </button>
+            </div>
+          </>
         ) : (
-          <NotesBrowser notes={notes} />
+          <NotesBrowser notes={notes} belowSearch={focusSlot} />
         )}
       </main>
 

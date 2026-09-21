@@ -7,6 +7,7 @@ import {
   RequireSession,
   SettingsScreen,
 } from "@/features/auth";
+import { FocusScreen, TodaysFocusCard } from "@/features/daily-focus";
 import { UpdatePrompt } from "@/features/install";
 import {
   EditNoteScreen,
@@ -27,7 +28,16 @@ export default function App() {
           path="/"
           element={
             <RequireSession>
-              <NotesListScreen />
+              {/* Today's focus card goes between the search bar and her notes. */}
+              <NotesListScreen focusSlot={<TodaysFocusCard />} />
+            </RequireSession>
+          }
+        />
+        <Route
+          path="/focus"
+          element={
+            <RequireSession>
+              <FocusScreen />
             </RequireSession>
           }
         />

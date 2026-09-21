@@ -14,6 +14,7 @@
 import { isEmptyDoc } from "./content";
 import { putOutbox, removeOutbox } from "./local-db";
 import { saveNoteContent } from "./save";
+import type { FocusCardCopy } from "./types";
 
 const SAVE_DELAY_MS = 1000;
 const RETRY_DELAY_MS = 4000;
@@ -31,6 +32,9 @@ type Entry = {
   stored: boolean;
   // True once the latest writing is safely on the phone.
   localSafe: boolean;
+  // For a note written from a daily focus card: the card copy that goes up with
+  // every save of it.
+  focusCard: FocusCardCopy | null;
   status: SaveStatus;
   timer?: ReturnType<typeof setTimeout>;
   localTimer?: ReturnType<typeof setTimeout>;
@@ -56,6 +60,7 @@ function entryFor(id: string): Entry {
       dirty: false,
       stored: false,
       localSafe: false,
+      focusCard: null,
       status: "idle",
       running: null,
       listeners: new Set(),
@@ -89,6 +94,16 @@ export function registerNote(id: string, stored: boolean) {
   return entry;
 }
 
+// Marks a note as written from a daily focus card. Done before its first save.
+export function attachFocusCard(id: string, focusCard: FocusCardCopy) {
+  entryFor(id).focusCard = focusCard;
+}
+
+// The card copy a note is waiting to send, if it has one.
+export function getFocusCard(id: string): FocusCardCopy | null {
+  return entries.get(id)?.focusCard ?? null;
+}
+
 // Copies the latest writing onto the phone.
 async function persistLocally(id: string) {
   const entry = entries.get(id);
@@ -97,7 +112,7 @@ async function persistLocally(id: string) {
   if (!entry.dirty) return;
 
   const doc = entry.doc;
-  const ok = await putOutbox(id, doc);
+  const ok = await putOutbox(id, doc, entry.focusCard);
   // Only counts if nothing newer was typed while that was happening.
   entry.localSafe = ok && entry.doc === doc;
   if (entry.localSafe && entry.status === "error") setStatus(entry, "offline");
@@ -122,11 +137,12 @@ export function queueSave(id: string, doc: unknown) {
 
 // Picks up writing that was on the phone but never reached the database, for
 // example because she closed the app while offline.
-export function resumeNote(id: string, doc: unknown) {
+export function resumeNote(id: string, doc: unknown, focusCard?: FocusCardCopy | null) {
   ensureFlushListeners();
   const entry = entryFor(id);
   // If she is already typing in this note, that is newer. Leave it alone.
   if (entry.dirty) return;
+  if (focusCard) entry.focusCard = focusCard;
   entry.doc = doc;
   entry.dirty = true;
   entry.localSafe = true;
@@ -157,7 +173,7 @@ export function flushNote(id: string): Promise<void> {
         return;
       }
 
-      const ok = await saveNoteContent(id, doc);
+      const ok = await saveNoteContent(id, doc, entry.focusCard);
       if (!ok) {
         // Put it back and try again shortly. Her writing stays in the queue,
         // and on the phone.

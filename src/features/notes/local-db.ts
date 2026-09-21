@@ -10,6 +10,11 @@
 // Everything here fails quietly: if the phone won't let us store things (some
 // private browsing modes), the app still works, it just can't work offline.
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
+import type { FocusCardCopy } from "./types";
+
+// Writing that hasn't reached the internet yet. A note written from a daily
+// focus card carries its card copy, so the copy goes up with it.
+export type OutboxEntry = { id: string; doc: unknown; focusCard?: FocusCardCopy | null };
 
 export type StoredNote = {
   id: string;
@@ -17,6 +22,9 @@ export type StoredNote = {
   pinned: boolean;
   updatedAt: string;
   deletedAt: string | null;
+  // The daily focus card this note was written from. Missing on notes saved
+  // before this existed, which is the same as null.
+  focusCard?: FocusCardCopy | null;
   // Worked out once when saved, so the list doesn't redo it on every open.
   title: string;
   preview: string;
@@ -25,7 +33,7 @@ export type StoredNote = {
 
 interface Schema extends DBSchema {
   notes: { key: string; value: StoredNote };
-  outbox: { key: string; value: { id: string; doc: unknown } };
+  outbox: { key: string; value: OutboxEntry };
   meta: { key: string; value: string };
 }
 
@@ -61,7 +69,7 @@ export type Everything = {
   owner: string | null;
   lastSync: string | null;
   notes: StoredNote[];
-  outbox: { id: string; doc: unknown }[];
+  outbox: OutboxEntry[];
 };
 
 export function readEverything(): Promise<Everything> {
@@ -91,9 +99,9 @@ export function removeNote(id: string) {
 }
 
 // True once the writing is safely on the phone.
-export function putOutbox(id: string, doc: unknown) {
+export function putOutbox(id: string, doc: unknown, focusCard?: FocusCardCopy | null) {
   return run(async (db) => {
-    await db.put("outbox", { id, doc });
+    await db.put("outbox", focusCard ? { id, doc, focusCard } : { id, doc });
     return true;
   }, false);
 }

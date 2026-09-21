@@ -4,12 +4,18 @@ import { BackIcon } from "@/components/icons";
 import { isNoteId } from "../content";
 import { fetchNoteExisting } from "../notes-api";
 import { getStoredNote } from "../notes-store";
+import type { FocusCardCopy } from "../types";
 import { useNotesReady } from "../use-notes";
 import NoteEditor from "./note-editor";
 
 type Loaded =
   | { kind: "new" }
-  | { kind: "existing"; content: unknown; pinned: boolean }
+  | {
+      kind: "existing";
+      content: unknown;
+      pinned: boolean;
+      focusCard: FocusCardCopy | null;
+    }
   | { kind: "deleted" }
   | { kind: "missing" };
 
@@ -40,7 +46,12 @@ function fromPhone(id: string): Loaded | null {
   if (!note) return null;
   return note.deletedAt
     ? { kind: "deleted" }
-    : { kind: "existing", content: note.content, pinned: note.pinned };
+    : {
+        kind: "existing",
+        content: note.content,
+        pinned: note.pinned,
+        focusCard: note.focusCard ?? null,
+      };
 }
 
 function OneNote({ id, startedHere }: { id: string; startedHere: boolean }) {
@@ -65,7 +76,12 @@ function OneNote({ id, startedHere }: { id: string; startedHere: boolean }) {
       } else if (note.deletedAt) {
         setLoaded({ kind: "deleted" });
       } else {
-        setLoaded({ kind: "existing", content: note.content, pinned: note.pinned });
+        setLoaded({
+          kind: "existing",
+          content: note.content,
+          pinned: note.pinned,
+          focusCard: note.focusCard,
+        });
       }
     });
     return () => {
@@ -94,6 +110,7 @@ function OneNote({ id, startedHere }: { id: string; startedHere: boolean }) {
       exists={loaded.kind === "existing"}
       initialContent={loaded.kind === "existing" ? loaded.content : null}
       initialPinned={loaded.kind === "existing" ? loaded.pinned : false}
+      focusCard={loaded.kind === "existing" ? loaded.focusCard : null}
     />
   );
 }

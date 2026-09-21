@@ -15,7 +15,8 @@
 //                 of her Sun, Moon and Rising. Also its animation, the
 //                 placement cards and the 36 descriptions (12 Sun, 12 Moon,
 //                 12 Rising)
-//   focus/        the first Daily Focus card (a stand-in for now)
+//                 (Onboarding ends by opening /focus, the real first Daily Focus
+//                 card, which the daily-focus feature makes.)
 //
 //   chart/        working out her chart: the real calculation (natal-chart.ts,
 //                 using circular-natal-horoscope-js, loaded only when a chart is

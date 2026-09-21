@@ -15,6 +15,8 @@ import {
   subscribe,
   type SaveStatus,
 } from "../save-queue";
+import type { FocusCardCopy } from "../types";
+import FocusInfo from "./focus-info";
 import FormatBar from "./format-bar";
 import NoteMenu from "./note-menu";
 
@@ -37,6 +39,8 @@ type Props = {
   exists: boolean;
   initialContent: unknown;
   initialPinned: boolean;
+  // For a note written from a daily focus card: the card it came from.
+  focusCard: FocusCardCopy | null;
 };
 
 function isDoc(value: unknown): value is { type: "doc" } {
@@ -52,6 +56,7 @@ export default function NoteEditor({
   exists,
   initialContent,
   initialPinned,
+  focusCard,
 }: Props) {
   const navigate = useNavigate();
   // A new note's id was chosen on her phone before this screen opened, so
@@ -164,6 +169,7 @@ export default function NoteEditor({
           <BackIcon />
         </Link>
         <div className="flex items-center gap-2">
+          {focusCard && <FocusInfo card={focusCard} />}
           <p
             role="status"
             className={`text-xs ${notice || status === "error" ? "text-alert" : "text-muted"}`}
@@ -178,6 +184,13 @@ export default function NoteEditor({
           />
         </div>
       </header>
+
+      {/* The question she was answering, in small type above her writing. It
+          is not part of the note's text: it isn't editable and never becomes
+          the title, the preview or a search match. */}
+      {focusCard && (
+        <p className="mb-2 text-[14px] leading-snug text-muted">{focusCard.prompt}</p>
+      )}
 
       <EditorContent editor={editor} className="flex-1 cursor-text" />
 

@@ -15,8 +15,10 @@
 import { registerBeforeReload } from "@/lib/before-reload";
 import { getSession, registerSignOutHandler, subscribe as subscribeToSession } from "@/lib/session";
 import {
+  docFromText,
   isEmptyDoc,
   noteToLines,
+  parseFocusCard,
   previewFromLines,
   textFromLines,
   titleFromLines,
@@ -26,13 +28,18 @@ import * as localDb from "./local-db";
 import type { StoredNote } from "./local-db";
 import * as api from "./notes-api";
 import {
+  attachFocusCard,
   flushEverything,
+  flushNote,
+  getFocusCard,
   hasAnyPending,
   hasPending,
   observeEdits,
+  queueSave,
   resumeNote,
 } from "./save-queue";
-import type { DeletedNoteSummary, ListedNote } from "./types";
+import { saveNoteContent } from "./save";
+import type { DeletedNoteSummary, FocusCardCopy, ListedNote } from "./types";
 
 export type NotesSnapshot = {
   // False for the brief moment the phone's copy is being read.
@@ -122,6 +129,8 @@ function buildSnapshot(): NotesSnapshot {
       text: note.text,
       pinned: note.pinned,
       updatedAt: note.updatedAt,
+      // Older copies have no area, so their card's title stands in for it.
+      focusLabel: note.focusCard ? (note.focusCard.label ?? note.focusCard.title) : null,
     })),
     deleted: gone.map((note) => ({
       id: note.id,
@@ -157,6 +166,7 @@ function makeNote(
   pinned: boolean,
   updatedAt: string,
   deletedAt: string | null,
+  focusCard: FocusCardCopy | null = null,
 ): StoredNote {
   const lines = noteToLines(content);
   return {
@@ -165,6 +175,7 @@ function makeNote(
     pinned,
     updatedAt,
     deletedAt,
+    focusCard,
     title: titleFromLines(lines),
     preview: previewFromLines(lines),
     text: textFromLines(lines),
@@ -222,11 +233,29 @@ function applyEdit(id: string, doc: unknown) {
       existing?.pinned ?? false,
       new Date().toISOString(),
       existing?.deletedAt ?? null,
+      // A note keeps the card it was written from through every edit.
+      existing?.focusCard ?? getFocusCard(id),
     ),
   );
 }
 
 observeEdits(applyEdit);
+
+// Starts a new note from what she wrote under a daily focus card. The note
+// shows in her list at once and goes to the database in the background, like any
+// other; it keeps a copy of the card so the question can sit above her writing.
+// Returns the note's id, or null when there was nothing written.
+export function startNoteFromFocus(card: FocusCardCopy, text: string): string | null {
+  const cleaned = parseFocusCard(card);
+  if (!cleaned || text.trim() === "") return null;
+
+  const id = crypto.randomUUID();
+  attachFocusCard(id, cleaned);
+  queueSave(id, docFromText(text.trim()));
+  // Straight away rather than after a second: there is no more typing to wait for.
+  void flushNote(id);
+  return id;
+}
 
 // Pin and delete show at once and are undone if the database refuses.
 export async function pinNote(id: string, pinned: boolean) {
@@ -292,9 +321,12 @@ async function begin(uid: string) {
 
   // Writing that never reached the database (she closed the app offline) goes
   // back into the queue, and back onto the screen.
-  stored.outbox.forEach(({ id, doc }) => {
+  stored.outbox.forEach(({ id, doc, focusCard }) => {
+    const card = parseFocusCard(focusCard);
+    // Known before applyEdit, so the note keeps its card while it waits.
+    if (card) attachFocusCard(id, card);
     applyEdit(id, doc);
-    resumeNote(id, doc);
+    resumeNote(id, doc, card);
   });
 
   ready = true;
@@ -347,12 +379,21 @@ export async function syncNow() {
     for (const row of rows) {
       // Her own newer writing wins over an older copy from the database.
       if (hasPending(row.id) || (editedAt.get(row.id) ?? 0) > startedAt) continue;
+
+      // The database's copy of the card wins, but a note it has no card for (one
+      // whose first save missed it) keeps the card this phone knows, and the
+      // database is given it again so every device agrees.
+      const local = notes.get(row.id)?.focusCard ?? null;
+      const serverCard = parseFocusCard(row.focus_card);
+      if (!serverCard && local) void saveNoteContent(row.id, row.content, local);
+
       const note = makeNote(
         row.id,
         row.content,
         row.pinned,
         row.updated_at,
         row.deleted_at,
+        serverCard ?? local,
       );
       notes.set(row.id, note);
       void localDb.putNote(note);

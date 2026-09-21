@@ -10,9 +10,17 @@
 //   editor/           the writing screen, formatting bar, menu and its styles
 //   deleted/          the Recently deleted screen
 //
+// A note can be written from a daily focus card: it keeps a copy of the card
+// (types.ts FocusCardCopy), shown as the question above her writing and in a
+// corner tooltip (editor/focus-info.tsx).
+//
 // The rest of the app only uses the screens below. src/app.tsx says which web
 // address opens which one.
 export { default as NotesListScreen } from "./list/notes-list";
 export { default as EditNoteScreen } from "./editor/edit-note-screen";
 export { default as NewNoteRedirect } from "./editor/new-note-redirect";
 export { default as RecentlyDeletedScreen } from "./deleted/recently-deleted-screen";
+
+// For the daily focus feature: start a note from what she wrote under a card.
+export { startNoteFromFocus } from "./notes-store";
+export type { FocusCardCopy } from "./types";

@@ -3,6 +3,8 @@
 // A note's content is stored as JSON in the shape the editor (Tiptap) uses, so
 // every note written earlier can still be opened when the editor grows.
 
+import type { FocusCardCopy } from "./types";
+
 export type NoteNode = {
   type?: string;
   text?: string;
@@ -77,6 +79,41 @@ export function textFromLines(lines: string[]) {
 
 export function isEmptyDoc(doc: unknown) {
   return titleFromLines(noteToLines(doc)) === "";
+}
+
+// Plain writing as a note: one paragraph per line, blank lines kept.
+export function docFromText(text: string): NoteNode {
+  return {
+    type: "doc",
+    content: text
+      .replace(/\r\n?/g, "\n")
+      .split("\n")
+      .map((line) =>
+        line === ""
+          ? { type: "paragraph" }
+          : { type: "paragraph", content: [{ type: "text", text: line }] },
+      ),
+  };
+}
+
+const FOCUS_LIMITS = { label: 100, title: 200, statement: 800, prompt: 400 } as const;
+
+// A card copy read back from the phone or the database, or null if it isn't a
+// whole one. Anything odd is treated as "this note has no card".
+export function parseFocusCard(value: unknown): FocusCardCopy | null {
+  if (typeof value !== "object" || value === null) return null;
+  const v = value as Record<string, unknown>;
+  const text = (item: unknown, max: number) =>
+    typeof item === "string" && item.trim() !== "" && item.length <= max ? item : null;
+
+  const date = typeof v.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v.date) ? v.date : null;
+  const title = text(v.title, FOCUS_LIMITS.title);
+  const statement = text(v.statement, FOCUS_LIMITS.statement);
+  const prompt = text(v.prompt, FOCUS_LIMITS.prompt);
+  // The area is optional: a copy without a usable one is still a whole copy.
+  const label = text(v.label, FOCUS_LIMITS.label);
+  if (!date || !title || !statement || !prompt) return null;
+  return label ? { date, label, title, statement, prompt } : { date, title, statement, prompt };
 }
 
 export function isNoteId(value: string) {

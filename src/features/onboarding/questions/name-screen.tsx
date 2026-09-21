@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
-import { setAnswers } from "./answers-store";
-import StepFrame from "./step-frame";
-import { useAnswers } from "./use-answers";
+import { setAnswers } from "../data/answers-store";
+import StepFrame from "../layout/step-frame";
+import { useAnswers } from "../data/use-answers";
 
 const NAME_MAX_LENGTH = 60;
 

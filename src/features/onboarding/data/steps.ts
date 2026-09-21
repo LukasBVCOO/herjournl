@@ -3,8 +3,8 @@
 // that is missing instead of showing an empty page.
 
 import type { Answers } from "./answers-store";
-import { checkBirthDate } from "./birth-date";
-import { parseBirthTime } from "./birth-time";
+import { checkBirthDate } from "../validation/birth-date";
+import { parseBirthTime } from "../validation/birth-time";
 
 // The questions in the order she meets them.
 const questions: { path: string; answered: (answers: Answers) => boolean }[] = [

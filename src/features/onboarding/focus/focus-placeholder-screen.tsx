@@ -1,6 +1,6 @@
 import { Navigate, useNavigate } from "react-router";
-import { ALL_QUESTIONS, firstUnanswered } from "./steps";
-import { useAnswers } from "./use-answers";
+import { ALL_QUESTIONS, firstUnanswered } from "../data/steps";
+import { useAnswers } from "../data/use-answers";
 
 // A stand-in for the first Daily Focus card, with example words rather than
 // anything worked out from her chart. It is where onboarding ends: reaching it

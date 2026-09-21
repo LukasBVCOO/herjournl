@@ -6,8 +6,8 @@
 // app starts the questions again. Saving comes with the profile table.
 
 import { registerSignOutHandler } from "@/lib/session";
-import type { Chart } from "./chart";
-import type { Place } from "./places";
+import type { Chart } from "../chart/natal-chart";
+import type { Place } from "../places/places";
 
 export type Answers = {
   name: string;

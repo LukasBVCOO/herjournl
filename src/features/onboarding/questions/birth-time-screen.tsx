@@ -1,9 +1,10 @@
 import { Navigate, useNavigate } from "react-router";
-import { setAnswers } from "./answers-store";
-import { parseBirthTime } from "./birth-time";
-import StepFrame from "./step-frame";
-import { firstUnanswered } from "./steps";
-import { useAnswers } from "./use-answers";
+import { setAnswers } from "../data/answers-store";
+import { parseBirthTime } from "../validation/birth-time";
+import BirthTimeField from "../fields/birth-time-field";
+import StepFrame from "../layout/step-frame";
+import { firstUnanswered } from "../data/steps";
+import { useAnswers } from "../data/use-answers";
 
 // For now this assumes she knows her birth time. A way to say "I don't know"
 // comes later.
@@ -36,19 +37,13 @@ export default function BirthTimeScreen() {
           connects to.
         </p>
 
-        <label htmlFor="birth-time" className="sr-only">
-          Time of birth
-        </label>
-        {/* The phone's own time picker: it already shows 12-hour or 24-hour the
-            way she has her phone set, and hands back one consistent value. */}
-        <input
-          id="birth-time"
-          type="time"
-          value={birthTime}
-          onChange={(event) => setAnswers({ birthTime: event.target.value })}
-          autoFocus
-          className="mt-10 h-14 w-full border-b border-line bg-transparent font-serif text-[28px] text-ink [color-scheme:light] outline-none transition-colors duration-200 focus:border-ink"
-        />
+        <div className="mt-10">
+          <BirthTimeField
+            value={birthTime}
+            autoFocus
+            onChange={(value) => setAnswers({ birthTime: value })}
+          />
+        </div>
 
         <button
           type="submit"

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router";
-import { PlusIcon, SettingsIcon } from "@/components/icons";
+import { PlusIcon, ProfileIcon, SettingsIcon } from "@/components/icons";
 import { InstallButton } from "@/features/install";
 import { OnboardingShortcut } from "@/features/onboarding";
 import EmptyMessage from "../empty-message";
@@ -38,6 +38,13 @@ export default function NotesListScreen() {
               className="flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
             >
               <TrashIcon />
+            </Link>
+            <Link
+              to="/profile"
+              aria-label="Profile"
+              className="flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
+            >
+              <ProfileIcon />
             </Link>
             <Link
               to="/settings"

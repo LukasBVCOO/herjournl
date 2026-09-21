@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router";
-import { getAnswers } from "./answers-store";
+import { getAnswers } from "../data/answers-store";
 import PlacementCard from "./placement-card";
-import { saveOnboarding } from "./save-profile";
-import StepFrame from "./step-frame";
-import { ALL_QUESTIONS, firstUnanswered } from "./steps";
-import { useAnswers } from "./use-answers";
+import { saveOnboarding } from "../data/save-profile";
+import StepFrame from "../layout/step-frame";
+import { ALL_QUESTIONS, firstUnanswered } from "../data/steps";
+import { useAnswers } from "../data/use-answers";
 
 // The first personal moment: her Sun, Moon and Rising. Tapping the button
 // finishes onboarding, which is when her answers are saved.
@@ -42,17 +42,13 @@ export default function RevealScreen() {
       </h1>
 
       <div className="mt-8 flex flex-col gap-4">
-        <PlacementCard kind="sun" sign={chart.sun} delay={0} />
-        <PlacementCard kind="moon" sign={chart.moon} delay={200} />
-        <PlacementCard kind="rising" sign={chart.rising} delay={400} />
+        <PlacementCard kind="sun" sign={chart.sun.sign} delay={0} />
+        <PlacementCard kind="moon" sign={chart.moon.sign} delay={200} />
+        <PlacementCard kind="rising" sign={chart.rising.sign} delay={400} />
       </div>
 
       <p className="mt-6 text-[15px] text-ink-soft">
         These placements help shape how your daily focus is personalised to you.
-      </p>
-      {/* Temporary: remove when the real chart service is connected. */}
-      <p className="mt-2 text-xs text-muted">
-        Sample result: the real chart service isn&rsquo;t connected yet.
       </p>
 
       {saveFailed && (

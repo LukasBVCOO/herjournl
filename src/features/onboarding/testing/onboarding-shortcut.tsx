@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { Icon } from "@/components/icons";
-import { clearAnswers } from "./answers-store";
+import { clearAnswers } from "../data/answers-store";
 
 // FOR TESTING ONLY. A way into onboarding from the notes list, so it can be
 // tried again and again without making a new account. It clears any answers

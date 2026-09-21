@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router";
-import { getAnswers, setChart } from "./answers-store";
-import { createChart } from "./chart";
+import { getAnswers, setChart } from "../data/answers-store";
+import { createChart } from "../chart/chart";
 import Constellation from "./constellation";
-import { ALL_QUESTIONS, firstUnanswered } from "./steps";
-import { useAnswers } from "./use-answers";
+import { ALL_QUESTIONS, firstUnanswered } from "../data/steps";
+import { useAnswers } from "../data/use-answers";
 
 // Even if the chart is ready at once, the screen stays long enough to be seen.
 // A screen that flashes past would feel like nothing happened.

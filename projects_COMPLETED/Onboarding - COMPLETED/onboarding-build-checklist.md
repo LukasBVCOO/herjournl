@@ -8,7 +8,7 @@
 - [x] Create Birth Time screen
 - [x] Create Birthplace screen
 - [x] Create “Mapping your chart” loading screen
-- [x] Create Sun / Moon / Rising reveal screen (sample placements for now)
+- [x] Create Sun / Moon / Rising reveal screen
 - [x] Add “See today’s focus” CTA
 - [x] Add subtle onboarding progress indicator
 - [x] Add back navigation between onboarding screens
@@ -26,7 +26,7 @@
 - [x] Store birth city / display name
 - [x] Store birth latitude
 - [x] Store birth longitude
-- [ ] Store historical birth timezone / UTC offset
+- [x] Store historical birth timezone / UTC offset (`birth_timezone_name` + `birth_utc_offset_minutes`)
 - [x] Store onboarding completion status
 
 ---
@@ -42,7 +42,7 @@
 - [x] Validate birth time
 - [ ] Add “I don’t know my birth time” option
 - [ ] Save `birth_time_known = false` when used
-- [ ] Require a valid birthplace selection
+- [x] Require a valid birthplace selection (she has to pick from the list)
 - [x] Preserve entered data when user navigates backward
 - [x] Preserve entered data if an API call fails
 
@@ -70,7 +70,7 @@
 
 - [x] Determine the timezone for the selected birthplace (from the `worldmap` table)
 - [x] Determine the correct historical UTC offset for the birth date and time
-- [x] Store the timezone / offset required by the astrology API (`birth_timezone_name` + `birth_utc_offset_minutes`; the server should recompute the offset itself when it makes the chart)
+- [x] Store the timezone / offset required by the astrology API (`birth_timezone_name` + `birth_utc_offset_minutes`: the zone and offset the chart calculation actually used)
 - [x] Test historical daylight-saving-time cases
 - [x] Test countries whose timezone rules changed historically
 
@@ -78,20 +78,20 @@
 
 ## 6. Connect the natal astrology API
 
-- [ ] Add Astrology API credentials securely on the server
-- [ ] Never expose the Astrology API secret in the client
-- [ ] Send birth day
-- [ ] Send birth month
-- [ ] Send birth year
-- [ ] Send birth hour
-- [ ] Send birth minute
-- [ ] Send birth latitude
-- [ ] Send birth longitude
-- [ ] Send historical timezone / UTC offset
-- [ ] Set `house_type = placidus`
-- [ ] Handle successful API response
-- [ ] Handle failed API response
-- [ ] Add retry behaviour
+- [x] Add Astrology API credentials securely on the server (not needed: the chart is calculated by the `circular-natal-horoscope-js` library)
+- [x] Never expose the Astrology API secret in the client (not needed: no API and no secret)
+- [x] Send birth day (to the library)
+- [x] Send birth month (to the library)
+- [x] Send birth year (to the library)
+- [x] Send birth hour (to the library)
+- [x] Send birth minute (to the library)
+- [x] Send birth latitude (to the library)
+- [x] Send birth longitude (to the library)
+- [x] Send historical timezone / UTC offset (the library works it out; we save what it used)
+- [x] Set `house_type = placidus`
+- [x] Handle successful API response
+- [x] Handle failed API response (checked results; anything unexpected shows the error screen)
+- [x] Add retry behaviour (“Try again” on the mapping screen)
 
 ---
 
@@ -99,22 +99,22 @@
 
 ### Required placements
 
-- [ ] Save Sun sign
-- [ ] Save Moon sign
-- [ ] Save Rising / Ascendant sign
-- [ ] Save Mercury position
-- [ ] Save Venus position
-- [ ] Save Mars position
-- [ ] Save Jupiter position
-- [ ] Save Saturn position
+- [x] Save Sun sign (in `profiles.placements`)
+- [x] Save Moon sign (in `profiles.placements`)
+- [x] Save Rising / Ascendant sign (in `profiles.placements`)
+- [x] Save Mercury position (in `profiles.placements`)
+- [x] Save Venus position (in `profiles.placements`)
+- [x] Save Mars position (in `profiles.placements`)
+- [x] Save Jupiter position (in `profiles.placements`)
+- [x] Save Saturn position (in `profiles.placements`)
 
 ### Houses and positions
 
-- [ ] Save all 12 house cusps
-- [ ] Save natal planet houses
-- [ ] Save natal planet degrees
-- [ ] Save raw astrology API response if useful for future features
-- [ ] Ensure natal data is only recalculated when birth information changes
+- [x] Save all 12 house cusps (in `profiles.placements`)
+- [x] Save natal planet houses (in `profiles.placements`)
+- [x] Save natal planet degrees (in `profiles.placements`)
+- [x] Save raw astrology API response if useful for future features (not needed: there is no API, and the chart can always be recalculated from the birth details)
+- [x] Ensure natal data is only recalculated when birth information changes (a name change, or saving with nothing changed, does not recalculate)
 
 ---
 
@@ -132,13 +132,13 @@
 
 ## 9. Build the Sun / Moon / Rising reveal
 
-- [x] Display Sun sign (sample data)
+- [x] Display Sun sign
 - [x] Label Sun as “Your core energy”
-- [x] Display Moon sign (sample data)
+- [x] Display Moon sign
 - [x] Label Moon as “Your inner world”
-- [x] Display Rising sign (sample data)
+- [x] Display Rising sign
 - [x] Label Rising as “How you move through the world”
-- [ ] Add one short personalised description for each placement
+- [x] Add one short personalised description for each placement
 - [x] Add supporting copy explaining that these placements personalise daily guidance
 - [x] Add “See today’s focus” CTA
 
@@ -148,18 +148,18 @@
 
 Create one short **core identity** description for:
 
-- [ ] Aries Sun
-- [ ] Taurus Sun
-- [ ] Gemini Sun
-- [ ] Cancer Sun
-- [ ] Leo Sun
-- [ ] Virgo Sun
-- [ ] Libra Sun
-- [ ] Scorpio Sun
-- [ ] Sagittarius Sun
-- [ ] Capricorn Sun
-- [ ] Aquarius Sun
-- [ ] Pisces Sun
+- [x] Aries Sun
+- [x] Taurus Sun
+- [x] Gemini Sun
+- [x] Cancer Sun
+- [x] Leo Sun
+- [x] Virgo Sun
+- [x] Libra Sun
+- [x] Scorpio Sun
+- [x] Sagittarius Sun
+- [x] Capricorn Sun
+- [x] Aquarius Sun
+- [x] Pisces Sun
 
 ---
 
@@ -167,18 +167,18 @@ Create one short **core identity** description for:
 
 Create one short **emotional / inner-world** description for:
 
-- [ ] Aries Moon
-- [ ] Taurus Moon
-- [ ] Gemini Moon
-- [ ] Cancer Moon
-- [ ] Leo Moon
-- [ ] Virgo Moon
-- [ ] Libra Moon
-- [ ] Scorpio Moon
-- [ ] Sagittarius Moon
-- [ ] Capricorn Moon
-- [ ] Aquarius Moon
-- [ ] Pisces Moon
+- [x] Aries Moon
+- [x] Taurus Moon
+- [x] Gemini Moon
+- [x] Cancer Moon
+- [x] Leo Moon
+- [x] Virgo Moon
+- [x] Libra Moon
+- [x] Scorpio Moon
+- [x] Sagittarius Moon
+- [x] Capricorn Moon
+- [x] Aquarius Moon
+- [x] Pisces Moon
 
 ---
 
@@ -186,31 +186,31 @@ Create one short **emotional / inner-world** description for:
 
 Create one short **outward style / approach to life** description for:
 
-- [ ] Aries Rising
-- [ ] Taurus Rising
-- [ ] Gemini Rising
-- [ ] Cancer Rising
-- [ ] Leo Rising
-- [ ] Virgo Rising
-- [ ] Libra Rising
-- [ ] Scorpio Rising
-- [ ] Sagittarius Rising
-- [ ] Capricorn Rising
-- [ ] Aquarius Rising
-- [ ] Pisces Rising
+- [x] Aries Rising
+- [x] Taurus Rising
+- [x] Gemini Rising
+- [x] Cancer Rising
+- [x] Leo Rising
+- [x] Virgo Rising
+- [x] Libra Rising
+- [x] Scorpio Rising
+- [x] Sagittarius Rising
+- [x] Capricorn Rising
+- [x] Aquarius Rising
+- [x] Pisces Rising
 
 ---
 
 ## 13. Map API results to content
 
-- [ ] Create content lookup for Sun signs
-- [ ] Create content lookup for Moon signs
-- [ ] Create content lookup for Rising signs
-- [ ] Map `Sun = Cancer` → Cancer Sun content
-- [ ] Map `Moon = Aquarius` → Aquarius Moon content
-- [ ] Map `Ascendant = Scorpio` → Scorpio Rising content
-- [ ] Test all 36 placement/content combinations
-- [ ] Add fallback behaviour if API returns unexpected values
+- [x] Create content lookup for Sun signs
+- [x] Create content lookup for Moon signs
+- [x] Create content lookup for Rising signs
+- [x] Map `Sun = Cancer` → Cancer Sun content
+- [x] Map `Moon = Aquarius` → Aquarius Moon content
+- [x] Map `Ascendant = Scorpio` → Scorpio Rising content
+- [x] Test all 36 placement/content combinations
+- [x] Add fallback behaviour if API returns unexpected values
 
 ---
 
@@ -254,15 +254,15 @@ Create one short **outward style / approach to life** description for:
 
 ## 16. Build Settings editing for birth details
 
-- [ ] Add Birth Details section in Settings
-- [ ] Allow date of birth editing
-- [ ] Allow birth time editing
-- [ ] Allow birthplace editing
-- [ ] Show confirmation before recalculating chart
-- [ ] Re-run location/timezone logic where required
-- [ ] Recalculate natal chart
-- [ ] Replace previous natal chart data
-- [ ] Keep historical journal entries unchanged
+- [x] Add Birth Details section in Settings (built as the “Birth details” card on the new **Profile** screen, opened from the person icon in the notes header)
+- [x] Allow date of birth editing
+- [x] Allow birth time editing
+- [x] Allow birthplace editing
+- [x] Show confirmation before recalculating chart
+- [x] Re-run location/timezone logic where required (a new place gives new coordinates; the chart calculation works out the time zone and clock offset again)
+- [x] Recalculate natal chart (with a loading screen while it works)
+- [x] Replace previous natal chart data (the new details and chart are saved together in one write)
+- [x] Keep historical journal entries unchanged (notes are never touched)
 
 ---
 
@@ -271,13 +271,13 @@ Create one short **outward style / approach to life** description for:
 - [x] Invalid birth date
 - [x] Future birth date
 - [x] User below minimum age
-- [ ] Unknown birthplace
-- [ ] Duplicate city names
-- [ ] Geocoding service failure
-- [ ] Historical timezone lookup failure
-- [ ] Astrology API failure
+- [x] Unknown birthplace
+- [x] Duplicate city names (each result shows its region and country)
+- [x] Geocoding service failure (“We couldn’t find your birthplace right now” with Try again)
+- [x] Historical timezone lookup failure (the chart calculation fails safely and shows the error screen)
+- [x] Astrology API failure (there is no API; any failure in the calculation shows the error screen)
 - [ ] Slow API response
-- [ ] Missing Sun / Moon / Rising data
+- [x] Missing Sun / Moon / Rising data (every result is checked)
 - [x] User navigates backward during onboarding
 
 ---
@@ -286,12 +286,12 @@ Create one short **outward style / approach to life** description for:
 
 - [ ] Exact birth time available
 - [ ] Birth time unknown
-- [ ] Accented city names such as Marijampolė
-- [ ] Non-English city names
-- [ ] Duplicate city names across countries
-- [ ] Cities with the same name within one country
-- [ ] Historical daylight-saving changes
-- [ ] Historical timezone changes
+- [x] Accented city names such as Marijampolė (checked)
+- [x] Non-English city names (checked: Łódź, Zürich, São Paulo)
+- [x] Duplicate city names across countries (checked: Paris, Birmingham)
+- [x] Cities with the same name within one country (checked: the Parises in the United States)
+- [x] Historical daylight-saving changes (checked by script, including the skipped and repeated hour)
+- [x] Historical timezone changes (checked by script: Moscow 2012, London 1970)
 - [ ] Astrology API timeout
 - [ ] Geocoding API timeout
 - [ ] User edits DOB before chart calculation

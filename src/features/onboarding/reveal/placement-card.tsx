@@ -4,7 +4,7 @@ import {
   placementLabel,
   placementTitle,
 } from "./placement-content";
-import type { Sign } from "./sun-sign";
+import type { Sign } from "../chart/natal-chart";
 
 // One of the three big cards on the reveal. There is room above the title for an
 // icon; the word "Sun", "Moon" or "Rising" stands in for it until those exist.

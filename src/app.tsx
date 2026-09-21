@@ -15,6 +15,7 @@ import {
   RecentlyDeletedScreen,
 } from "@/features/notes";
 import { OnboardingFlow } from "@/features/onboarding";
+import { ProfileScreen } from "@/features/profile";
 
 // Every screen in the app and the web address that opens it. Moving between
 // them never asks the server for a new page, which is what makes it quick.
@@ -51,6 +52,14 @@ export default function App() {
           element={
             <RequireSession>
               <RecentlyDeletedScreen />
+            </RequireSession>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <RequireSession>
+              <ProfileScreen />
             </RequireSession>
           }
         />

@@ -1,12 +1,12 @@
 import { Navigate, Route, Routes } from "react-router";
-import BirthdayScreen from "./birthday-screen";
-import BirthplaceScreen from "./birthplace-screen";
-import BirthTimeScreen from "./birth-time-screen";
-import FocusPlaceholderScreen from "./focus-placeholder-screen";
-import MappingScreen from "./mapping-screen";
-import NameScreen from "./name-screen";
-import RevealScreen from "./reveal-screen";
-import WelcomeScreen from "./welcome-screen";
+import BirthdayScreen from "./questions/birthday-screen";
+import BirthplaceScreen from "./questions/birthplace-screen";
+import BirthTimeScreen from "./questions/birth-time-screen";
+import FocusPlaceholderScreen from "./focus/focus-placeholder-screen";
+import MappingScreen from "./reveal/mapping-screen";
+import NameScreen from "./questions/name-screen";
+import RevealScreen from "./reveal/reveal-screen";
+import WelcomeScreen from "./questions/welcome-screen";
 
 // Every onboarding screen and its web address, all under /onboarding. Each
 // screen has its own address so the phone's back button steps back through them

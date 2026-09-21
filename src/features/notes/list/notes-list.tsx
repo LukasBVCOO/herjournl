@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router";
 import { PlusIcon, SettingsIcon } from "@/components/icons";
 import { InstallButton } from "@/features/install";
+import { OnboardingShortcut } from "@/features/onboarding";
 import EmptyMessage from "../empty-message";
 import { TrashIcon } from "../note-icons";
 import { retrySync } from "../notes-store";
@@ -28,6 +29,8 @@ export default function NotesListScreen() {
         <header className="flex items-center justify-between pt-[max(1.25rem,env(safe-area-inset-top))] pb-5">
           <h1 className="font-serif text-[28px] font-medium">Becomely</h1>
           <nav className="-mr-3 flex items-center">
+            {/* Testing only: remove before launch. */}
+            <OnboardingShortcut />
             <InstallButton />
             <Link
               to="/recently-deleted"

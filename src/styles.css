@@ -40,6 +40,42 @@
       opacity: 1;
     }
   }
+
+  /* The "Mapping your chart" picture: points appear one by one, a line slowly
+     draws between them, and the outer circle gently breathes. */
+  --animate-star-in: star-in 900ms ease-out both;
+  --animate-draw-line: draw-line 3.2s ease-in-out both;
+  --animate-breathe: breathe 3.6s ease-in-out infinite;
+
+  @keyframes star-in {
+    from {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes draw-line {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes breathe {
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
 }
 
 body {

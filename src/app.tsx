@@ -14,7 +14,7 @@ import {
   NotesListScreen,
   RecentlyDeletedScreen,
 } from "@/features/notes";
-import { OnboardingScreen } from "@/features/onboarding";
+import { OnboardingFlow } from "@/features/onboarding";
 
 // Every screen in the app and the web address that opens it. Moving between
 // them never asks the server for a new page, which is what makes it quick.
@@ -88,11 +88,12 @@ export default function App() {
           path="/auth/confirmed"
           element={<AuthCallbackScreen next="/onboarding" />}
         />
+        {/* The "/*" lets the onboarding feature choose its own screens. */}
         <Route
-          path="/onboarding"
+          path="/onboarding/*"
           element={
             <RequireSession>
-              <OnboardingScreen />
+              <OnboardingFlow />
             </RequireSession>
           }
         />

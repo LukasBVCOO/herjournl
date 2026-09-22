@@ -60,15 +60,19 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(title, {
       body,
-      icon: "/icon-192.png",
+      // No `icon` on purpose: the large icon on the right of the notification
+      // was the founder's own call to drop, once the small badge on the left
+      // (below) was actually showing the "B" — one working mark was enough.
+      //
       // Android forces this small icon through a monochrome mask, tinted
       // with the site's theme colour (index.html / the manifest) — confirmed
       // by testing: it stayed blank even with no badge at all, tinted
       // near-invisible against the pale theme colour that used to be there.
       // Now that the theme colour is dark (index.html, vite.config.ts), a
-      // plain white silhouette on transparency (badge-192.png) is what the
-      // mask actually needs, and should read properly.
-      badge: "/badge-192.png",
+      // plain white silhouette on transparency (badge-512.png, generated from
+      // icon-512.png) is what the mask actually needs, and should read
+      // properly.
+      badge: "/badge-512.png",
       // Where tapping it should open. Kept on the notification object itself
       // (not just read from the push payload again) because the payload is not
       // available any more once a notificationclick event fires.

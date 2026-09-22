@@ -8,7 +8,7 @@ import {
   SettingsScreen,
 } from "@/features/auth";
 import { FocusScreen, TodaysFocusCard } from "@/features/daily-focus";
-import { UpdatePrompt } from "@/features/install";
+import { InstalledSync, InstallOfferPrompt, UpdatePrompt } from "@/features/install";
 import {
   EditNoteScreen,
   NewNoteRedirect,
@@ -28,8 +28,16 @@ export default function App() {
           path="/"
           element={
             <RequireSession>
-              {/* Today's focus card goes between the search bar and her notes. */}
-              <NotesListScreen focusSlot={<TodaysFocusCard />} />
+              {/* Today's focus card, then the install nudge if one is due,
+                  both between the search bar and her notes. */}
+              <NotesListScreen
+                focusSlot={
+                  <>
+                    <TodaysFocusCard />
+                    <InstallOfferPrompt />
+                  </>
+                }
+              />
             </RequireSession>
           }
         />
@@ -120,6 +128,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <UpdatePrompt />
+      <InstalledSync />
     </BrowserRouter>
   );
 }

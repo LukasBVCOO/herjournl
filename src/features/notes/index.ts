@@ -24,3 +24,7 @@ export { default as RecentlyDeletedScreen } from "./deleted/recently-deleted-scr
 // For the daily focus feature: start a note from what she wrote under a card.
 export { startNoteFromFocus } from "./notes-store";
 export type { FocusCardCopy } from "./types";
+
+// For the install feature: whether she has written any daily-focus note yet
+// (the moment that makes the first install offer due).
+export { useNotes } from "./use-notes";

@@ -5,18 +5,23 @@
 import { supabase } from "@/lib/supabase/client";
 import type { SubscriptionKeys } from "./push";
 
-// True once it is saved (or was already there — subscribing twice on the same
-// device reuses the same endpoint, which the table only allows one row for).
+// True once it is saved. If this device already has a row (same endpoint —
+// re-subscribing while already on, say after travelling), only its time zone
+// is refreshed: that is the one thing an existing row is ever allowed to change.
 export async function saveSubscription(keys: SubscriptionKeys): Promise<boolean> {
   try {
-    const { error } = await supabase.from("push_subscriptions").insert({
-      endpoint: keys.endpoint,
-      p256dh: keys.p256dh,
-      auth_key: keys.auth,
-    });
-    // 23505: this endpoint is already saved (hers or, if it somehow matched
-    // someone else's device, an impossible collision) — either way, fine.
-    return !error || error.code === "23505";
+    const { error } = await supabase
+      .from("push_subscriptions")
+      .upsert(
+        {
+          endpoint: keys.endpoint,
+          p256dh: keys.p256dh,
+          auth_key: keys.auth,
+          timezone: keys.timezone,
+        },
+        { onConflict: "endpoint" },
+      );
+    return !error;
   } catch {
     return false;
   }

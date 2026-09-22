@@ -33,13 +33,25 @@ function keyAsBytes(key: string): Uint8Array {
   return Uint8Array.from(raw, (char) => char.charCodeAt(0));
 }
 
-export type SubscriptionKeys = { endpoint: string; p256dh: string; auth: string };
+export type SubscriptionKeys = {
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  // Which IANA zone ("Europe/Vilnius") her phone was in just now. This is how
+  // the server works out when her morning and evening are.
+  timezone: string;
+};
 
 function toKeys(subscription: PushSubscription): SubscriptionKeys | null {
   const json = subscription.toJSON();
   const { p256dh, auth } = json.keys ?? {};
   if (!json.endpoint || !p256dh || !auth) return null;
-  return { endpoint: json.endpoint, p256dh, auth };
+  return {
+    endpoint: json.endpoint,
+    p256dh,
+    auth,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  };
 }
 
 // Asks her, then subscribes this browser. null means it didn't happen (not

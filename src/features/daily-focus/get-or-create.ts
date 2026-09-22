@@ -4,8 +4,9 @@
 //      is her card, however it came about. A card never changes once made. "No card
 //      for today yet" is all it takes to know a new one is due: nothing has to be
 //      reset each morning, so nothing can be missed or go out of date.
-//   2. Otherwise: has she finished onboarding, and does she have what a card needs
-//      (a chart, a real birth time)?
+//   2. Otherwise: has she finished onboarding, and does she have a usable saved
+//      chart? A real birth time no longer gates this — it only decides which
+//      kind of chart she has (chart.kind), and generate.ts branches on that.
 //   3. Work the card out on her phone, and save it. One card per day is enforced
 //      by the database itself, so two phones opening at once end up with the same
 //      card.
@@ -14,7 +15,7 @@
 // the card is simply made the next time this runs with a connection. Nothing is
 // queued or retried in the background.
 
-import type { Chart } from "@/features/onboarding";
+import type { Chart, ReducedChart } from "@/features/onboarding";
 import { hasUsableHouses } from "./active-house";
 import type { Found, SavedChart } from "./card-store";
 import { cardDayIn } from "./local-day";
@@ -31,7 +32,7 @@ export type Ports = {
   saveCard: (card: DailyFocusCard) => Promise<Found<"saved" | "exists">>;
   generate: (
     userId: string,
-    chart: Chart,
+    chart: Chart | ReducedChart,
     localDate: string,
     timeZone: string,
   ) => Promise<DailyFocusCard>;
@@ -54,11 +55,12 @@ async function run(ports: Ports, userId: string, localDate: string, timeZone: st
   if (!saved.value) return { status: "no-chart" } as const;
   // Cards are only made once onboarding is finished.
   if (!saved.value.onboarded) return { status: "no-chart" } as const;
-  // Without a real birth time her houses are not real, so no house-based card.
-  // No birth time is ever invented to get round this.
-  if (!saved.value.birthTimeKnown) return { status: "no-birth-time" } as const;
   const chart = saved.value.chart;
-  if (!chart || !hasUsableHouses(chart)) return { status: "no-chart" } as const;
+  if (!chart) return { status: "no-chart" } as const;
+  // A full chart needs 12 usable houses. A reduced one (no birth time) was
+  // already strictly checked on the way out of the database — see
+  // readSavedNatalChart — so there is nothing further to validate here.
+  if (chart.kind === "full" && !hasUsableHouses(chart)) return { status: "no-chart" } as const;
 
   // 3. Make it and save it.
   let card: DailyFocusCard;

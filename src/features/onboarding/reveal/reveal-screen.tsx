@@ -20,6 +20,13 @@ export default function RevealScreen() {
   if (!answers.chart) return <Navigate to="/onboarding/mapping" replace />;
   const { chart } = answers;
 
+  // A reduced chart (no exact birth time) only shows a placement when it held
+  // steady across her whole possible birth day — never a guessed Rising sign,
+  // and never a Sun or Moon sign that could just as easily be the other one.
+  const showSun = chart.kind === "full" || chart.sun.reliable;
+  const showMoon = chart.kind === "full" || chart.moon.reliable;
+  const showRising = chart.kind === "full";
+
   async function seeTodaysFocus() {
     setSaving(true);
     setSaveFailed(false);
@@ -44,10 +51,25 @@ export default function RevealScreen() {
       </h1>
 
       <div className="mt-8 flex flex-col gap-4">
-        <PlacementCard kind="sun" sign={chart.sun.sign} delay={0} />
-        <PlacementCard kind="moon" sign={chart.moon.sign} delay={200} />
-        <PlacementCard kind="rising" sign={chart.rising.sign} delay={400} />
+        {showSun && <PlacementCard kind="sun" sign={chart.sun.sign} delay={0} />}
+        {showMoon && <PlacementCard kind="moon" sign={chart.moon.sign} delay={200} />}
+        {showRising && chart.kind === "full" && (
+          <PlacementCard kind="rising" sign={chart.rising.sign} delay={400} />
+        )}
       </div>
+
+      {!showSun && !showMoon && (
+        <p className="mt-6 text-[15px] text-ink-soft">
+          We&rsquo;ll be able to show your placements with a bit more
+          precision — your daily focus still works today.
+        </p>
+      )}
+
+      {chart.kind === "reduced" && (
+        <p className="mt-4 text-[15px] text-ink-soft">
+          There&rsquo;s more we can unlock if you find your birth time later.
+        </p>
+      )}
 
       <p className="mt-6 text-[15px] text-ink-soft">
         These placements help shape how your daily focus is personalised to you.

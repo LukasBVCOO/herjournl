@@ -17,18 +17,21 @@ export default function ProfileScreen() {
 
   const profile = state.status === "ready" ? state.profile : null;
   // Everything the sections need has to be saved. If not, she hasn't finished
-  // setting up, and the way to do that is onboarding.
+  // setting up, and the way to do that is onboarding. A missing birth time
+  // only counts as unanswered when she hasn't explicitly said she doesn't
+  // know it — otherwise a reduced-mode profile would wrongly look unfinished.
   const details =
     profile &&
     profile.name &&
     profile.dateOfBirth &&
-    profile.birthTime &&
+    (profile.birthTime || !profile.birthTimeKnown) &&
     profile.birthPlace &&
     profile.place
       ? {
           name: profile.name,
           dateOfBirth: profile.dateOfBirth,
-          birthTime: profile.birthTime,
+          birthTime: profile.birthTime ?? "",
+          birthTimeKnown: profile.birthTimeKnown,
           birthPlace: profile.birthPlace,
           place: profile.place,
           chart: profile.chart,
@@ -67,12 +70,14 @@ export default function ProfileScreen() {
               <BirthDetailsSection
                 dateOfBirth={details.dateOfBirth}
                 birthTime={details.birthTime}
+                birthTimeKnown={details.birthTimeKnown}
                 birthPlace={details.birthPlace}
                 place={details.place}
                 onSaved={reload}
               />
               <ChartSection
                 chart={details.chart}
+                birthTimeKnown={details.birthTimeKnown}
                 dateOfBirth={details.dateOfBirth}
                 birthTime={details.birthTime}
                 place={details.place}

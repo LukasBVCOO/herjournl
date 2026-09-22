@@ -15,7 +15,7 @@ const questions: { path: string; answered: (answers: Answers) => boolean }[] = [
   },
   {
     path: "/onboarding/birth-time",
-    answered: (a) => parseBirthTime(a.birthTime) !== null,
+    answered: (a) => parseBirthTime(a.birthTime) !== null || a.birthTimeUnknown,
   },
   { path: "/onboarding/birthplace", answered: (a) => a.place !== null },
 ];

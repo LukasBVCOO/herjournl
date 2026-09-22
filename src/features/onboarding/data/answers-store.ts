@@ -6,7 +6,7 @@
 // app starts the questions again. Saving comes with the profile table.
 
 import { registerSignOutHandler } from "@/lib/session";
-import type { Chart } from "../chart/natal-chart";
+import type { Chart, ReducedChart } from "../chart/natal-chart";
 import type { Place } from "../places/places";
 
 export type Answers = {
@@ -17,10 +17,13 @@ export type Answers = {
   year: string;
   // As "HH:MM" in 24-hour time, or "" until she picks one.
   birthTime: string;
+  // True once she has chosen "I don't know my birth time" instead of typing
+  // one. Cleared the moment she types a time again.
+  birthTimeUnknown: boolean;
   place: Place | null;
   // Worked out from the answers above. Thrown away whenever a birth detail
   // changes, so it is made again from the new details.
-  chart: Chart | null;
+  chart: Chart | ReducedChart | null;
 };
 
 const empty: Answers = {
@@ -29,12 +32,13 @@ const empty: Answers = {
   month: "",
   year: "",
   birthTime: "",
+  birthTimeUnknown: false,
   place: null,
   chart: null,
 };
 
 // Changing any of these means the chart no longer matches her.
-const birthDetails = ["day", "month", "year", "birthTime", "place"] as const;
+const birthDetails = ["day", "month", "year", "birthTime", "birthTimeUnknown", "place"] as const;
 
 let answers: Answers = empty;
 const listeners = new Set<() => void>();
@@ -66,7 +70,7 @@ export function setAnswers(patch: Partial<Omit<Answers, "chart">>) {
   notify();
 }
 
-export function setChart(chart: Chart) {
+export function setChart(chart: Chart | ReducedChart) {
   answers = { ...answers, chart };
   notify();
 }

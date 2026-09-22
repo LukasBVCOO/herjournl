@@ -3,13 +3,17 @@ import {
   BirthDateFields,
   BirthTimeField,
   calculateChart,
+  calculateReducedChart,
   checkBirthDate,
   MIN_AGE,
   parseBirthTime,
   PlaceSearch,
   type BirthDateProblem,
+  type Chart,
   type Place,
+  type ReducedChart,
 } from "@/features/onboarding";
+import BirthTimeUpgradeReveal from "./birth-time-upgrade-reveal";
 import ChartLoading, { MIN_LOADING_MS } from "./chart-loading";
 import ConfirmSheet from "./confirm-sheet";
 import { formatBirthDate, formatBirthTime } from "./format";
@@ -34,16 +38,21 @@ function splitDate(iso: string) {
 // Her birth date, time and birthplace. Changing any of them recalculates her
 // chart, so it asks first, then works the chart out again with the same code
 // onboarding uses and replaces the old one. Her journal entries are never
-// touched.
+// touched. She can move either way: say she doesn't know her time after all,
+// or — if she started out not knowing it — add a real one, which unlocks her
+// Rising sign and house-based focus from her next card onward.
 export default function BirthDetailsSection({
   dateOfBirth,
   birthTime,
+  birthTimeKnown,
   birthPlace,
   place: savedPlace,
   onSaved,
 }: {
   dateOfBirth: string;
+  // "" when birthTimeKnown is false.
   birthTime: string;
+  birthTimeKnown: boolean;
   // The birthplace as she chose it, for showing.
   birthPlace: string;
   // The same place rebuilt from what was saved, for working the chart out again.
@@ -55,12 +64,15 @@ export default function BirthDetailsSection({
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
   const [time, setTime] = useState("");
+  const [timeUnknown, setTimeUnknown] = useState(false);
   const [place, setPlace] = useState<Place | null>(null);
   const [problem, setProblem] = useState<BirthDateProblem | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updated, setUpdated] = useState(false);
+  // Set right after a save that added a real time where there wasn't one.
+  const [upgradedChart, setUpgradedChart] = useState<Chart | null>(null);
 
   function startEditing() {
     const saved = splitDate(dateOfBirth);
@@ -68,6 +80,7 @@ export default function BirthDetailsSection({
     setMonth(saved.month);
     setYear(saved.year);
     setTime(birthTime);
+    setTimeUnknown(!birthTimeKnown);
     setPlace(savedPlace);
     setProblem(null);
     setError(null);
@@ -82,14 +95,19 @@ export default function BirthDetailsSection({
     Number(day) !== Number(saved.day) ||
     Number(month) !== Number(saved.month) ||
     year !== saved.year;
-  const timeChanged = time !== birthTime;
+  const timeChanged = timeUnknown !== !birthTimeKnown || time !== birthTime;
   const placeChanged =
     place !== null &&
     (place.latitude !== savedPlace.latitude || place.longitude !== savedPlace.longitude);
   const changed = dateChanged || timeChanged || placeChanged;
 
   const parsedTime = parseBirthTime(time);
-  const canSave = day !== "" && month !== "" && year.length === 4 && parsedTime !== null && place !== null;
+  const canSave =
+    day !== "" &&
+    month !== "" &&
+    year.length === 4 &&
+    place !== null &&
+    (timeUnknown || parsedTime !== null);
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -109,7 +127,7 @@ export default function BirthDetailsSection({
   }
 
   async function recalculate() {
-    if (!place || !parsedTime) return;
+    if (!place || (!timeUnknown && !parsedTime)) return;
     // The loading screen takes over from the question, and stays long enough
     // to be seen even when the chart is ready straight away.
     setConfirming(false);
@@ -119,18 +137,27 @@ export default function BirthDetailsSection({
     const shownLongEnough = new Promise((resolve) =>
       setTimeout(resolve, MIN_LOADING_MS),
     );
-    let chart;
+    let chart: Chart | ReducedChart;
     try {
       [chart] = await Promise.all([
-        calculateChart({
-          year: Number(year),
-          month: Number(month),
-          day: Number(day),
-          hour: parsedTime.hour,
-          minute: parsedTime.minute,
-          latitude: place.latitude,
-          longitude: place.longitude,
-        }),
+        timeUnknown
+          ? calculateReducedChart({
+              year: Number(year),
+              month: Number(month),
+              day: Number(day),
+              latitude: place.latitude,
+              longitude: place.longitude,
+            })
+          : calculateChart({
+              year: Number(year),
+              month: Number(month),
+              day: Number(day),
+              // canSave already guarantees this when !timeUnknown.
+              hour: parsedTime!.hour,
+              minute: parsedTime!.minute,
+              latitude: place.latitude,
+              longitude: place.longitude,
+            }),
         shownLongEnough,
       ]);
     } catch {
@@ -139,11 +166,15 @@ export default function BirthDetailsSection({
       return;
     }
 
+    // A real time added where there wasn't one before: the second
+    // personalisation moment, once this save succeeds.
+    const justUpgraded = !birthTimeKnown && !timeUnknown && chart.kind === "full";
+
     // One save for all of it, so the new details and the new chart replace the
     // old ones together or not at all.
     const ok = await updateProfile({
       dateOfBirth: `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`,
-      birthTime: time,
+      birthTime: timeUnknown ? "" : time,
       place: placeChanged ? place : undefined,
       chart,
     });
@@ -157,6 +188,7 @@ export default function BirthDetailsSection({
     setBusy(false);
     setEditing(false);
     setUpdated(true);
+    if (justUpgraded && chart.kind === "full") setUpgradedChart(chart);
   }
 
   if (!editing) {
@@ -173,7 +205,10 @@ export default function BirthDetailsSection({
 
         <dl className="mt-1 flex flex-col gap-3">
           <Row label="Date of birth" value={formatBirthDate(dateOfBirth)} />
-          <Row label="Time of birth" value={formatBirthTime(birthTime)} />
+          <Row
+            label="Time of birth"
+            value={birthTimeKnown ? formatBirthTime(birthTime) : "Not known yet"}
+          />
           <Row label="Birthplace" value={birthPlace} />
         </dl>
 
@@ -181,6 +216,13 @@ export default function BirthDetailsSection({
           <p role="status" className="mt-3 animate-fade-in text-sm text-ink-soft">
             Your chart has been updated.
           </p>
+        )}
+
+        {upgradedChart && (
+          <BirthTimeUpgradeReveal
+            chart={upgradedChart}
+            onClose={() => setUpgradedChart(null)}
+          />
         )}
       </section>
     );
@@ -213,7 +255,35 @@ export default function BirthDetailsSection({
         )}
 
         <div>
-          <BirthTimeField value={time} onChange={setTime} />
+          {timeUnknown ? (
+            <div className="rounded-card bg-paper px-4 py-3">
+              <p className="text-[15px] text-ink-soft">
+                We&rsquo;ll leave your Rising sign and house-based focus out
+                until you add a real time.
+              </p>
+              <button
+                type="button"
+                onClick={() => setTimeUnknown(false)}
+                className="mt-2 text-[15px] font-medium text-ink underline underline-offset-4"
+              >
+                Enter your birth time
+              </button>
+            </div>
+          ) : (
+            <>
+              <BirthTimeField value={time} onChange={setTime} />
+              <button
+                type="button"
+                onClick={() => {
+                  setTimeUnknown(true);
+                  setTime("");
+                }}
+                className="mt-3 text-[15px] font-medium text-ink-soft underline underline-offset-4 transition-colors duration-200 hover:text-ink"
+              >
+                I don&rsquo;t know my birth time
+              </button>
+            </>
+          )}
         </div>
 
         <div>
@@ -247,7 +317,9 @@ export default function BirthDetailsSection({
 
       {busy && (
         <ChartLoading title="Updating your chart">
-          Recalculating your Sun, Moon and Rising from your new birth details.
+          {timeUnknown
+            ? "Working out what we can from your birth date and place."
+            : "Recalculating your Sun, Moon and Rising from your new birth details."}
         </ChartLoading>
       )}
 
@@ -258,10 +330,20 @@ export default function BirthDetailsSection({
           onConfirm={recalculate}
           onCancel={() => setConfirming(false)}
         >
-          <p>
-            We&rsquo;ll recalculate your chart from these details. Your Sun, Moon
-            and Rising may change, and your daily focus will follow the new chart.
-          </p>
+          {timeUnknown ? (
+            <p>
+              We&rsquo;ll recalculate your chart from these details. Since your
+              birth time isn&rsquo;t known, we won&rsquo;t include a Rising
+              sign or house-based focus, and your daily focus will follow the
+              new chart.
+            </p>
+          ) : (
+            <p>
+              We&rsquo;ll recalculate your chart from these details. Your Sun,
+              Moon and Rising may change, and your daily focus will follow the
+              new chart.
+            </p>
+          )}
           <p className="mt-3">Your journal entries stay exactly as they are.</p>
         </ConfirmSheet>
       )}

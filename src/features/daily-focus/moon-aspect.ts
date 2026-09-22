@@ -8,7 +8,7 @@
 // angles) is closest to exact today is used, however close or far. A card must
 // never be left without an approach, so nothing here can come back empty.
 
-import type { Chart } from "@/features/onboarding";
+import type { Chart, ReducedChart } from "@/features/onboarding";
 import { longitudeOf } from "@/features/transits";
 import { ASPECT_NAMES, ASPECT_PLANETS, type AspectName, type AspectPlanet } from "./content/moon-aspects";
 
@@ -62,4 +62,37 @@ export function closestMoonAspect(moonLongitude: number, chart: Chart): MoonAspe
   // Unreachable: the loop above always finds at least one candidate.
   if (!best) throw new Error("No angle could be found");
   return best;
+}
+
+// Without a birth time only some of her seven natal planets can be trusted
+// (chart.<planet>.reliable — see calculateReducedChart), and even a reliable
+// one is only a steady estimate, not an exact degree. So unlike the full
+// version above, this only considers reliable planets, and only returns an
+// angle close enough to matter (`maxOrb`, a wider orb than a full chart would
+// need since the degree itself already carries some uncertainty). null when
+// nothing today is both reliable and close enough — a reduced card's
+// statement still has to read as complete on its own in that case.
+export function closestReliableMoonAspect(
+  moonLongitude: number,
+  chart: ReducedChart,
+  maxOrb = 5,
+): MoonAspect | null {
+  if (!Number.isFinite(moonLongitude) || moonLongitude < 0 || moonLongitude >= 360) {
+    throw new Error("The Moon position is not usable");
+  }
+
+  let best: MoonAspect | null = null;
+  for (const planet of ASPECT_PLANETS) {
+    const natal = chart[planet];
+    if (!natal.reliable) continue;
+    const to = longitudeOf(natal);
+    const apart = distance(moonLongitude, to);
+
+    for (const aspect of ASPECT_NAMES) {
+      const orb = Math.round(Math.abs(apart - TARGET_ANGLE[aspect]) * 100) / 100;
+      if (!best || orb < best.orb) best = { planet, aspect, orb };
+    }
+  }
+
+  return best && best.orb <= maxOrb ? best : null;
 }

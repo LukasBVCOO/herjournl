@@ -6,19 +6,17 @@ import StepFrame from "../layout/step-frame";
 import { firstUnanswered } from "../data/steps";
 import { useAnswers } from "../data/use-answers";
 
-// For now this assumes she knows her birth time. A way to say "I don't know"
-// comes later.
 export default function BirthTimeScreen() {
   const navigate = useNavigate();
   const answers = useAnswers();
-  const { birthTime } = answers;
+  const { birthTime, birthTimeUnknown } = answers;
 
   // She got here without the earlier answers (a refresh loses them): go back to
   // the first one that is missing.
   const missing = firstUnanswered(answers, 2);
   if (missing) return <Navigate to={missing} replace />;
 
-  const canContinue = parseBirthTime(birthTime) !== null;
+  const canContinue = parseBirthTime(birthTime) !== null || birthTimeUnknown;
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,9 +39,23 @@ export default function BirthTimeScreen() {
           <BirthTimeField
             value={birthTime}
             autoFocus
-            onChange={(value) => setAnswers({ birthTime: value })}
+            onChange={(value) => setAnswers({ birthTime: value, birthTimeUnknown: false })}
           />
         </div>
+
+        <button
+          type="button"
+          onClick={() => navigate("/onboarding/birth-time-unknown")}
+          className="mt-4 h-11 self-start text-[15px] font-medium text-ink-soft underline underline-offset-4 transition-colors duration-200 hover:text-ink"
+        >
+          I don&rsquo;t know my birth time
+        </button>
+
+        {birthTimeUnknown && (
+          <p role="status" className="mt-3 text-[14px] text-ink-soft">
+            Got it — Continue to move on, or enter a time above if you find it.
+          </p>
+        )}
 
         <button
           type="submit"

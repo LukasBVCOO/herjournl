@@ -4,20 +4,25 @@
 // If anything is missing or broken (her chart, the Moon calculation, the wording)
 // this throws. A card is never made up.
 
-import type { Chart } from "@/features/onboarding";
+import type { Chart, ReducedChart } from "@/features/onboarding";
 import type { Transits } from "@/features/transits";
 import { readMoon } from "./active-house";
-import { assembleDailyFocusCard } from "./assemble-card";
+import { readMoonSign } from "./moon-sign";
+import { assembleDailyFocusCard, assembleReducedDailyFocusCard } from "./assemble-card";
 import type { DailyFocusCard } from "./types";
 
 export async function generateDailyFocus(
   userId: string,
-  chart: Chart,
+  chart: Chart | ReducedChart,
   localDate: string,
   timeZone: string,
   // How the planets are worked out. The app always uses the default.
   calculate?: (at: Date) => Promise<Transits>,
 ): Promise<DailyFocusCard> {
+  if (chart.kind === "reduced") {
+    const moon = await readMoonSign(localDate, timeZone, calculate);
+    return assembleReducedDailyFocusCard({ userId, moon, chart });
+  }
   const moon = await readMoon(chart, localDate, timeZone, calculate);
   return assembleDailyFocusCard({ userId, moon, chart });
 }

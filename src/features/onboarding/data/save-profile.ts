@@ -15,7 +15,10 @@ export async function saveOnboarding(answers: Answers): Promise<boolean> {
   const { place, chart } = answers;
   if (!userId || !place || !chart) return false;
 
-  const time = parseBirthTime(answers.birthTime);
+  // She may have chosen "I don't know" instead of typing a time — never a
+  // time that was typed and happens to be unparseable, since Continue is
+  // disabled on the birth time screen until one or the other is true.
+  const time = answers.birthTimeUnknown ? null : parseBirthTime(answers.birthTime);
 
   try {
     // One row per person, so saving again (trying onboarding a second time)
@@ -32,9 +35,11 @@ export async function saveOnboarding(answers: Answers): Promise<boolean> {
       birth_latitude: place.latitude,
       birth_longitude: place.longitude,
       // The zone and offset the chart was actually worked out with, so the
-      // record can never disagree with the chart.
-      birth_timezone_name: chart.timeZone,
-      birth_utc_offset_minutes: chart.utcOffsetMinutes,
+      // record can never disagree with the chart. Only known when the chart
+      // is a full one — a reduced chart has no single confirmed moment to
+      // have worked a zone or offset out from.
+      birth_timezone_name: chart.kind === "full" ? chart.timeZone : null,
+      birth_utc_offset_minutes: chart.kind === "full" ? chart.utcOffsetMinutes : null,
       placements: chart,
       onboarding_completed_at: new Date().toISOString(),
     });

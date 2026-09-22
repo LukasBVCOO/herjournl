@@ -10,8 +10,6 @@ import type { AspectName, AspectPlanet } from "./content/moon-aspects";
 export type DailyFocusResult =
   // created is true when this call made and saved it (false: it already existed).
   | { status: "ready"; card: DailyFocusCard; created: boolean }
-  // Her houses depend on a real birth time, so there is no house-based card.
-  | { status: "no-birth-time" }
   // Her saved chart is missing or damaged: she should review her birth details.
   | { status: "no-chart" }
   // No internet. Nothing is wrong; the card is made when she is back online.
@@ -27,8 +25,19 @@ export type DailyFocusCard = {
   timeZone: string;
   referenceInstant: string;
   moonLongitude: number;
-  activeHouse: number;
-  natalMoonSign: Sign;
+  // "full" once she has a real birth time (houses, a fixed area of life over a
+  // few days); "reduced" when she doesn't (today's Moon sign is the theme
+  // instead — see content/moon-sign-themes.ts). Never shown to her; kept so a
+  // card can always be explained, and for basic debugging.
+  personalisationLevel: "full" | "reduced";
+  // Null on a reduced card: there is no real house without a birth time, and
+  // one is never invented to stand in for it.
+  activeHouse: number | null;
+  // Null on a reduced card when even her natal Moon sign wasn't reliably
+  // knowable (see the reduced chart's own moon.reliable flag). Kept for
+  // explainability only — it never decides what a reduced card says; today's
+  // transiting Moon sign does that instead.
+  natalMoonSign: Sign | null;
 
   // What she sees.
   // The area of life, as a short internal name (like "career").
@@ -37,13 +46,14 @@ export type DailyFocusCard = {
   // Not saved with the card: it is read from the wording for that area.
   label: string;
   title: string;
-  // The day's statement followed by a line on how to approach it today.
+  // The day's statement, usually followed by a line on how to approach it
+  // today (see moonAspectPlanet below — a reduced card may not have one).
   statement: string;
   // The question she writes about.
   prompt: string;
 
-  // Which option was picked from the house's own lists (counting from 0), so a
-  // card can be recreated exactly.
+  // Which option was picked from the house's (or Moon sign's) own lists
+  // (counting from 0), so a card can be recreated exactly.
   titleVariant: number;
   statementVariant: number;
   promptVariant: number;
@@ -51,10 +61,13 @@ export type DailyFocusCard = {
   // How to approach it today: the Moon's closest angle to one of her seven natal
   // planets. Not a pick from a list — worked out fresh from where the Moon
   // actually is, so it changes day to day even while the house above does not.
-  // Kept so a card can always be explained later, never shown to her.
-  moonAspectPlanet: AspectPlanet;
-  moonAspectName: AspectName;
-  moonAspectOrb: number;
+  // Kept so a card can always be explained later, never shown to her. Null only
+  // on a reduced card with no planet both reliably known and close enough to
+  // use (see moon-aspect.ts's closestReliableMoonAspect) — the statement still
+  // reads as complete without it.
+  moonAspectPlanet: AspectPlanet | null;
+  moonAspectName: AspectName | null;
+  moonAspectOrb: number | null;
 
   // Where she is with today's card. Both are saved with the card and only ever
   // move forward: opened means she has seen it (it stays revealed from then on),

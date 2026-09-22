@@ -37,6 +37,7 @@ export type AnglePosition = { sign: Sign; degree: number };
 
 // What is saved in her profile.
 export type Chart = {
+  kind: "full";
   houseSystem: "placidus";
   // The time zone and clock offset (in minutes ahead of UTC) that the
   // calculation used for the birthplace on her birthday.
@@ -64,6 +65,38 @@ export type BirthMoment = {
   latitude: number;
   longitude: number;
 };
+
+// Her birth date and place, without a time.
+export type BirthDay = {
+  year: number;
+  month: number;
+  day: number;
+  latitude: number;
+  longitude: number;
+};
+
+// A planet's sign and degree worked out without a birth time, and whether that
+// placement is trustworthy: the same for every minute of her birth day, from
+// midnight to one minute before the next. If it isn't (the planet changed sign
+// somewhere in the day), `reliable` is false and nothing about this reading is
+// ever shown to her or used to generate a card — see calculateReducedChart.
+export type PlanetReading = { sign: Sign; degree: number; reliable: boolean };
+
+// What is saved in her profile when she doesn't know her birth time. No
+// `rising` and no house cusps: those need an exact time to mean anything, so
+// they are never calculated, never stored and never guessed at here.
+export type ReducedChart = {
+  kind: "reduced";
+  sun: PlanetReading;
+  moon: PlanetReading;
+  mercury: PlanetReading;
+  venus: PlanetReading;
+  mars: PlanetReading;
+  jupiter: PlanetReading;
+  saturn: PlanetReading;
+};
+
+export type NatalChart = Chart | ReducedChart;
 
 type Library = typeof import("circular-natal-horoscope-js");
 
@@ -167,6 +200,7 @@ export function buildChart(library: Library, birth: BirthMoment): Chart {
   });
 
   return {
+    kind: "full",
     houseSystem: "placidus",
     timeZone,
     utcOffsetMinutes,
@@ -187,6 +221,49 @@ export function buildChart(library: Library, birth: BirthMoment): Chart {
 export async function calculateChart(birth: BirthMoment): Promise<Chart> {
   const library = await import("circular-natal-horoscope-js");
   return buildChart(library, birth);
+}
+
+// Without an exact birth time, a planet's true position could be anywhere the
+// library would place it between midnight and one minute before midnight on
+// her birth day. Rather than guess a time, this works out both ends of that
+// window and only trusts a planet's placement when both ends agree.
+const PLANET_NAMES = [
+  "sun",
+  "moon",
+  "mercury",
+  "venus",
+  "mars",
+  "jupiter",
+  "saturn",
+] as const;
+
+export function buildReducedChart(library: Library, birth: BirthDay): ReducedChart {
+  const startOfDay = buildChart(library, { ...birth, hour: 0, minute: 0 });
+  const endOfDay = buildChart(library, { ...birth, hour: 23, minute: 59 });
+
+  const readings = {} as Omit<ReducedChart, "kind">;
+  for (const name of PLANET_NAMES) {
+    const start = startOfDay[name];
+    const end = endOfDay[name];
+    const reliable = start.sign === end.sign;
+    readings[name] = {
+      sign: start.sign,
+      // Only meaningful when reliable (same sign both ends, so the two
+      // numbers are directly comparable); halfway between them is a steadier
+      // estimate than either end alone. When not reliable this number is
+      // never shown or used — only `reliable` is checked before that happens.
+      degree: reliable ? Math.round(((start.degree + end.degree) / 2) * 100) / 100 : start.degree,
+      reliable,
+    };
+  }
+  return { kind: "reduced", ...readings };
+}
+
+// Loads the library only when a chart is being made, then works out which of
+// her planets can be trusted without an exact birth time.
+export async function calculateReducedChart(birth: BirthDay): Promise<ReducedChart> {
+  const library = await import("circular-natal-horoscope-js");
+  return buildReducedChart(library, birth);
 }
 
 // Reads a chart back from what was saved in her profile (profiles.placements).
@@ -222,6 +299,7 @@ export function readSavedChart(saved: unknown): Chart | null {
     }
 
     return {
+      kind: "full",
       houseSystem: "placidus",
       timeZone,
       utcOffsetMinutes: number(dig(saved, "utcOffsetMinutes")),
@@ -238,4 +316,32 @@ export function readSavedChart(saved: unknown): Chart | null {
   } catch {
     return null;
   }
+}
+
+// Reads a reduced chart (saved when she didn't know her birth time) back from
+// profiles.placements. null if it isn't a complete, well-formed reduced chart.
+export function readSavedReducedChart(saved: unknown): ReducedChart | null {
+  try {
+    if (dig(saved, "kind") !== "reduced") return null;
+
+    const readingAt = (key: string): PlanetReading => {
+      const entry = dig(saved, key);
+      const reliable = dig(entry, "reliable");
+      if (typeof reliable !== "boolean") throw new Error("Unexpected reliability in the saved chart");
+      return { sign: sign(dig(entry, "sign")), degree: number(dig(entry, "degree")), reliable };
+    };
+
+    const readings = {} as Omit<ReducedChart, "kind">;
+    for (const name of PLANET_NAMES) readings[name] = readingAt(name);
+    return { kind: "reduced", ...readings };
+  } catch {
+    return null;
+  }
+}
+
+// Reads back whichever kind of chart is saved — a full one, or a reduced one
+// from before she knew her birth time. null if it's neither (for example a
+// profile saved before charts were kept at all).
+export function readSavedNatalChart(saved: unknown): NatalChart | null {
+  return readSavedChart(saved) ?? readSavedReducedChart(saved);
 }

@@ -70,15 +70,6 @@ export default function FocusScreen() {
             Review birth details
           </Link>
         </Notice>
-      ) : state.status === "no-birth-time" ? (
-        <Notice title="Your focus works best with your birth time.">
-          <p>
-            It helps us personalise the areas of life your chart connects to.
-          </p>
-          <Link to="/profile" className={buttonClass}>
-            Add my birth time
-          </Link>
-        </Notice>
       ) : (
         <Notice title="Your focus is still aligning.">
           <p>We couldn&rsquo;t prepare today&rsquo;s card yet.</p>

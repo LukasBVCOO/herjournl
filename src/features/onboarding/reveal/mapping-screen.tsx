@@ -73,8 +73,9 @@ export default function MappingScreen() {
             Mapping your chart &#10022;
           </h1>
           <p role="status" className="mt-4 max-w-[30ch] text-[17px] text-ink-soft">
-            Finding your Sun, Moon, Rising and the areas of life that are uniquely
-            yours.
+            {answers.birthTimeUnknown
+              ? "Finding your Sun, Moon and the areas of life that are uniquely yours."
+              : "Finding your Sun, Moon, Rising and the areas of life that are uniquely yours."}
           </p>
         </>
       )}

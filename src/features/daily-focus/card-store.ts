@@ -6,7 +6,7 @@
 //   failed   the database answered with something we did not expect
 // Nothing here logs what came back.
 
-import { readSavedChart, type Chart } from "@/features/onboarding";
+import { readSavedNatalChart, type Chart, type ReducedChart } from "@/features/onboarding";
 import { supabase } from "@/lib/supabase/client";
 import { CARD_COLUMNS, cardFromRow, rowFromCard } from "./card-row";
 import type { DailyFocusCard } from "./types";
@@ -74,15 +74,17 @@ export const markOpened = (localDate: string) => mark(localDate, { opened: true 
 export const markDone = (localDate: string) => mark(localDate, { opened: true, done: true });
 
 export type SavedChart = {
-  // null when she has no chart saved, or the saved one is not usable.
-  chart: Chart | null;
+  // null when she has no chart saved, or the saved one is not usable. A full
+  // chart (chart.kind === "full") or a reduced one (chart.kind === "reduced",
+  // saved when she doesn't know her birth time) — see readSavedNatalChart.
+  chart: Chart | ReducedChart | null;
   birthTimeKnown: boolean;
   // True once she has finished onboarding.
   onboarded: boolean;
 };
 
-// Her saved birth chart and whether her birth time is a real one. null when she
-// has no profile at all.
+// Her saved birth chart (whichever kind she has) and whether her birth time is
+// a real one. null when she has no profile at all.
 export async function findChart(userId: string): Promise<Found<SavedChart | null>> {
   try {
     const { data, error, status } = await supabase
@@ -95,7 +97,7 @@ export async function findChart(userId: string): Promise<Found<SavedChart | null
     return {
       ok: true,
       value: {
-        chart: readSavedChart(data.placements),
+        chart: readSavedNatalChart(data.placements),
         birthTimeKnown: data.birth_time_known === true,
         onboarded: typeof data.onboarding_completed_at === "string",
       },

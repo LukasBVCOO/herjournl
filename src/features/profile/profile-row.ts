@@ -3,8 +3,9 @@
 import {
   formatPlace,
   parseBirthTime,
-  readSavedChart,
+  readSavedNatalChart,
   type Chart,
+  type ReducedChart,
   type Place,
 } from "@/features/onboarding";
 
@@ -29,7 +30,11 @@ export type Profile = {
   // The birthplace rebuilt from what was saved, so a chart can be worked out
   // again without her searching for the place a second time.
   place: Place | null;
-  chart: Chart | null;
+  // A full chart (a real birth time) or a reduced one (see readSavedNatalChart).
+  chart: Chart | ReducedChart | null;
+  // False once she has told us she doesn't know her birth time (rather than
+  // simply never having finished onboarding — see profile-screen.tsx).
+  birthTimeKnown: boolean;
 };
 
 // The columns of her profile that this screen reads.
@@ -37,6 +42,7 @@ export type ProfileRow = {
   name: string | null;
   date_of_birth: string | null;
   birth_time: string | null;
+  birth_time_known: boolean;
   birth_place: string | null;
   birth_city: string | null;
   birth_country: string | null;
@@ -47,7 +53,7 @@ export type ProfileRow = {
 };
 
 export const PROFILE_COLUMNS =
-  "name, date_of_birth, birth_time, birth_place, birth_city, birth_country, birth_latitude, birth_longitude, birth_timezone_name, placements";
+  "name, date_of_birth, birth_time, birth_time_known, birth_place, birth_city, birth_country, birth_latitude, birth_longitude, birth_timezone_name, placements";
 
 export function profileFromRow(row: ProfileRow): Profile {
   const place: Place | null =
@@ -72,7 +78,8 @@ export function profileFromRow(row: ProfileRow): Profile {
     birthTime: row.birth_time ? row.birth_time.slice(0, 5) : null,
     birthPlace: row.birth_place,
     place,
-    chart: readSavedChart(row.placements),
+    chart: readSavedNatalChart(row.placements),
+    birthTimeKnown: row.birth_time_known,
   };
 }
 
@@ -81,10 +88,10 @@ export type ProfileChanges = {
   name?: string;
   // "2000-07-18"
   dateOfBirth?: string;
-  // "16:00"
+  // "16:00", or "" for "I don't know my birth time".
   birthTime?: string;
   place?: Place;
-  chart?: Chart;
+  chart?: Chart | ReducedChart;
 };
 
 // The row to write. It holds only the columns that are changing, so saving one
@@ -110,10 +117,11 @@ export function rowFromChanges(userId: string, changes: ProfileChanges) {
   }
 
   if (changes.chart) {
-    // The zone and offset the chart was actually worked out with, so the record
-    // can never disagree with the chart.
-    row.birth_timezone_name = changes.chart.timeZone;
-    row.birth_utc_offset_minutes = changes.chart.utcOffsetMinutes;
+    // The zone and offset the chart was actually worked out with, so the
+    // record can never disagree with the chart. A reduced chart (no birth
+    // time) has no single confirmed moment to have worked either out from.
+    row.birth_timezone_name = changes.chart.kind === "full" ? changes.chart.timeZone : null;
+    row.birth_utc_offset_minutes = changes.chart.kind === "full" ? changes.chart.utcOffsetMinutes : null;
     row.placements = changes.chart;
   }
 

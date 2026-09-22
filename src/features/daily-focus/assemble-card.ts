@@ -12,11 +12,13 @@
 // the same day always gets the same card. Nothing here touches the sky, the
 // database or the screen.
 
-import { SIGNS, type Chart, type Sign } from "@/features/onboarding";
+import { SIGNS, type Chart, type ReducedChart, type Sign } from "@/features/onboarding";
 import type { MoonReading } from "./active-house";
+import type { MoonSignReading } from "./moon-sign";
 import { HOUSE_CONTENT, type HouseContent, type HouseNumber } from "./content/houses";
 import { moonAspectLine } from "./content/moon-aspects";
-import { closestMoonAspect } from "./moon-aspect";
+import { MOON_SIGN_THEMES, type MoonSignTheme } from "./content/moon-sign-themes";
+import { closestMoonAspect, closestReliableMoonAspect } from "./moon-aspect";
 import { pickIndex, seedFor } from "./deterministic-seed";
 import type { DailyFocusCard } from "./types";
 
@@ -72,6 +74,7 @@ export function assembleDailyFocusCard(
     timeZone: moon.timeZone,
     referenceInstant: moon.referenceInstant,
     moonLongitude: moon.moonLongitude,
+    personalisationLevel: "full",
     activeHouse: house,
     natalMoonSign,
     category: area.key,
@@ -86,6 +89,77 @@ export function assembleDailyFocusCard(
     moonAspectName: moonAspect.aspect,
     moonAspectOrb: moonAspect.orb,
     // A new card has not been seen yet.
+    opened: false,
+    done: false,
+  };
+}
+
+// The reduced version of the card above: no birth time, so no house — today's
+// Moon sign gives the theme instead (content/moon-sign-themes.ts), and the
+// approach line only appears when a reliable natal angle exists close enough
+// to use (see moon-aspect.ts's closestReliableMoonAspect). Nothing here is
+// guessed: a missing theme is an error, not a made-up card, exactly as above.
+export type ReducedCardInput = {
+  userId: string;
+  moon: MoonSignReading;
+  chart: ReducedChart;
+};
+
+export type ReducedCardContent = {
+  themes: Record<Sign, MoonSignTheme | undefined>;
+};
+
+const DEFAULT_REDUCED_CONTENT: ReducedCardContent = { themes: MOON_SIGN_THEMES };
+
+export function assembleReducedDailyFocusCard(
+  input: ReducedCardInput,
+  content: ReducedCardContent = DEFAULT_REDUCED_CONTENT,
+): DailyFocusCard {
+  const { userId, moon, chart } = input;
+  if (typeof userId !== "string" || userId.length === 0) throw new Error("A card needs a person");
+
+  const theme = content.themes[moon.moonSign];
+  if (!theme) throw new Error("There is no wording for this Moon sign");
+
+  // Seeded by today's Moon sign instead of a house — the same idea as the full
+  // card (deterministic-seed.ts), just a different key for what area of the
+  // wording it picks from.
+  const seed = seedFor(userId, moon.localDate, moon.moonSign);
+
+  const titleVariant = pickIndex(seed, "title", Math.max(theme.titles.length, 1));
+  const statementVariant = pickIndex(seed, "statement", Math.max(theme.statements.length, 1));
+  const promptVariant = pickIndex(seed, "prompt", Math.max(theme.prompts.length, 1));
+
+  const title = theme.titles[titleVariant] ?? theme.label;
+  const baseStatement = theme.statements[statementVariant] ?? `${theme.label} is in focus today.`;
+  const prompt = theme.prompts[promptVariant] ?? FALLBACK_PROMPT;
+
+  // Not every day has one — a reduced chart may have no planet both reliably
+  // known and close enough — so the statement has to read as complete alone.
+  const aspect = closestReliableMoonAspect(moon.moonLongitude, chart);
+  const statement = aspect
+    ? `${baseStatement} ${moonAspectLine(aspect.planet, aspect.aspect)}`
+    : baseStatement;
+
+  return {
+    localDate: moon.localDate,
+    timeZone: moon.timeZone,
+    referenceInstant: moon.referenceInstant,
+    moonLongitude: moon.moonLongitude,
+    personalisationLevel: "reduced",
+    activeHouse: null,
+    natalMoonSign: chart.moon.reliable ? chart.moon.sign : null,
+    category: `moon_${theme.key}`,
+    label: theme.label,
+    title,
+    statement,
+    prompt,
+    titleVariant,
+    statementVariant,
+    promptVariant,
+    moonAspectPlanet: aspect?.planet ?? null,
+    moonAspectName: aspect?.aspect ?? null,
+    moonAspectOrb: aspect?.orb ?? null,
     opened: false,
     done: false,
   };

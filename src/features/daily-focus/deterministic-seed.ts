@@ -20,9 +20,10 @@ export function hashText(text: string): number {
   return hash >>> 0;
 }
 
-// What one card is built from: who, which day, which area of life.
-export function seedFor(userId: string, localDate: string, activeHouse: number): string {
-  return `${userId}|${localDate}|${activeHouse}`;
+// What one card is built from: who, which day, which area of life — a house
+// number for a full card, or today's Moon sign for a reduced one.
+export function seedFor(userId: string, localDate: string, area: number | string): string {
+  return `${userId}|${localDate}|${area}`;
 }
 
 // A choice from 0 to count - 1. `part` names what is being chosen ("title",

@@ -44,8 +44,15 @@ export { default as BirthDateFields } from "./fields/birth-date-fields";
 export { default as BirthTimeField } from "./fields/birth-time-field";
 export { default as PlaceSearch } from "./fields/place-search";
 export { default as Constellation } from "./reveal/constellation";
-export { calculateChart, readSavedChart, SIGNS } from "./chart/natal-chart";
-export type { Chart, Sign } from "./chart/natal-chart";
+export {
+  calculateChart,
+  calculateReducedChart,
+  readSavedChart,
+  readSavedReducedChart,
+  readSavedNatalChart,
+  SIGNS,
+} from "./chart/natal-chart";
+export type { Chart, NatalChart, PlanetReading, ReducedChart, Sign } from "./chart/natal-chart";
 export { checkBirthDate, MIN_AGE } from "./validation/birth-date";
 export type { BirthDateProblem } from "./validation/birth-date";
 export { parseBirthTime } from "./validation/birth-time";

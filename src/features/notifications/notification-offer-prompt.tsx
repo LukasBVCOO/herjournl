@@ -4,6 +4,10 @@ import { hasOfferedNotifications, markNotificationsOffered } from "./notificatio
 import { notificationPermission, pushSupported, requestPushSubscription } from "./push";
 import { saveSubscription } from "./push-api";
 
+// Waits a moment after it becomes due before popping up, so it never appears
+// the instant she lands on the screen.
+const SHOW_DELAY_MS = 1500;
+
 // Offered once she has actually installed the app — notifications work best
 // (and on iPhone, only work at all) once it is on her home screen, so this
 // waits for that rather than asking too early. Shown once; if she has already
@@ -17,6 +21,7 @@ export default function NotificationOfferPrompt() {
   const { installed } = useSyncExternalStore(subscribeToInstallState, getInstallState, getInstallState);
   const [dismissed, setDismissed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [delayOver, setDelayOver] = useState(false);
   const closeButton = useRef<HTMLButtonElement>(null);
 
   const due =
@@ -26,22 +31,35 @@ export default function NotificationOfferPrompt() {
     notificationPermission() === "default" &&
     !hasOfferedNotifications();
 
+  // The delay only starts once it is actually due, and resets if it stops
+  // being due before the delay is up.
+  useEffect(() => {
+    if (!due) return;
+    const timer = setTimeout(() => setDelayOver(true), SHOW_DELAY_MS);
+    return () => {
+      clearTimeout(timer);
+      setDelayOver(false);
+    };
+  }, [due]);
+
+  const visible = due && delayOver;
+
   function dismiss() {
     markNotificationsOffered();
     setDismissed(true);
   }
 
   useEffect(() => {
-    if (!due) return;
+    if (!visible) return;
     closeButton.current?.focus();
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") dismiss();
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [due]);
+  }, [visible]);
 
-  if (!due) return null;
+  if (!visible) return null;
 
   async function allow() {
     setBusy(true);

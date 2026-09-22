@@ -13,6 +13,10 @@ function isPhoneWidth() {
   return window.matchMedia("(max-width: 767px)").matches;
 }
 
+// Waits a moment after she lands on the list before popping up, so it never
+// appears the instant the screen does.
+const SHOW_DELAY_MS = 1500;
+
 // Offers her the install nudge, at most 3 times, at progressively longer gaps
 // (install-offer.ts), stopping the moment she has actually installed —
 // detected live and remembered on her account, so it works even if she starts
@@ -30,6 +34,7 @@ export default function InstallOfferPrompt() {
   const [state, setState] = useState<InstallOfferState | null>(null);
   const [dismissed, setDismissed] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [delayOver, setDelayOver] = useState(false);
   const closeButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -52,21 +57,34 @@ export default function InstallOfferPrompt() {
     isOfferDue(state, new Date()) &&
     (state.count > 0 || hasWrittenFirstDailyNote);
 
-  useEffect(() => {
-    if (due && state) void recordOfferShown(state.count);
-  }, [due, state]);
-
+  // The delay only starts once it is actually due, and resets if it stops
+  // being due before the delay is up (nothing left to show any more).
   useEffect(() => {
     if (!due) return;
+    const timer = setTimeout(() => setDelayOver(true), SHOW_DELAY_MS);
+    return () => {
+      clearTimeout(timer);
+      setDelayOver(false);
+    };
+  }, [due]);
+
+  const visible = due && delayOver;
+
+  useEffect(() => {
+    if (visible && state) void recordOfferShown(state.count);
+  }, [visible, state]);
+
+  useEffect(() => {
+    if (!visible) return;
     closeButton.current?.focus();
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") setDismissed(true);
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [due]);
+  }, [visible]);
 
-  if (!due) return null;
+  if (!visible) return null;
 
   function dismiss() {
     setDismissed(true);

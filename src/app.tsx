@@ -9,6 +9,7 @@ import {
 } from "@/features/auth";
 import { FocusScreen, TodaysFocusCard } from "@/features/daily-focus";
 import { InstalledSync, InstallOfferPrompt, UpdatePrompt } from "@/features/install";
+import { NotificationOfferPrompt } from "@/features/notifications";
 import {
   EditNoteScreen,
   NewNoteRedirect,
@@ -129,6 +130,7 @@ export default function App() {
       </Routes>
       <UpdatePrompt />
       <InstalledSync />
+      <NotificationOfferPrompt />
     </BrowserRouter>
   );
 }

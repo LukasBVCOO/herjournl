@@ -5,8 +5,9 @@
 //   push-api.ts               saving and removing her subscription in the database
 //   use-push.ts               where notifications stand for this browser right now
 //   notifications-section.tsx the on/off control, shown in Settings
-//
-// This only covers turning notifications on and off, and proving one can be
-// delivered. Nothing sends a real morning or evening notification yet — that
-// needs a small server piece, still to come.
+//   notification-offer.ts     whether she has already been offered notifications
+//                            on this device
+//   notification-offer-prompt.tsx  offers turning them on, once she has
+//                            actually installed the app
 export { default as NotificationsSection } from "./notifications-section";
+export { default as NotificationOfferPrompt } from "./notification-offer-prompt";

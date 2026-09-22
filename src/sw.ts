@@ -61,14 +61,14 @@ self.addEventListener("push", (event) => {
     self.registration.showNotification(title, {
       body,
       icon: "/icon-192.png",
-      // No `badge` on purpose: Android forces whatever it's given through a
-      // monochrome mask, tinted with the site's theme colour (index.html /
-      // the manifest) — a pale, near-white tone here, which made even a
-      // correct white silhouette (badge-192.png, still in public/, unused for
-      // now) render as an empty circle. Rather than recolour the app's theme
-      // just for this, the small icon slot is left to Android's own default
-      // instead, and `icon` above (full colour, already shows the "B"
-      // correctly) is the one place that actually carries the mark.
+      // Android forces this small icon through a monochrome mask, tinted
+      // with the site's theme colour (index.html / the manifest) — confirmed
+      // by testing: it stayed blank even with no badge at all, tinted
+      // near-invisible against the pale theme colour that used to be there.
+      // Now that the theme colour is dark (index.html, vite.config.ts), a
+      // plain white silhouette on transparency (badge-192.png) is what the
+      // mask actually needs, and should read properly.
+      badge: "/badge-192.png",
       // Where tapping it should open. Kept on the notification object itself
       // (not just read from the push payload again) because the payload is not
       // available any more once a notificationclick event fires.

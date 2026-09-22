@@ -9,11 +9,23 @@ export default defineConfig({
     react(),
     tailwindcss(),
     // Turns the site into an installable app that opens with no internet. It
-    // builds a small background script (the "service worker") that keeps a copy
-    // of the app's own files on the phone.
+    // used to generate the small background script (the "service worker")
+    // automatically; now it bundles our own (src/sw.ts), because push
+    // notifications need code in there and generateSW has no way to add any.
     VitePWA({
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
+      injectManifest: {
+        // The app's own files only. Her notes are never stored here: they live
+        // in the phone's database (see notes-store.ts), and nothing from
+        // Supabase is cached, so nobody's writing ends up in the wrong place.
+        globPatterns: ["**/*.{js,css,html,woff2,png,svg,jpg}"],
+      },
       // A new version waits until she taps Refresh, so the app never reloads
-      // itself in the middle of a sentence.
+      // itself in the middle of a sentence. (With our own service worker, this
+      // only affects the client-side registerSW helper; src/sw.ts is what
+      // actually waits, by listening for the SKIP_WAITING message below.)
       registerType: "prompt",
       includeAssets: ["apple-touch-icon.png"],
       manifest: {
@@ -38,16 +50,6 @@ export default defineConfig({
             purpose: "maskable",
           },
         ],
-      },
-      workbox: {
-        // The app's own files only. Her notes are never stored here: they live
-        // in the phone's database (see notes-store.ts), and nothing from
-        // Supabase is cached, so nobody's writing ends up in the wrong place.
-        globPatterns: ["**/*.{js,css,html,woff2,png,svg,jpg}"],
-        // Any web address opens the app, including a refresh on a note and the
-        // return trip from Google sign-in.
-        navigateFallback: "/index.html",
-        cleanupOutdatedCaches: true,
       },
     }),
   ],

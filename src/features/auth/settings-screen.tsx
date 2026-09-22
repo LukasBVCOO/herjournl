@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { BackIcon } from "@/components/icons";
+import { NotificationsSection } from "@/features/notifications";
 import { signOut } from "@/lib/session";
 import { useSession } from "./use-session";
 
@@ -43,6 +44,10 @@ export default function SettingsScreen() {
           {session.email ?? "Your account"}
         </p>
       </section>
+
+      <div className="mt-4">
+        <NotificationsSection />
+      </div>
 
       {problem && (
         <p role="alert" className="mt-6 animate-fade-in text-sm text-alert">

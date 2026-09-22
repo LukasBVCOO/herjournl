@@ -1,31 +1,36 @@
 // Putting a card together from the day's facts and the wording in content/.
 //
-//   the area of life for the day  ->  a title, a statement and a question
-//   her natal Moon sign           ->  one line about how she tends to feel things
+//   the area of life for the day       ->  a title, a statement and a question
+//   the Moon's closest angle to her    ->  one line on how to approach it today
+//   natal planets, today
 //
-// Which option is used from each list is decided by deterministic-seed.ts, so the
-// same person on the same day always gets the same card. Nothing here touches the
-// sky, the database or the screen.
+// The area (the house) moves slowly, so the Moon can sit in the same one for two
+// or three days running. The angle changes with it every day, which is what
+// keeps the card from repeating itself while the area stays the same. Which
+// title, statement and prompt are used from the house's own lists is still
+// picked with no chance involved (deterministic-seed.ts), so the same person on
+// the same day always gets the same card. Nothing here touches the sky, the
+// database or the screen.
 
-import { SIGNS, type Sign } from "@/features/onboarding";
+import { SIGNS, type Chart, type Sign } from "@/features/onboarding";
 import type { MoonReading } from "./active-house";
 import { HOUSE_CONTENT, type HouseContent, type HouseNumber } from "./content/houses";
-import { MOON_MODIFIERS, type MoonModifier } from "./content/moon-modifiers";
+import { moonAspectLine } from "./content/moon-aspects";
+import { closestMoonAspect } from "./moon-aspect";
 import { pickIndex, seedFor } from "./deterministic-seed";
 import type { DailyFocusCard } from "./types";
 
 export type CardInput = {
   userId: string;
   moon: MoonReading;
-  natalMoonSign: Sign;
+  chart: Chart;
 };
 
 export type CardContent = {
   houses: Record<number, HouseContent | undefined>;
-  moons: Record<string, MoonModifier | undefined>;
 };
 
-const DEFAULT_CONTENT: CardContent = { houses: HOUSE_CONTENT, moons: MOON_MODIFIERS };
+const DEFAULT_CONTENT: CardContent = { houses: HOUSE_CONTENT };
 
 // Used only if a list of wording were ever empty, so a card is never blank.
 const FALLBACK_PROMPT = "What deserves your attention today?";
@@ -34,10 +39,11 @@ export function assembleDailyFocusCard(
   input: CardInput,
   content: CardContent = DEFAULT_CONTENT,
 ): DailyFocusCard {
-  const { userId, moon, natalMoonSign } = input;
+  const { userId, moon, chart } = input;
   if (typeof userId !== "string" || userId.length === 0) throw new Error("A card needs a person");
   const house = moon.activeHouse;
   if (!Number.isInteger(house) || house < 1 || house > 12) throw new Error("Not a house from 1 to 12");
+  const natalMoonSign: Sign = chart.moon.sign;
   if (!(SIGNS as readonly string[]).includes(natalMoonSign)) throw new Error("Not a Moon sign");
 
   // A missing area would leave nothing honest to say, so this is an error, not a
@@ -55,11 +61,11 @@ export function assembleDailyFocusCard(
   const baseStatement = area.statements[statementVariant] ?? `${area.label} is in focus today.`;
   const prompt = area.prompts[promptVariant] ?? FALLBACK_PROMPT;
 
-  // The line about her Moon sign is a bonus: without one, the card is still whole.
-  const modifier = content.moons[natalMoonSign];
-  const lines = modifier?.lines ?? [];
-  const moonModifierVariant = lines.length > 0 ? pickIndex(seed, "moon", lines.length) : null;
-  const line = moonModifierVariant === null ? "" : lines[moonModifierVariant];
+  // How to approach it today: not a pick from a list, but always worked out
+  // fresh from where the Moon actually is against her chart, so it changes even
+  // on a day the house does not.
+  const moonAspect = closestMoonAspect(moon.moonLongitude, chart);
+  const approachLine = moonAspectLine(moonAspect.planet, moonAspect.aspect);
 
   return {
     localDate: moon.localDate,
@@ -71,12 +77,14 @@ export function assembleDailyFocusCard(
     category: area.key,
     label: area.label,
     title,
-    statement: line ? `${baseStatement} ${line}` : baseStatement,
+    statement: `${baseStatement} ${approachLine}`,
     prompt,
     titleVariant,
     statementVariant,
-    moonModifierVariant,
     promptVariant,
+    moonAspectPlanet: moonAspect.planet,
+    moonAspectName: moonAspect.aspect,
+    moonAspectOrb: moonAspect.orb,
     // A new card has not been seen yet.
     opened: false,
     done: false,

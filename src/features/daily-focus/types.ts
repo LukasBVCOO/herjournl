@@ -2,6 +2,7 @@
 // person per day, so its parts line up with the database columns.
 
 import type { Sign } from "@/features/onboarding";
+import type { AspectName, AspectPlanet } from "./content/moon-aspects";
 
 // What asking for today's card can come back with. A card is only ever "ready"
 // when it is real; every other answer says why there isn't one, and none of
@@ -36,17 +37,24 @@ export type DailyFocusCard = {
   // Not saved with the card: it is read from the wording for that area.
   label: string;
   title: string;
-  // The day's statement followed by the line about how she tends to feel things.
+  // The day's statement followed by a line on how to approach it today.
   statement: string;
   // The question she writes about.
   prompt: string;
 
-  // Which option was picked from each list (counting from 0), so a card can be
-  // recreated exactly. The Moon line is null if there was none to add.
+  // Which option was picked from the house's own lists (counting from 0), so a
+  // card can be recreated exactly.
   titleVariant: number;
   statementVariant: number;
-  moonModifierVariant: number | null;
   promptVariant: number;
+
+  // How to approach it today: the Moon's closest angle to one of her seven natal
+  // planets. Not a pick from a list — worked out fresh from where the Moon
+  // actually is, so it changes day to day even while the house above does not.
+  // Kept so a card can always be explained later, never shown to her.
+  moonAspectPlanet: AspectPlanet;
+  moonAspectName: AspectName;
+  moonAspectOrb: number;
 
   // Where she is with today's card. Both are saved with the card and only ever
   // move forward: opened means she has seen it (it stays revealed from then on),

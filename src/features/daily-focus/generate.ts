@@ -19,5 +19,5 @@ export async function generateDailyFocus(
   calculate?: (at: Date) => Promise<Transits>,
 ): Promise<DailyFocusCard> {
   const moon = await readMoon(chart, localDate, timeZone, calculate);
-  return assembleDailyFocusCard({ userId, moon, natalMoonSign: chart.moon.sign });
+  return assembleDailyFocusCard({ userId, moon, chart });
 }

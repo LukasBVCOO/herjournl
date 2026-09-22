@@ -325,6 +325,8 @@ Database rules:
 
 ---
 
+
+> **REPLACED 2026-09-22 (founder's own design):** instead of a fixed natal Moon-sign line, the "how to approach it" half of the statement now comes from the Moon's closest angle to one of her 7 natal planets today (real astrology, worked out fresh from the sky, not picked from a hash). This is what stops the same card repeating while the house stays the same for two or three days. Built as `moon-aspect.ts` (closestMoonAspect) and `content/moon-aspects.ts` (35 lines: 7 planets x 5 angles). Proven on the spec profile: every run where the house stayed the same for 2-4 days in a row, the card differed every day. `content/moon-modifiers.ts` (12 Moon signs) is kept, tone-approved, but no longer used by the default card.
 ## 15. Create Optional Transit Cache
 
 Create `daily_transit_cache` if useful.

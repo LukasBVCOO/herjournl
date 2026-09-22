@@ -5,11 +5,20 @@
 //                          to midnight), and the 08:00 moment it is worked out for
 //                          (daylight saving handled)
 //   active-house.ts        the Moon at that moment, and which of her houses it is in
+//   moon-aspect.ts          the Moon's closest angle to one of her seven natal
+//                          planets today: worked out fresh from the sky, not
+//                          picked from a list, so it changes even on a day the
+//                          house does not. This is what keeps the card from
+//                          repeating itself
 //   content/               the words: houses.ts (12 areas of life) and
-//                          moon-modifiers.ts (12 Moon signs)
-//   deterministic-seed.ts  picks options from those lists with no chance involved,
-//                          so a card is the same all day
-//   assemble-card.ts       builds the card from the day's facts and the words
+//                          moon-aspects.ts (7 planets x 5 angles, "how to approach
+//                          it today"). moon-modifiers.ts (12 Moon signs, "how she
+//                          tends to feel things") is kept but no longer used by
+//                          the default card
+//   deterministic-seed.ts  picks the house's own title/statement/prompt with no
+//                          chance involved, so a card is the same all day
+//   assemble-card.ts       builds the card from the house content and the day's
+//                          Moon-to-planet angle
 //   generate.ts            all of the above in one call: chart + day in, card out
 //   types.ts               what a finished card is (including opened and done), and
 //                          what asking for one returns

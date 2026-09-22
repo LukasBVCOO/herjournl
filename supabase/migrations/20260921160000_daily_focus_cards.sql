@@ -125,3 +125,33 @@ grant update (opened, done) on public.daily_focus_cards to authenticated;
 
 -- local_date is the card day: it runs from 08:00 to 08:00 in her time zone (so at
 -- 03:00 on the 22nd she is still on the 21st's card), not from midnight.
+
+-- ---------------------------------------------------------------------------
+-- Added later the same day (applied as the migration daily_focus_cards_moon_aspect):
+-- how to approach the day, from the Moon's closest angle to one of her seven
+-- natal planets, worked out fresh every day rather than picked from a list. This
+-- is what stops the card repeating itself while the house (active_house) stays
+-- the same for two or three days running. It replaces what moon_modifier_variant
+-- was for (the natal Moon-sign line); that column is left in place, unused,
+-- rather than being dropped.
+-- ---------------------------------------------------------------------------
+alter table public.daily_focus_cards
+  add column moon_aspect_planet text,
+  add column moon_aspect_name text,
+  add column moon_aspect_orb double precision;
+
+alter table public.daily_focus_cards
+  add constraint daily_focus_cards_moon_aspect_planet_check
+    check (moon_aspect_planet in ('sun','moon','mercury','venus','mars','jupiter','saturn')),
+  add constraint daily_focus_cards_moon_aspect_name_check
+    check (moon_aspect_name in ('conjunction','sextile','square','trine','opposition')),
+  add constraint daily_focus_cards_moon_aspect_orb_check
+    check (moon_aspect_orb >= 0);
+
+comment on column public.daily_focus_cards.moon_aspect_planet is 'Which of her seven natal planets the Moon was closest to an angle with today.';
+comment on column public.daily_focus_cards.moon_aspect_name is 'The angle (conjunction, sextile, square, trine, opposition).';
+comment on column public.daily_focus_cards.moon_aspect_orb is 'How far that angle was from exact, in degrees. Smaller is closer.';
+
+-- Not marked "not null": rows saved before this migration have none. The app
+-- treats a card missing these as not usable, the same as any other incomplete
+-- saved row, rather than guessing.

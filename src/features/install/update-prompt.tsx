@@ -26,8 +26,19 @@ export default function UpdatePrompt() {
 
   async function refresh() {
     setBusy(true);
-    await runBeforeReload();
-    await updateServiceWorker(true);
+    // A hard backstop under the whole thing, not just runBeforeReload's own
+    // timeout: if the new service worker itself ever failed to take over —
+    // whatever the reason — this makes sure "Refresh" still finishes with an
+    // ordinary reload rather than sitting on "One moment..." forever.
+    const giveUp = new Promise<void>((resolve) => setTimeout(resolve, 10000));
+    await Promise.race([
+      (async () => {
+        await runBeforeReload();
+        await updateServiceWorker(true);
+      })(),
+      giveUp,
+    ]);
+    window.location.reload();
   }
 
   return (

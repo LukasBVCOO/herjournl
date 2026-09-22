@@ -61,13 +61,14 @@ self.addEventListener("push", (event) => {
     self.registration.showNotification(title, {
       body,
       icon: "/icon-192.png",
-      // Android tints and masks whatever this points to itself, so it has to
-      // already be a plain white shape on full transparency — a normal
-      // full-colour icon (icon-192.png) gets flattened into a solid blob
-      // instead of the "B", which is what made notifications look "very
-      // basic, no icon" on Android. badge-192.png is a white silhouette of
-      // the same mark on transparency, made for exactly this.
-      badge: "/badge-192.png",
+      // No `badge` on purpose: Android forces whatever it's given through a
+      // monochrome mask, tinted with the site's theme colour (index.html /
+      // the manifest) — a pale, near-white tone here, which made even a
+      // correct white silhouette (badge-192.png, still in public/, unused for
+      // now) render as an empty circle. Rather than recolour the app's theme
+      // just for this, the small icon slot is left to Android's own default
+      // instead, and `icon` above (full colour, already shows the "B"
+      // correctly) is the one place that actually carries the mark.
       // Where tapping it should open. Kept on the notification object itself
       // (not just read from the push payload again) because the payload is not
       // available any more once a notificationclick event fires.

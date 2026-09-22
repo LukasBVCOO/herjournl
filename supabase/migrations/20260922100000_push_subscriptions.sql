@@ -46,3 +46,14 @@ grant select, insert, delete on public.push_subscriptions to authenticated;
 -- same as with daily_focus_cards). Applied as a second small migration,
 -- push_subscriptions_tighten_grants.
 revoke update, truncate, references, trigger on public.push_subscriptions from authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Bug found and fixed 2026-09-22 (applied as push_subscriptions_fix_upsert):
+-- turning notifications off then on again could leave a row behind whose
+-- endpoint the browser then reused, so the app's upsert hit the ON CONFLICT
+-- DO UPDATE path — which needs UPDATE on every column being set, not just
+-- timezone. Reproduced directly, then fixed: RLS already restricts every row
+-- to its own owner, so there is no privacy reason to keep the grant narrower
+-- than the whole row.
+-- ---------------------------------------------------------------------------
+grant update on public.push_subscriptions to authenticated;

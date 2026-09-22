@@ -6,8 +6,9 @@ import { supabase } from "@/lib/supabase/client";
 import type { SubscriptionKeys } from "./push";
 
 // True once it is saved. If this device already has a row (same endpoint —
-// re-subscribing while already on, say after travelling), only its time zone
-// is refreshed: that is the one thing an existing row is ever allowed to change.
+// re-subscribing while already on, say after travelling, or if turning
+// notifications off didn't fully clear the old one first), that row is
+// refreshed rather than rejected.
 export async function saveSubscription(keys: SubscriptionKeys): Promise<boolean> {
   try {
     const { error } = await supabase

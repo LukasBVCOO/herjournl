@@ -64,22 +64,30 @@ export default function ProfileScreen() {
         </p>
       ) : (
         <div className="flex flex-col gap-4">
+          {details && <NameSection name={details.name} onSaved={reload} />}
+
+          <section className={cardClass}>
+            <p className="text-xs text-muted">Email</p>
+            <p className="mt-1 text-[17px] break-all">
+              {session.email ?? "Your account"}
+            </p>
+          </section>
+
           {details ? (
             <>
-              <NameSection name={details.name} onSaved={reload} />
-              <BirthDetailsSection
-                dateOfBirth={details.dateOfBirth}
-                birthTime={details.birthTime}
-                birthTimeKnown={details.birthTimeKnown}
-                birthPlace={details.birthPlace}
-                place={details.place}
-                onSaved={reload}
-              />
               <ChartSection
                 chart={details.chart}
                 birthTimeKnown={details.birthTimeKnown}
                 dateOfBirth={details.dateOfBirth}
                 birthTime={details.birthTime}
+                place={details.place}
+                onSaved={reload}
+              />
+              <BirthDetailsSection
+                dateOfBirth={details.dateOfBirth}
+                birthTime={details.birthTime}
+                birthTimeKnown={details.birthTimeKnown}
+                birthPlace={details.birthPlace}
                 place={details.place}
                 onSaved={reload}
               />
@@ -101,12 +109,6 @@ export default function ProfileScreen() {
             </section>
           )}
 
-          <section className={cardClass}>
-            <p className="text-xs text-muted">Email</p>
-            <p className="mt-1 text-[17px] break-all">
-              {session.email ?? "Your account"}
-            </p>
-          </section>
         </div>
       )}
     </main>

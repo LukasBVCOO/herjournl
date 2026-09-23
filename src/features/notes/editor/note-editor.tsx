@@ -168,7 +168,7 @@ export default function NoteEditor({
         >
           <BackIcon />
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-3">
           {focusCard && <FocusInfo card={focusCard} />}
           <p
             role="status"
@@ -185,11 +185,11 @@ export default function NoteEditor({
         </div>
       </header>
 
-      {/* The question she was answering, in small type above her writing. It
+      {/* The question she was answering, above her writing. It
           is not part of the note's text: it isn't editable and never becomes
           the title, the preview or a search match. */}
       {focusCard && (
-        <p className="mb-2 text-[14px] leading-snug text-muted">{focusCard.prompt}</p>
+        <p className="mt-3 mb-8 font-serif text-[24px] leading-snug font-normal text-ink-soft">{focusCard.prompt}</p>
       )}
 
       <EditorContent editor={editor} className="flex-1 cursor-text" />

@@ -12,6 +12,9 @@ export default function WelcomeScreen() {
         </p>
 
         <div className="flex flex-1 flex-col justify-center pb-10">
+          <span aria-hidden="true" className="mb-6 block text-[40px] leading-none text-accent">
+            ✦
+          </span>
           <h1 className="font-serif text-[length:clamp(2.5rem,7.5dvh,3.5rem)] leading-[1.02] font-medium text-balance [&_em]:font-normal">
             Your day, <em>aligned to you.</em>
           </h1>

@@ -1,5 +1,20 @@
-// Thin line icons, one stroke weight everywhere. Icons that belong to one
-// feature live in that feature's folder and build on Icon.
+// Local icon-pack assets use a mask so they inherit the button's text color.
+export function PackIcon({ name }: {
+  name: "plus" | "arrow-left" | "arrow-right" | "user-profile" | "menu-2" | "settings" | "trash" | "pin";
+}) {
+  return (
+    <span
+      aria-hidden="true"
+      className="inline-block h-6 w-6 shrink-0 bg-current"
+      style={{
+        mask: `url("/Iconspack/${name}.svg") center / contain no-repeat`,
+        WebkitMask: `url("/Iconspack/${name}.svg") center / contain no-repeat`,
+      }}
+    />
+  );
+}
+
+// Icons without a matching asset in the pack still use the shared SVG frame.
 export function Icon({ children }: { children: React.ReactNode }) {
   return (
     <svg
@@ -19,36 +34,21 @@ export function Icon({ children }: { children: React.ReactNode }) {
 }
 
 export function PlusIcon() {
-  return (
-    <Icon>
-      <path d="M12 5v14M5 12h14" />
-    </Icon>
-  );
+  return <PackIcon name="plus" />;
 }
 
 export function BackIcon() {
-  return (
-    <Icon>
-      <path d="M15 5l-7 7 7 7" />
-    </Icon>
-  );
+  return <PackIcon name="arrow-left" />;
 }
 
 export function ProfileIcon() {
-  return (
-    <Icon>
-      <circle cx="12" cy="8.5" r="3.5" />
-      <path d="M5 19.5c1-3.6 3.7-5.5 7-5.5s6 1.9 7 5.5" />
-    </Icon>
-  );
+  return <PackIcon name="user-profile" />;
+}
+
+export function MenuIcon() {
+  return <PackIcon name="menu-2" />;
 }
 
 export function SettingsIcon() {
-  return (
-    <Icon>
-      <path d="M4 8h9M17 8h3M4 16h3M11 16h9" />
-      <circle cx="15" cy="8" r="2" />
-      <circle cx="9" cy="16" r="2" />
-    </Icon>
-  );
+  return <PackIcon name="settings" />;
 }

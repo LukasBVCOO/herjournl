@@ -49,6 +49,9 @@ function FocusWriting({ card }: { card: DailyFocusCard }) {
         statement: card.statement,
         prompt: card.prompt,
         label: card.label,
+        // Only a full-personalisation card has a real house (see
+        // types.ts's DailyFocusCard) — never stood in for on a reduced one.
+        ...(card.activeHouse ? { house: card.activeHouse } : {}),
       },
       text,
     );

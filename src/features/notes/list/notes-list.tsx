@@ -1,21 +1,22 @@
-import type { ReactNode } from "react";
-import { Link, useNavigate } from "react-router";
-import { PlusIcon, ProfileIcon, SettingsIcon } from "@/components/icons";
-import { InstallButton } from "@/features/install";
+import { useState, type ReactNode } from "react";
+import { useNavigate } from "react-router";
+import { PlusIcon } from "@/components/icons";
 import { OnboardingShortcut } from "@/features/onboarding";
 import EmptyMessage from "../empty-message";
-import { TrashIcon } from "../note-icons";
 import { retrySync } from "../notes-store";
 import { useNotes } from "../use-notes";
 import NotesBrowser from "./notes-browser";
+import ProfileMenu from "./profile-menu";
+import HeaderSearch from "../search/header-search";
 
 // The notes list screen: search bar, pinned notes, the rest, and the new note button.
 //
 // `focusSlot` is a card shown between the search bar and her notes (or at the top
 // when she has none yet). The app puts today's focus card there. It is handed in
 // rather than imported so this feature knows nothing about it.
-export default function NotesListScreen({ focusSlot }: { focusSlot?: ReactNode }) {
+export default function NotesListScreen({ focusSlot, greetingSlot }: { focusSlot?: ReactNode; greetingSlot?: ReactNode }) {
   const navigate = useNavigate();
+  const [query, setQuery] = useState("");
   const { ready, hasSynced, syncFailed, notes } = useNotes();
 
   // A new note's id is chosen here, so the writing screen has a real web
@@ -31,35 +32,13 @@ export default function NotesListScreen({ focusSlot }: { focusSlot?: ReactNode }
   return (
     <>
       <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6 pb-32">
-        <header className="flex items-center justify-between pt-[max(1.25rem,env(safe-area-inset-top))] pb-5">
-          <h1 className="font-serif text-[28px] font-medium">Becomely</h1>
-          <nav className="-mr-3 flex items-center">
-            {/* Testing only: remove before launch. */}
-            <OnboardingShortcut />
-            <InstallButton />
-            <Link
-              to="/recently-deleted"
-              aria-label="Recently deleted"
-              className="flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
-            >
-              <TrashIcon />
-            </Link>
-            <Link
-              to="/profile"
-              aria-label="Profile"
-              className="flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
-            >
-              <ProfileIcon />
-            </Link>
-            <Link
-              to="/settings"
-              aria-label="Settings"
-              className="flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
-            >
-              <SettingsIcon />
-            </Link>
-          </nav>
+        <header className="flex items-center gap-2 pt-[max(1.25rem,env(safe-area-inset-top))] pb-5">
+          <HeaderSearch value={query} onChange={setQuery} />
+          <OnboardingShortcut />
+          <ProfileMenu />
         </header>
+
+        {!stillFinding && greetingSlot}
 
         {stillFinding ? null : notes.length === 0 && !hasSynced ? (
           <>
@@ -94,7 +73,7 @@ export default function NotesListScreen({ focusSlot }: { focusSlot?: ReactNode }
             </div>
           </>
         ) : (
-          <NotesBrowser notes={notes} belowSearch={focusSlot} />
+          <NotesBrowser notes={notes} query={query} belowSearch={focusSlot} />
         )}
       </main>
 

@@ -1,4 +1,4 @@
-import { Icon } from "@/components/icons";
+import { Icon, PackIcon } from "@/components/icons";
 
 // Icons used by the notes list and the editor menu.
 export function SearchIcon() {
@@ -21,17 +21,9 @@ export function MoreIcon() {
 }
 
 export function PinIcon() {
-  return (
-    <Icon>
-      <path d="M9 4h6l-1 6 3 3H7l3-3-1-6zM12 13v7" />
-    </Icon>
-  );
+  return <PackIcon name="pin" />;
 }
 
 export function TrashIcon() {
-  return (
-    <Icon>
-      <path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l.75 12.5h9.5L17.5 7M10 11v5M14 11v5" />
-    </Icon>
-  );
+  return <PackIcon name="trash" />;
 }

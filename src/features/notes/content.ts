@@ -112,8 +112,21 @@ export function parseFocusCard(value: unknown): FocusCardCopy | null {
   const prompt = text(v.prompt, FOCUS_LIMITS.prompt);
   // The area is optional: a copy without a usable one is still a whole copy.
   const label = text(v.label, FOCUS_LIMITS.label);
+  // Likewise the house — never invented if it isn't a real 1-12 (a reduced-
+  // mode card has no house at all, and older copies never kept one).
+  const house =
+    typeof v.house === "number" && Number.isInteger(v.house) && v.house >= 1 && v.house <= 12
+      ? v.house
+      : null;
   if (!date || !title || !statement || !prompt) return null;
-  return label ? { date, label, title, statement, prompt } : { date, title, statement, prompt };
+  return {
+    date,
+    title,
+    statement,
+    prompt,
+    ...(label ? { label } : {}),
+    ...(house ? { house } : {}),
+  };
 }
 
 export function isNoteId(value: string) {

@@ -49,6 +49,15 @@
 // about it. app.tsx puts today's card on the notes list.
 export { default as TodaysFocusCard } from "./todays-focus-card";
 export { default as FocusScreen } from "./focus-screen";
+// A house's icon and colours, by house number — used here by NoteCard so a
+// note written from a card can show which house it came from. A reduced-mode
+// card has no house at all, so MOON_FALLBACK_VISUAL is its one shared mark.
+export { default as HouseIcon } from "./house-icon";
+export {
+  HOUSE_VISUAL,
+  MOON_FALLBACK_VISUAL,
+  type HouseVisual,
+} from "./content/house-visuals";
 export { cardDayIn, deviceTimeZone, localDateIn, localInstant, referenceInstant, REFERENCE_HOUR } from "./local-day";
 export { moonHouse, readMoon, type MoonReading } from "./active-house";
 export { assembleDailyFocusCard } from "./assemble-card";

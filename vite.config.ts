@@ -21,6 +21,14 @@ export default defineConfig({
         // in the phone's database (see notes-store.ts), and nothing from
         // Supabase is cached, so nobody's writing ends up in the wrong place.
         globPatterns: ["**/*.{js,css,html,woff2,png,svg,jpg}"],
+        // The daily focus card illustrations (public/daily-cards/) are full-size
+        // artwork, one per house, well over the default 2 MiB-per-file precache
+        // limit once there's a full set of them. Precaching all of them would
+        // also mean every install downloads every house's art up front, which
+        // isn't needed: a card's illustration only matters once that house's
+        // card is actually shown, at which point the browser fetches and caches
+        // it normally. Nothing here is needed for reading past entries offline.
+        globIgnores: ["daily-cards/**"],
       },
       // A new version waits until she taps Refresh, so the app never reloads
       // itself in the middle of a sentence. (With our own service worker, this

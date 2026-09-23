@@ -26,6 +26,10 @@ export type FocusState = {
   title: string;
   label: string;
   prompt: string;
+  // The house (1-12), for colouring the card — null for a reduced-mode card
+  // (no birth time, so no house) or an older cached copy from before this
+  // was kept.
+  house: number | null;
 };
 
 function keyFor(date: string): string | null {
@@ -55,10 +59,16 @@ export function readFocusState(date: string): FocusState | null {
     if (!raw) return null;
     const v: unknown = JSON.parse(raw);
     if (typeof v !== "object" || v === null) return null;
-    const { opened, done, title, label, prompt } = v as Record<string, unknown>;
+    const { opened, done, title, label, prompt, house } = v as Record<string, unknown>;
     if (typeof opened !== "boolean" || typeof done !== "boolean") return null;
     if (!isText(title) || !isText(label) || !isText(prompt)) return null;
-    return { ...mergeFlags({ opened, done }, null), title, label, prompt };
+    return {
+      ...mergeFlags({ opened, done }, null),
+      title,
+      label,
+      prompt,
+      house: typeof house === "number" && house >= 1 && house <= 12 ? house : null,
+    };
   } catch {
     return null;
   }
@@ -75,6 +85,7 @@ export function saveFocusState(card: DailyFocusCard) {
       title: card.title,
       label: card.label,
       prompt: card.prompt,
+      house: card.activeHouse,
     };
     localStorage.setItem(key, JSON.stringify(state));
     // Only today's card is kept. Anything from an earlier day goes.

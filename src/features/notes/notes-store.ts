@@ -131,6 +131,7 @@ function buildSnapshot(): NotesSnapshot {
       updatedAt: note.updatedAt,
       // Older copies have no area, so their card's title stands in for it.
       focusLabel: note.focusCard ? (note.focusCard.label ?? note.focusCard.title) : null,
+      focusHouse: note.focusCard?.house ?? null,
     })),
     deleted: gone.map((note) => ({
       id: note.id,

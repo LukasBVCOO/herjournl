@@ -18,3 +18,4 @@
 //
 // The rest of the app uses only what is exported here.
 export { default as ProfileScreen } from "./profile-screen";
+export { default as OpeningGreeting } from "./opening-greeting";

@@ -81,5 +81,6 @@ export function searchNotes(index: IndexedNote[], query: string): NoteSummary[] 
       pinned: note.pinned,
       updatedAt: note.updatedAt,
       focusLabel: note.focusLabel,
+      focusHouse: note.focusHouse,
     }));
 }

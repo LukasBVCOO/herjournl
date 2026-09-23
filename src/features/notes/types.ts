@@ -9,6 +9,11 @@ export type NoteSummary = {
   // "Career & Direction". Its presence is what marks the note as one of those (it
   // gets a small star and this line above its title). Null for an ordinary note.
   focusLabel: string | null;
+  // The house (1-12) the card came from, for picking its icon and colours
+  // (see daily-focus's content/house-visuals.ts). Null for an ordinary note,
+  // for a reduced-mode card (no birth time, so no house), and for notes made
+  // before this was kept.
+  focusHouse: number | null;
 };
 
 // The copy of a daily focus card that a note written from it keeps: the day, the
@@ -20,6 +25,9 @@ export type FocusCardCopy = {
   // The area of life in words, like "Career & Direction". Missing on notes made
   // before it was kept.
   label?: string;
+  // The house (1-12) the card came from. Missing for a reduced-mode card (no
+  // house at all) and for notes made before this was kept.
+  house?: number;
   title: string;
   statement: string;
   prompt: string;

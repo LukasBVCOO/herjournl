@@ -47,7 +47,7 @@ export default function RevealScreen() {
     // makes a fresh chart.
     <StepFrame back="/onboarding/birthplace">
       <h1 className="font-serif text-[length:clamp(2rem,6.5dvh,2.75rem)] leading-[1.05] font-medium text-balance [&_em]:font-normal">
-        Your chart <em>starts here</em>
+        Your chart <em>starts here</em> <span className="text-accent">✦</span>
       </h1>
 
       <div className="mt-8 flex flex-col gap-4">

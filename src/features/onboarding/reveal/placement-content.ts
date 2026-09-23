@@ -13,9 +13,9 @@ import type { Sign } from "../chart/natal-chart";
 export type Placement = "sun" | "moon" | "rising";
 
 export const placementLabel: Record<Placement, string> = {
-  sun: "Your core energy",
-  moon: "Your inner world",
-  rising: "How you move through the world",
+  sun: "Your sense of self",
+  moon: "Your emotional needs",
+  rising: "How you meet the world",
 };
 
 const descriptions: Record<Placement, Record<Sign, string>> = {

@@ -56,8 +56,14 @@ export { default as HouseIcon } from "./house-icon";
 export {
   HOUSE_VISUAL,
   MOON_FALLBACK_VISUAL,
+  houseBorderColor,
   type HouseVisual,
 } from "./content/house-visuals";
+// Shared with the full birth chart page (profile/chart/), so a house's
+// meaning and a sign's practical trait line are written once and read the
+// same way everywhere they appear, not duplicated in a second content file.
+export { HOUSE_CONTENT, type HouseContent, type HouseNumber } from "./content/houses";
+export { MOON_MODIFIERS, type MoonModifier } from "./content/moon-modifiers";
 export { cardDayIn, deviceTimeZone, localDateIn, localInstant, referenceInstant, REFERENCE_HOUR } from "./local-day";
 export { moonHouse, readMoon, type MoonReading } from "./active-house";
 export { assembleDailyFocusCard } from "./assemble-card";

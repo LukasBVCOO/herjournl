@@ -3,9 +3,6 @@ import {
   calculateChart,
   calculateReducedChart,
   parseBirthTime,
-  placementDescription,
-  placementLabel,
-  placementTitle,
   type Chart,
   type Place,
   type ReducedChart,
@@ -15,14 +12,12 @@ import { updateProfile } from "./profile-api";
 
 const cardClass = "rounded-card bg-card px-5 py-4 shadow-soft";
 
-const FULL_KINDS = ["sun", "moon", "rising"] as const;
-const REDUCED_KINDS = ["sun", "moon"] as const;
-
-// Her Sun, Moon and Rising, worded the same way as the onboarding reveal — or,
-// without a real birth time, whichever of her Sun and Moon are reliably known
-// (see readSavedNatalChart), never a guessed Rising sign. If a profile was
-// saved before charts were kept, it offers to make one from the birth details
-// already saved.
+// Creates her chart (a real birth time) or works out what a reduced one can
+// tell her (see readSavedNatalChart) when it doesn't exist yet — this is a
+// save-to-database action daily-focus depends on, so it stays here. Once a
+// chart exists there's nothing left for this card to do: the actual reveal
+// (chart/full-chart-screen.tsx) is reached from "Your birth chart" in the ☰
+// menu, so this section simply isn't shown any more once she has one.
 export default function ChartSection({
   chart,
   birthTimeKnown,
@@ -41,6 +36,9 @@ export default function ChartSection({
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Nothing to do here once she has a chart — see this file's own top comment.
+  if (chart) return null;
 
   async function createChart() {
     const [year, month, day] = dateOfBirth.split("-").map(Number);
@@ -84,87 +82,30 @@ export default function ChartSection({
     setBusy(false);
   }
 
-  const showReliable =
-    chart?.kind === "reduced" ? REDUCED_KINDS.filter((kind) => chart[kind].reliable) : null;
-
   return (
     <section className={cardClass}>
       <h2 className="text-xs font-medium tracking-wider text-muted uppercase">
         Your chart
       </h2>
 
-      {chart?.kind === "full" ? (
-        <ul className="mt-3 flex flex-col gap-5">
-          {FULL_KINDS.map((kind) => {
-            const sign = chart[kind].sign;
-            const description = placementDescription(kind, sign);
-            return (
-              <li key={kind}>
-                <p className="font-serif text-[24px] leading-tight font-medium">
-                  {placementTitle(kind, sign)}
-                </p>
-                <p className="mt-0.5 text-[15px] font-medium text-ink-soft">
-                  {placementLabel[kind]}
-                </p>
-                {description && (
-                  <p className="mt-1 text-[15px] leading-snug text-ink-soft">
-                    {description}
-                  </p>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      ) : chart?.kind === "reduced" ? (
-        <div className="mt-2">
-          {showReliable && showReliable.length > 0 && (
-            <ul className="flex flex-col gap-5">
-              {showReliable.map((kind) => {
-                const sign = chart[kind].sign;
-                const description = placementDescription(kind, sign);
-                return (
-                  <li key={kind}>
-                    <p className="font-serif text-[24px] leading-tight font-medium">
-                      {placementTitle(kind, sign)}
-                    </p>
-                    <p className="mt-0.5 text-[15px] font-medium text-ink-soft">
-                      {placementLabel[kind]}
-                    </p>
-                    {description && (
-                      <p className="mt-1 text-[15px] leading-snug text-ink-soft">
-                        {description}
-                      </p>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          <p className="mt-3 text-[15px] text-ink-soft">
-            Add your birth time above to include your Rising sign and more
-            personalised daily focus.
+      <div className="mt-2">
+        <p className="text-[15px] text-ink-soft">
+          Your chart hasn&rsquo;t been created yet.
+        </p>
+        {error && (
+          <p role="alert" className="mt-3 animate-fade-in text-sm text-alert">
+            {error}
           </p>
-        </div>
-      ) : (
-        <div className="mt-2">
-          <p className="text-[15px] text-ink-soft">
-            Your chart hasn&rsquo;t been created yet.
-          </p>
-          {error && (
-            <p role="alert" className="mt-3 animate-fade-in text-sm text-alert">
-              {error}
-            </p>
-          )}
-          <button
-            type="button"
-            onClick={createChart}
-            disabled={busy}
-            className="mt-4 h-11 rounded-full bg-ink px-6 text-[15px] font-medium text-paper transition-opacity duration-200 hover:opacity-90"
-          >
-            Create my chart
-          </button>
-        </div>
-      )}
+        )}
+        <button
+          type="button"
+          onClick={createChart}
+          disabled={busy}
+          className="mt-4 h-11 rounded-full bg-ink px-6 text-[15px] font-medium text-paper transition-opacity duration-200 hover:opacity-90"
+        >
+          Create my chart
+        </button>
+      </div>
 
       {busy && (
         <ChartLoading title="Creating your chart">

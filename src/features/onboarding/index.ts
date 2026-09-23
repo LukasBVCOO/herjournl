@@ -51,8 +51,26 @@ export {
   readSavedReducedChart,
   readSavedNatalChart,
   SIGNS,
+  // The library-reading building blocks, shared with the full birth chart
+  // page (profile/chart/full-chart.ts) so both places distrust the library's
+  // output the same way, rather than checking it twice in two different ways.
+  dig,
+  sign,
+  number,
+  degreeInSign,
+  angle,
+  buildOrigin,
 } from "./chart/natal-chart";
-export type { Chart, NatalChart, PlanetReading, ReducedChart, Sign } from "./chart/natal-chart";
+export type {
+  Chart,
+  NatalChart,
+  PlanetReading,
+  ReducedChart,
+  Sign,
+  AnglePosition,
+  PlanetPosition,
+  BirthMoment,
+} from "./chart/natal-chart";
 export { checkBirthDate, MIN_AGE } from "./validation/birth-date";
 export type { BirthDateProblem } from "./validation/birth-date";
 export { parseBirthTime } from "./validation/birth-time";

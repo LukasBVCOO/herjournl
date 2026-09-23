@@ -19,3 +19,6 @@
 // The rest of the app uses only what is exported here.
 export { default as ProfileScreen } from "./profile-screen";
 export { default as OpeningGreeting } from "./opening-greeting";
+// Her complete birth chart — every planet, every house, the angles between
+// them — reached from a link on the Profile screen once she has a chart.
+export { default as FullChartScreen } from "./chart/full-chart-screen";

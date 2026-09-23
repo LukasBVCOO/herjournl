@@ -105,8 +105,9 @@ type PlanetName = "sun" | "moon" | "mercury" | "venus" | "mars" | "jupiter" | "s
 // --- Reading the library's results safely -----------------------------------
 
 // Follows a path into something of unknown shape, giving back undefined if any
-// step is missing.
-function dig(value: unknown, ...path: (string | number)[]): unknown {
+// step is missing. Exported: the full birth chart (profile/chart/full-chart.ts)
+// reads the same library result shape and checks it the same distrustful way.
+export function dig(value: unknown, ...path: (string | number)[]): unknown {
   let current = value;
   for (const key of path) {
     if (typeof current !== "object" || current === null) return undefined;
@@ -115,25 +116,25 @@ function dig(value: unknown, ...path: (string | number)[]): unknown {
   return current;
 }
 
-function sign(value: unknown): Sign {
+export function sign(value: unknown): Sign {
   if (typeof value === "string" && (SIGNS as readonly string[]).includes(value)) {
     return value as Sign;
   }
   throw new Error("Unexpected sign in the chart result");
 }
 
-function number(value: unknown): number {
+export function number(value: unknown): number {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   throw new Error("Unexpected number in the chart result");
 }
 
 // The library gives a position along the whole 360 degree circle; a sign is 30
 // of those, so this is how far into its sign the position is.
-function degreeInSign(circleDegrees: unknown) {
+export function degreeInSign(circleDegrees: unknown) {
   return Math.round((number(circleDegrees) % 30) * 100) / 100;
 }
 
-function angle(entry: unknown, ...positionPath: string[]): AnglePosition {
+export function angle(entry: unknown, ...positionPath: string[]): AnglePosition {
   return {
     sign: sign(dig(entry, "Sign", "label")),
     degree: degreeInSign(dig(entry, ...positionPath, "Ecliptic", "DecimalDegrees")),
@@ -151,8 +152,11 @@ function planet(horoscope: unknown, name: PlanetName): PlanetPosition {
 
 // --- The calculation ---------------------------------------------------------
 
-// Takes the library as an argument so it can be tried out without a browser.
-export function buildChart(library: Library, birth: BirthMoment): Chart {
+// The library's Origin for her birth moment, plus the time zone and clock
+// offset it worked out for the birthplace on that day. Exported so
+// profile/chart/full-chart.ts builds its own (differently configured)
+// Horoscope from the same Origin, rather than repeating this.
+export function buildOrigin(library: Library, birth: BirthMoment) {
   const origin = new library.Origin({
     year: birth.year,
     month: birth.month - 1, // the library counts January as 0
@@ -161,17 +165,6 @@ export function buildChart(library: Library, birth: BirthMoment): Chart {
     minute: birth.minute,
     latitude: birth.latitude,
     longitude: birth.longitude,
-  });
-
-  const horoscope = new library.Horoscope({
-    origin,
-    houseSystem: "placidus",
-    zodiac: "tropical",
-    aspectPoints: [],
-    aspectWithPoints: [],
-    aspectTypes: [],
-    customOrbs: {},
-    language: "en",
   });
 
   // The zone it found, and the offset between her clock and world time.
@@ -189,6 +182,24 @@ export function buildChart(library: Library, birth: BirthMoment): Chart {
     birth.minute,
   );
   const utcOffsetMinutes = Math.round((wallClockMs - utcMs) / 60000);
+
+  return { origin, timeZone, utcOffsetMinutes };
+}
+
+// Takes the library as an argument so it can be tried out without a browser.
+export function buildChart(library: Library, birth: BirthMoment): Chart {
+  const { origin, timeZone, utcOffsetMinutes } = buildOrigin(library, birth);
+
+  const horoscope = new library.Horoscope({
+    origin,
+    houseSystem: "placidus",
+    zodiac: "tropical",
+    aspectPoints: [],
+    aspectWithPoints: [],
+    aspectTypes: [],
+    customOrbs: {},
+    language: "en",
+  });
 
   const houses = dig(horoscope, "Houses");
   if (!Array.isArray(houses) || houses.length !== 12) {

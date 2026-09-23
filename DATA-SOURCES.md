@@ -209,7 +209,13 @@ the check below.
 | All 12 house cusps | **Placidus** house system |
 
 It can also give the outer planets, the lunar nodes, Chiron, Lilith, aspects and
-retrograde flags. We don't use those yet.
+retrograde flags. **Onboarding and the daily focus card still don't use these**
+(they only ever need the 7 inner planets, Rising and the houses) — but the full
+birth chart page reached from Profile (`src/features/profile/chart/`) does, for
+the founder who wants everything the chart has. It asks the same library for a
+second, separately-configured `Horoscope` (all 10 planets, the lunar nodes,
+Chiron, Lilith, and the major aspects between her 10 planets), calculated fresh
+each time that page opens and never saved — see that folder's `full-chart.ts`.
 
 ### Packages it brings with it
 

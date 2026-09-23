@@ -57,6 +57,18 @@ export default function ProfileMenu() {
         >
           {[
             { to: "/profile", label: "Profile", icon: <ProfileIcon /> },
+            {
+              to: "/profile/chart",
+              label: "Your birth chart",
+              icon: (
+                <span
+                  aria-hidden="true"
+                  className="flex h-6 w-6 items-center justify-center text-[17px] leading-none text-ink-soft"
+                >
+                  ✦
+                </span>
+              ),
+            },
             { to: "/settings", label: "Settings", icon: <SettingsIcon /> },
             { to: "/recently-deleted", label: "Recently deleted", icon: <TrashIcon /> },
           ].map(({ to, label, icon }) => (

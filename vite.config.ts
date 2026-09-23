@@ -28,7 +28,8 @@ export default defineConfig({
         // isn't needed: a card's illustration only matters once that house's
         // card is actually shown, at which point the browser fetches and caches
         // it normally. Nothing here is needed for reading past entries offline.
-        globIgnores: ["daily-cards/**"],
+        // Same reasoning for public/birth-chart/'s decorative art.
+        globIgnores: ["daily-cards/**", "birth-chart/**"],
       },
       // A new version waits until she taps Refresh, so the app never reloads
       // itself in the middle of a sentence. (With our own service worker, this

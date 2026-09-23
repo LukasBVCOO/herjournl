@@ -199,7 +199,32 @@ const TAB_LABEL: Record<Tab, string> = {
   deeper: "Deeper",
 };
 
-// Sits right under the hero, above the tab content itself.
+// Sits right under the hero, above the tab content itself. Two centred rows
+// (3 tabs, then 2) rather than a grid — a grid keeps every tab pinned to a
+// fixed column, so the shorter second row sits left-aligned with empty space
+// beside it; each row centring itself independently keeps both rows looking
+// balanced instead.
+function TabRow({ tabs, tab, onChange }: { tabs: readonly Tab[]; tab: Tab; onChange: (tab: Tab) => void }) {
+  return (
+    <div className="flex justify-center gap-5">
+      {tabs.map((t) => (
+        <button
+          key={t}
+          type="button"
+          role="tab"
+          aria-selected={t === tab}
+          onClick={() => onChange(t)}
+          className={`border-b-2 pb-2 text-[14px] transition-colors duration-200 ${
+            t === tab ? "border-ink font-medium text-ink" : "border-transparent text-muted hover:text-ink-soft"
+          }`}
+        >
+          {TAB_LABEL[t]}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function TabBar({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void }) {
   return (
     <div
@@ -209,22 +234,10 @@ function TabBar({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void }) {
       // design (a plain absolutely-positioned element otherwise paints above
       // normal-flow siblings regardless of DOM order), so this needs its own
       // stacking order to guarantee it renders on top rather than under it.
-      className="relative z-10 flex gap-5 border-b border-line"
+      className="relative z-10 flex flex-col gap-y-3 border-b border-line pb-3"
     >
-      {TABS.map((t) => (
-        <button
-          key={t}
-          type="button"
-          role="tab"
-          aria-selected={t === tab}
-          onClick={() => onChange(t)}
-          className={`-mb-px border-b-2 pb-2 text-[14px] transition-colors duration-200 ${
-            t === tab ? "border-ink font-medium text-ink" : "border-transparent text-muted hover:text-ink-soft"
-          }`}
-        >
-          {TAB_LABEL[t]}
-        </button>
-      ))}
+      <TabRow tabs={TABS.slice(0, 3)} tab={tab} onChange={onChange} />
+      <TabRow tabs={TABS.slice(3)} tab={tab} onChange={onChange} />
     </div>
   );
 }
@@ -660,7 +673,7 @@ const hero = (
         paints above normal-flow content by default, regardless of DOM order. */}
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute top-1/2 -right-2 h-[115px] w-[173px] -translate-y-1/2"
+      className="pointer-events-none absolute top-1/2 -right-10 h-[115px] w-[173px] -translate-y-1/2"
     >
       <img
         src="/birth-chart/header-decorator-birth-chart.png"

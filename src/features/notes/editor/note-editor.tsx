@@ -185,13 +185,13 @@ export default function NoteEditor({
         </div>
       </header>
 
-      {/* The question she was answering, above her writing. It
-          is not part of the note's text: it isn't editable and never becomes
-          the title, the preview or a search match. */}
-      {focusCard && (
-        <p className="mt-3 mb-8 font-serif text-[24px] leading-snug font-normal text-ink-soft">{focusCard.prompt}</p>
-      )}
-
+      {/* For a focus-card note, the card's title leads the note (so it's
+          what titleFromLines picks up as the note's title, same as any
+          note's first line always has) and the question she was asked sits
+          right below it, above her answer — see content.ts's
+          docFromCardAnswers, which builds the note this way from the start.
+          Both are ordinary, editable lines of the note now, not a separate
+          static readout above it. */}
       <EditorContent editor={editor} className="flex-1 cursor-text" />
 
       {editor && <FormatBar editor={editor} />}

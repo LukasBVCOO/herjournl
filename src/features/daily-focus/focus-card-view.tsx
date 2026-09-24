@@ -71,17 +71,16 @@ export default function FocusCardView({ card }: { card: DailyFocusCard }) {
           {card.statement}
         </p>
 
-        <div
-          className={`${fadeIn} mt-6 border-t border-line pt-5`}
-          style={{ animationDelay: "560ms" }}
-        >
-          <p className="text-xs font-medium tracking-wider text-muted uppercase">
-            Today&rsquo;s question
-          </p>
-          <p className="mt-2 font-serif text-[26px] leading-snug font-medium">
-            {card.prompt}
-          </p>
-        </div>
+        {/* Material to consider before she answers anything below — null
+            only on a card saved before this existed (see types.ts). */}
+        {card.reflection && (
+          <div
+            className={`${fadeIn} mt-6 border-t border-line pt-5`}
+            style={{ animationDelay: "560ms" }}
+          >
+            <p className="text-[15px] leading-relaxed text-ink-soft">{card.reflection}</p>
+          </div>
+        )}
       </div>
     </section>
   );

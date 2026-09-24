@@ -83,9 +83,31 @@ export default function FocusInfo({ card }: { card: FocusCardCopy }) {
         <p className="mt-4 whitespace-pre-line text-[17px] leading-relaxed text-ink-soft">
           {card.statement}
         </p>
-        <p className="mt-5 border-t border-line pt-5 font-serif text-[24px] leading-snug">
-          {card.prompt}
-        </p>
+        {/* Missing only on a note made before the reflection existed. */}
+        {card.reflection && (
+          <p className="mt-5 border-t border-line pt-5 text-[15px] leading-relaxed text-ink-soft">
+            {card.reflection}
+          </p>
+        )}
+        <div className="mt-5 space-y-4 border-t border-line pt-5">
+          <div>
+            <p className="text-xs font-medium tracking-wider text-muted uppercase">My intention</p>
+            <p className="mt-1 font-serif text-[22px] leading-snug">{card.prompt}</p>
+          </div>
+          {/* Missing only on a note made before these existed. */}
+          {card.beliefPrompt && (
+            <div>
+              <p className="text-xs font-medium tracking-wider text-muted uppercase">A belief to explore</p>
+              <p className="mt-1 font-serif text-[22px] leading-snug">{card.beliefPrompt}</p>
+            </div>
+          )}
+          {card.nextStepPrompt && (
+            <div>
+              <p className="text-xs font-medium tracking-wider text-muted uppercase">My next step</p>
+              <p className="mt-1 font-serif text-[22px] leading-snug">{card.nextStepPrompt}</p>
+            </div>
+          )}
+        </div>
         <button
           type="button"
           onClick={() => setOpen(false)}

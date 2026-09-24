@@ -49,14 +49,29 @@ export type DailyFocusCard = {
   // The day's statement, usually followed by a line on how to approach it
   // today (see moonAspectPlanet below — a reduced card may not have one).
   statement: string;
-  // The question she writes about.
+  // A short paragraph of real material to consider, shown before the three
+  // prompts below. Null only on a card saved before this existed — every
+  // card made from here on always has one.
+  reflection: string | null;
+  // "My intention" — the one required prompt. Still named `prompt`, from
+  // when it was the only one; see beliefPrompt/nextStepPrompt for the two
+  // added alongside it.
   prompt: string;
+  // "A belief to explore" — shown and encouraged, never required to answer.
+  // Null only on a card saved before this existed.
+  beliefPrompt: string | null;
+  // "My next step" — shown and encouraged, never required to answer. Null
+  // only on a card saved before this existed.
+  nextStepPrompt: string | null;
 
   // Which option was picked from the house's (or Moon sign's) own lists
   // (counting from 0), so a card can be recreated exactly.
   titleVariant: number;
   statementVariant: number;
+  reflectionVariant: number | null;
   promptVariant: number;
+  beliefPromptVariant: number | null;
+  nextStepPromptVariant: number | null;
 
   // How to approach it today: the Moon's closest angle to one of her seven natal
   // planets. Not a pick from a list — worked out fresh from where the Moon

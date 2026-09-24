@@ -19,13 +19,34 @@ import { HOUSE_CONTENT, type HouseContent, type HouseNumber } from "./content/ho
 import { moonAspectLine } from "./content/moon-aspects";
 import { MOON_SIGN_THEMES, type MoonSignTheme } from "./content/moon-sign-themes";
 import { closestMoonAspect, closestReliableMoonAspect } from "./moon-aspect";
-import { pickIndex, seedFor } from "./deterministic-seed";
+import { pickIndex, pickIndexAvoiding, seedFor } from "./deterministic-seed";
 import type { DailyFocusCard } from "./types";
+
+// Which indices she's already seen for this same area of life (or Moon
+// sign), most-recent-first, so the reflection and the three prompts don't
+// repeat while the area stays the same for a few days running — see
+// variant-history.ts for where this comes from and deterministic-seed.ts's
+// pickIndexAvoiding for how it's used. Empty arrays when there's no history
+// yet, which reads exactly the same as "nothing to avoid".
+export type RecentVariants = {
+  reflection: readonly number[];
+  intentionPrompt: readonly number[];
+  beliefPrompt: readonly number[];
+  nextStepPrompt: readonly number[];
+};
+
+export const NO_RECENT_VARIANTS: RecentVariants = {
+  reflection: [],
+  intentionPrompt: [],
+  beliefPrompt: [],
+  nextStepPrompt: [],
+};
 
 export type CardInput = {
   userId: string;
   moon: MoonReading;
   chart: Chart;
+  recent?: RecentVariants;
 };
 
 export type CardContent = {
@@ -41,7 +62,7 @@ export function assembleDailyFocusCard(
   input: CardInput,
   content: CardContent = DEFAULT_CONTENT,
 ): DailyFocusCard {
-  const { userId, moon, chart } = input;
+  const { userId, moon, chart, recent = NO_RECENT_VARIANTS } = input;
   if (typeof userId !== "string" || userId.length === 0) throw new Error("A card needs a person");
   const house = moon.activeHouse;
   if (!Number.isInteger(house) || house < 1 || house > 12) throw new Error("Not a house from 1 to 12");
@@ -57,11 +78,37 @@ export function assembleDailyFocusCard(
 
   const titleVariant = pickIndex(seed, "title", Math.max(area.titles.length, 1));
   const statementVariant = pickIndex(seed, "statement", Math.max(area.statements.length, 1));
-  const promptVariant = pickIndex(seed, "prompt", Math.max(area.prompts.length, 1));
+  const reflectionVariant = pickIndexAvoiding(
+    seed,
+    "reflection",
+    Math.max(area.reflections.length, 1),
+    recent.reflection,
+  );
+  const promptVariant = pickIndexAvoiding(
+    seed,
+    "prompt",
+    Math.max(area.intentionPrompts.length, 1),
+    recent.intentionPrompt,
+  );
+  const beliefPromptVariant = pickIndexAvoiding(
+    seed,
+    "beliefPrompt",
+    Math.max(area.beliefPrompts.length, 1),
+    recent.beliefPrompt,
+  );
+  const nextStepPromptVariant = pickIndexAvoiding(
+    seed,
+    "nextStepPrompt",
+    Math.max(area.nextStepPrompts.length, 1),
+    recent.nextStepPrompt,
+  );
 
   const title = area.titles[titleVariant] ?? area.label;
   const baseStatement = area.statements[statementVariant] ?? `${area.label} is in focus today.`;
-  const prompt = area.prompts[promptVariant] ?? FALLBACK_PROMPT;
+  const reflection = area.reflections[reflectionVariant] ?? null;
+  const prompt = area.intentionPrompts[promptVariant] ?? FALLBACK_PROMPT;
+  const beliefPrompt = area.beliefPrompts[beliefPromptVariant] ?? null;
+  const nextStepPrompt = area.nextStepPrompts[nextStepPromptVariant] ?? null;
 
   // How to approach it today: not a pick from a list, but always worked out
   // fresh from where the Moon actually is against her chart, so it changes even
@@ -81,10 +128,16 @@ export function assembleDailyFocusCard(
     label: area.label,
     title,
     statement: `${baseStatement} ${approachLine}`,
+    reflection,
     prompt,
+    beliefPrompt,
+    nextStepPrompt,
     titleVariant,
     statementVariant,
+    reflectionVariant,
     promptVariant,
+    beliefPromptVariant,
+    nextStepPromptVariant,
     moonAspectPlanet: moonAspect.planet,
     moonAspectName: moonAspect.aspect,
     moonAspectOrb: moonAspect.orb,
@@ -103,6 +156,7 @@ export type ReducedCardInput = {
   userId: string;
   moon: MoonSignReading;
   chart: ReducedChart;
+  recent?: RecentVariants;
 };
 
 export type ReducedCardContent = {
@@ -115,7 +169,7 @@ export function assembleReducedDailyFocusCard(
   input: ReducedCardInput,
   content: ReducedCardContent = DEFAULT_REDUCED_CONTENT,
 ): DailyFocusCard {
-  const { userId, moon, chart } = input;
+  const { userId, moon, chart, recent = NO_RECENT_VARIANTS } = input;
   if (typeof userId !== "string" || userId.length === 0) throw new Error("A card needs a person");
 
   const theme = content.themes[moon.moonSign];
@@ -128,11 +182,37 @@ export function assembleReducedDailyFocusCard(
 
   const titleVariant = pickIndex(seed, "title", Math.max(theme.titles.length, 1));
   const statementVariant = pickIndex(seed, "statement", Math.max(theme.statements.length, 1));
-  const promptVariant = pickIndex(seed, "prompt", Math.max(theme.prompts.length, 1));
+  const reflectionVariant = pickIndexAvoiding(
+    seed,
+    "reflection",
+    Math.max(theme.reflections.length, 1),
+    recent.reflection,
+  );
+  const promptVariant = pickIndexAvoiding(
+    seed,
+    "prompt",
+    Math.max(theme.intentionPrompts.length, 1),
+    recent.intentionPrompt,
+  );
+  const beliefPromptVariant = pickIndexAvoiding(
+    seed,
+    "beliefPrompt",
+    Math.max(theme.beliefPrompts.length, 1),
+    recent.beliefPrompt,
+  );
+  const nextStepPromptVariant = pickIndexAvoiding(
+    seed,
+    "nextStepPrompt",
+    Math.max(theme.nextStepPrompts.length, 1),
+    recent.nextStepPrompt,
+  );
 
   const title = theme.titles[titleVariant] ?? theme.label;
   const baseStatement = theme.statements[statementVariant] ?? `${theme.label} is in focus today.`;
-  const prompt = theme.prompts[promptVariant] ?? FALLBACK_PROMPT;
+  const reflection = theme.reflections[reflectionVariant] ?? null;
+  const prompt = theme.intentionPrompts[promptVariant] ?? FALLBACK_PROMPT;
+  const beliefPrompt = theme.beliefPrompts[beliefPromptVariant] ?? null;
+  const nextStepPrompt = theme.nextStepPrompts[nextStepPromptVariant] ?? null;
 
   // Not every day has one — a reduced chart may have no planet both reliably
   // known and close enough — so the statement has to read as complete alone.
@@ -153,10 +233,16 @@ export function assembleReducedDailyFocusCard(
     label: theme.label,
     title,
     statement,
+    reflection,
     prompt,
+    beliefPrompt,
+    nextStepPrompt,
     titleVariant,
     statementVariant,
+    reflectionVariant,
     promptVariant,
+    beliefPromptVariant,
+    nextStepPromptVariant,
     moonAspectPlanet: aspect?.planet ?? null,
     moonAspectName: aspect?.aspect ?? null,
     moonAspectOrb: aspect?.orb ?? null,

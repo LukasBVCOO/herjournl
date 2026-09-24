@@ -15,7 +15,7 @@
 import { registerBeforeReload } from "@/lib/before-reload";
 import { getSession, registerSignOutHandler, subscribe as subscribeToSession } from "@/lib/session";
 import {
-  docFromText,
+  docFromCardAnswers,
   isEmptyDoc,
   noteToLines,
   parseFocusCard,
@@ -246,13 +246,16 @@ observeEdits(applyEdit);
 // shows in her list at once and goes to the database in the background, like any
 // other; it keeps a copy of the card so the question can sit above her writing.
 // Returns the note's id, or null when there was nothing written.
-export function startNoteFromFocus(card: FocusCardCopy, text: string): string | null {
+export function startNoteFromFocus(
+  card: FocusCardCopy,
+  answers: { intention: string; belief: string; nextStep: string },
+): string | null {
   const cleaned = parseFocusCard(card);
-  if (!cleaned || text.trim() === "") return null;
+  if (!cleaned || answers.intention.trim() === "") return null;
 
   const id = crypto.randomUUID();
   attachFocusCard(id, cleaned);
-  queueSave(id, docFromText(text.trim()));
+  queueSave(id, docFromCardAnswers(cleaned, answers));
   // Straight away rather than after a second: there is no more typing to wait for.
   void flushNote(id);
   return id;

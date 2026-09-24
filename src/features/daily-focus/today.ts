@@ -16,6 +16,7 @@ import { generateDailyFocus } from "./generate";
 import { getOrCreateDailyFocusCard } from "./get-or-create";
 import { cardDayIn, deviceTimeZone } from "./local-day";
 import type { DailyFocusCard, DailyFocusResult } from "./types";
+import { recentVariants } from "./variant-history";
 
 type Ready = Extract<DailyFocusResult, { status: "ready" }>;
 
@@ -78,7 +79,7 @@ export async function getTodaysFocus(): Promise<DailyFocusResult> {
     findChart,
     saveCard,
     generate: (userId, chart, localDate, timeZone) =>
-      generateDailyFocus(userId, chart, localDate, timeZone),
+      generateDailyFocus(userId, chart, localDate, timeZone, undefined, recentVariants),
   });
   // Only a real card is remembered. Every other answer is asked again next time,
   // so fixing what was missing (or coming back online) just works.

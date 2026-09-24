@@ -32,7 +32,7 @@ const REDUCED_LABEL_BY_CATEGORY: Record<string, string> = Object.fromEntries(
 // active_house, natal_moon_sign and the three moon_aspect_* columns are only
 // ever null on a reduced card (personalisation_level "reduced") — see types.ts.
 export const CARD_COLUMNS =
-  "local_date, timezone, reference_instant, moon_longitude, personalisation_level, active_house, natal_moon_sign, focus_category, focus_title, focus_statement, journal_prompt, title_variant, statement_variant, prompt_variant, moon_aspect_planet, moon_aspect_name, moon_aspect_orb, opened, done";
+  "local_date, timezone, reference_instant, moon_longitude, personalisation_level, active_house, natal_moon_sign, focus_category, focus_title, focus_statement, reflection, journal_prompt, belief_prompt, next_step_prompt, title_variant, statement_variant, reflection_variant, prompt_variant, belief_prompt_variant, next_step_prompt_variant, moon_aspect_planet, moon_aspect_name, moon_aspect_orb, opened, done";
 
 export type CardRow = {
   local_date: string;
@@ -45,10 +45,16 @@ export type CardRow = {
   focus_category: string;
   focus_title: string;
   focus_statement: string;
+  reflection: string | null;
   journal_prompt: string;
+  belief_prompt: string | null;
+  next_step_prompt: string | null;
   title_variant: number;
   statement_variant: number;
+  reflection_variant: number | null;
   prompt_variant: number;
+  belief_prompt_variant: number | null;
+  next_step_prompt_variant: number | null;
   moon_aspect_planet: AspectPlanet | null;
   moon_aspect_name: AspectName | null;
   moon_aspect_orb: number | null;
@@ -68,10 +74,16 @@ export function rowFromCard(card: DailyFocusCard): CardRow {
     focus_category: card.category,
     focus_title: card.title,
     focus_statement: card.statement,
+    reflection: card.reflection,
     journal_prompt: card.prompt,
+    belief_prompt: card.beliefPrompt,
+    next_step_prompt: card.nextStepPrompt,
     title_variant: card.titleVariant,
     statement_variant: card.statementVariant,
+    reflection_variant: card.reflectionVariant,
     prompt_variant: card.promptVariant,
+    belief_prompt_variant: card.beliefPromptVariant,
+    next_step_prompt_variant: card.nextStepPromptVariant,
     moon_aspect_planet: card.moonAspectPlanet,
     moon_aspect_name: card.moonAspectName,
     moon_aspect_orb: card.moonAspectOrb,
@@ -107,6 +119,18 @@ export function cardFromRow(row: unknown): DailyFocusCard | null {
   const title = text(r.focus_title);
   const statement = text(r.focus_statement);
   const prompt = text(r.journal_prompt);
+  // New with the reflection/belief/next-step upgrade: null on any card saved
+  // before it, real text on every card since. Kept distinct from "corrupt"
+  // the same way the moon-aspect columns are below — a genuinely absent
+  // pre-upgrade value is fine, a present-but-mismatched one is not.
+  const reflection = r.reflection === null ? null : (text(r.reflection) ?? undefined);
+  const beliefPrompt = r.belief_prompt === null ? null : (text(r.belief_prompt) ?? undefined);
+  const nextStepPrompt = r.next_step_prompt === null ? null : (text(r.next_step_prompt) ?? undefined);
+  const reflectionVariant = r.reflection_variant === null ? null : (whole(r.reflection_variant, 0) ?? undefined);
+  const beliefPromptVariant =
+    r.belief_prompt_variant === null ? null : (whole(r.belief_prompt_variant, 0) ?? undefined);
+  const nextStepPromptVariant =
+    r.next_step_prompt_variant === null ? null : (whole(r.next_step_prompt_variant, 0) ?? undefined);
   const moonLongitude =
     typeof r.moon_longitude === "number" &&
     Number.isFinite(r.moon_longitude) &&
@@ -149,6 +173,17 @@ export function cardFromRow(row: unknown): DailyFocusCard | null {
   const aspectComplete = moonAspectPlanet && moonAspectName && typeof moonAspectOrb === "number";
   if (aspectPresent && !aspectComplete) return null;
   if (personalisationLevel === "full" && !aspectComplete) return null;
+
+  // Same all-or-nothing rule as the moon aspect, for each of the three
+  // pieces this card gained alongside "My intention": text and its variant
+  // are both there, or both genuinely absent (a card saved before this
+  // existed) — never a mismatch.
+  if (reflection === undefined || reflectionVariant === undefined) return null;
+  if ((reflection === null) !== (reflectionVariant === null)) return null;
+  if (beliefPrompt === undefined || beliefPromptVariant === undefined) return null;
+  if ((beliefPrompt === null) !== (beliefPromptVariant === null)) return null;
+  if (nextStepPrompt === undefined || nextStepPromptVariant === undefined) return null;
+  if ((nextStepPrompt === null) !== (nextStepPromptVariant === null)) return null;
 
   // The two flags must be real yes/no answers, and done means opened too.
   if (typeof r.opened !== "boolean" || typeof r.done !== "boolean") return null;
@@ -193,10 +228,16 @@ export function cardFromRow(row: unknown): DailyFocusCard | null {
         : (REDUCED_LABEL_BY_CATEGORY[category] ?? title),
     title,
     statement,
+    reflection,
     prompt,
+    beliefPrompt,
+    nextStepPrompt,
     titleVariant,
     statementVariant,
+    reflectionVariant,
     promptVariant,
+    beliefPromptVariant,
+    nextStepPromptVariant,
     moonAspectPlanet: aspectComplete ? moonAspectPlanet : null,
     moonAspectName: aspectComplete ? moonAspectName : null,
     moonAspectOrb: aspectComplete ? (moonAspectOrb as number) : null,

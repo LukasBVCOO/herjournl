@@ -17,8 +17,9 @@ export type NoteSummary = {
 };
 
 // The copy of a daily focus card that a note written from it keeps: the day, the
-// card's title and statement, and the question that was asked. It is separate
-// from the note's writing, so it is never part of the title, preview or search.
+// card's title and statement, the reflection and the three prompts she was
+// asked. It is separate from the note's writing, so it is never part of the
+// title, preview or search.
 export type FocusCardCopy = {
   // The card's day, like "2026-09-21".
   date: string;
@@ -30,7 +31,16 @@ export type FocusCardCopy = {
   house?: number;
   title: string;
   statement: string;
+  // Material to consider, shown before the three prompts below. Missing on
+  // notes made before this existed.
+  reflection?: string;
+  // "My intention" — the one required prompt, and the only one every note
+  // from a card has always had.
   prompt: string;
+  // "A belief to explore" / "My next step" — shown and encouraged, never
+  // required to answer. Missing on notes made before these existed.
+  beliefPrompt?: string;
+  nextStepPrompt?: string;
 };
 
 // A note in the list, with all of its writing so the search box at the top can

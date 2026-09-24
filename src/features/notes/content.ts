@@ -81,22 +81,52 @@ export function isEmptyDoc(doc: unknown) {
   return titleFromLines(noteToLines(doc)) === "";
 }
 
-// Plain writing as a note: one paragraph per line, blank lines kept.
-export function docFromText(text: string): NoteNode {
-  return {
-    type: "doc",
-    content: text
-      .replace(/\r\n?/g, "\n")
-      .split("\n")
-      .map((line) =>
-        line === ""
-          ? { type: "paragraph" }
-          : { type: "paragraph", content: [{ type: "text", text: line }] },
-      ),
-  };
+function paragraphsFor(text: string): NoteNode[] {
+  return text
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map((line) =>
+      line === "" ? { type: "paragraph" } : { type: "paragraph", content: [{ type: "text", text: line }] },
+    );
 }
 
-const FOCUS_LIMITS = { label: 100, title: 200, statement: 800, prompt: 400 } as const;
+// Her three answers to a card, as one note shaped like the card itself:
+// the card's own title leads (so it becomes the note's title the same way
+// any note's first line already does — see titleFromLines — no separate
+// title field needed), then each question she was actually asked sits
+// directly above her answer to it, in order. "My intention" always has an
+// answer (it's the one required field), so its question and her answer
+// always appear; "belief" and "nextStep" only appear, each under its own
+// real question, if she actually wrote something for it.
+export function docFromCardAnswers(
+  card: FocusCardCopy,
+  answers: { intention: string; belief: string; nextStep: string },
+): NoteNode {
+  const content: NoteNode[] = [
+    { type: "paragraph", content: [{ type: "text", text: card.title }] },
+    { type: "heading", content: [{ type: "text", text: card.prompt }] },
+    ...paragraphsFor(answers.intention.trim()),
+  ];
+  if (card.beliefPrompt && answers.belief.trim() !== "") {
+    content.push({ type: "heading", content: [{ type: "text", text: card.beliefPrompt }] });
+    content.push(...paragraphsFor(answers.belief.trim()));
+  }
+  if (card.nextStepPrompt && answers.nextStep.trim() !== "") {
+    content.push({ type: "heading", content: [{ type: "text", text: card.nextStepPrompt }] });
+    content.push(...paragraphsFor(answers.nextStep.trim()));
+  }
+  return { type: "doc", content };
+}
+
+const FOCUS_LIMITS = {
+  label: 100,
+  title: 200,
+  statement: 800,
+  reflection: 800,
+  prompt: 400,
+  beliefPrompt: 400,
+  nextStepPrompt: 400,
+} as const;
 
 // A card copy read back from the phone or the database, or null if it isn't a
 // whole one. Anything odd is treated as "this note has no card".
@@ -118,6 +148,11 @@ export function parseFocusCard(value: unknown): FocusCardCopy | null {
     typeof v.house === "number" && Number.isInteger(v.house) && v.house >= 1 && v.house <= 12
       ? v.house
       : null;
+  // The reflection and the two optional prompts: missing on any copy saved
+  // before they existed, which is fine — a copy without them is still whole.
+  const reflection = text(v.reflection, FOCUS_LIMITS.reflection);
+  const beliefPrompt = text(v.beliefPrompt, FOCUS_LIMITS.beliefPrompt);
+  const nextStepPrompt = text(v.nextStepPrompt, FOCUS_LIMITS.nextStepPrompt);
   if (!date || !title || !statement || !prompt) return null;
   return {
     date,
@@ -126,6 +161,9 @@ export function parseFocusCard(value: unknown): FocusCardCopy | null {
     prompt,
     ...(label ? { label } : {}),
     ...(house ? { house } : {}),
+    ...(reflection ? { reflection } : {}),
+    ...(beliefPrompt ? { beliefPrompt } : {}),
+    ...(nextStepPrompt ? { nextStepPrompt } : {}),
   };
 }
 

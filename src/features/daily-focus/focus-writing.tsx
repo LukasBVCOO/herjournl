@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { startNoteFromFocus } from "@/features/notes";
-import { clearDraft, readDraft, saveDraft } from "./focus-draft";
+import { clearDraft, readDraft, saveDraft, type FocusDraftField } from "./focus-draft";
 import { recordDone } from "./today";
 import type { DailyFocusCard } from "./types";
 
-// Under the revealed card: where she writes her answer, and "Done", which turns
-// it into a note and opens it. A card that has been answered (it says so in the
-// database) offers no writing box: the day has one answer, and it is a note now.
+// Under the revealed card: where she writes her answers, and "Done", which
+// turns them into a note and opens it. A card that has been answered (it
+// says so in the database) offers no writing box: the day has one answer,
+// and it is a note now.
 export default function FocusResponse({ card }: { card: DailyFocusCard }) {
   return card.done ? (
     <section className="mt-6 animate-fade-in text-center">
@@ -29,19 +30,63 @@ export default function FocusResponse({ card }: { card: DailyFocusCard }) {
   );
 }
 
+// One prompt and its own answer box. "required" only changes the label — the
+// Done button below is what actually enforces it.
+function FocusField({
+  label,
+  required,
+  prompt,
+  value,
+  onChange,
+  autoFocus,
+}: {
+  label: string;
+  required?: boolean;
+  prompt: string;
+  value: string;
+  onChange: (value: string) => void;
+  autoFocus?: boolean;
+}) {
+  return (
+    <div>
+      <p className="text-xs font-medium tracking-wider text-muted uppercase">
+        {label}
+        {!required && <span className="normal-case text-muted/70"> · optional</span>}
+      </p>
+      <p className="mt-2 mb-3 font-serif text-[20px] leading-snug font-medium">{prompt}</p>
+      <textarea
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="Start writing…"
+        aria-label={label}
+        autoFocus={autoFocus}
+        rows={4}
+        className="field-sizing-content block min-h-32 w-full resize-none rounded-card bg-surface px-5 py-4 text-[17px] leading-relaxed shadow-soft placeholder:text-muted"
+      />
+    </div>
+  );
+}
+
 function FocusWriting({ card }: { card: DailyFocusCard }) {
   const navigate = useNavigate();
+  // A card saved before the belief/next-step prompts existed only has "My
+  // intention" — the same single-question flow it's always had, rather than
+  // showing two prompts with nothing to ask.
+  const structured = card.beliefPrompt !== null && card.nextStepPrompt !== null;
+
   // Picks up where she left off if she came back to this card.
-  const [text, setText] = useState(() => readDraft(card.localDate));
+  const [intention, setIntention] = useState(() => readDraft(card.localDate, "intention"));
+  const [belief, setBelief] = useState(() => readDraft(card.localDate, "belief"));
+  const [nextStep, setNextStep] = useState(() => readDraft(card.localDate, "nextStep"));
   const [finished, setFinished] = useState(false);
 
-  function change(value: string) {
-    setText(value);
-    saveDraft(card.localDate, value);
+  function change(field: FocusDraftField, setter: (value: string) => void, value: string) {
+    setter(value);
+    saveDraft(card.localDate, field, value);
   }
 
   function done() {
-    if (finished || text.trim() === "") return;
+    if (finished || intention.trim() === "") return;
     const id = startNoteFromFocus(
       {
         date: card.localDate,
@@ -52,8 +97,11 @@ function FocusWriting({ card }: { card: DailyFocusCard }) {
         // Only a full-personalisation card has a real house (see
         // types.ts's DailyFocusCard) — never stood in for on a reduced one.
         ...(card.activeHouse ? { house: card.activeHouse } : {}),
+        ...(card.reflection ? { reflection: card.reflection } : {}),
+        ...(card.beliefPrompt ? { beliefPrompt: card.beliefPrompt } : {}),
+        ...(card.nextStepPrompt ? { nextStepPrompt: card.nextStepPrompt } : {}),
       },
-      text,
+      { intention, belief, nextStep },
     );
     if (!id) return;
     setFinished(true);
@@ -66,20 +114,36 @@ function FocusWriting({ card }: { card: DailyFocusCard }) {
   }
 
   return (
-    <section className="mt-4">
-      <textarea
-        value={text}
-        onChange={(event) => change(event.target.value)}
-        placeholder="Start writing…"
-        aria-label="Your answer"
-        rows={6}
-        className="field-sizing-content block min-h-44 w-full resize-none rounded-card bg-surface px-5 py-4 text-[17px] leading-relaxed shadow-soft placeholder:text-muted"
+    <section className="mt-4 space-y-6">
+      <FocusField
+        label="My intention"
+        required
+        prompt={card.prompt}
+        value={intention}
+        onChange={(value) => change("intention", setIntention, value)}
+        autoFocus
       />
+      {structured && (
+        <>
+          <FocusField
+            label="A belief to explore"
+            prompt={card.beliefPrompt as string}
+            value={belief}
+            onChange={(value) => change("belief", setBelief, value)}
+          />
+          <FocusField
+            label="My next step"
+            prompt={card.nextStepPrompt as string}
+            value={nextStep}
+            onChange={(value) => change("nextStep", setNextStep, value)}
+          />
+        </>
+      )}
       <button
         type="button"
         onClick={done}
-        disabled={finished || text.trim() === ""}
-        className="mt-4 flex h-12 w-full items-center justify-center rounded-full bg-accent font-medium text-ink shadow-soft transition-opacity duration-200 hover:opacity-90 active:opacity-80 disabled:opacity-40"
+        disabled={finished || intention.trim() === ""}
+        className="flex h-12 w-full items-center justify-center rounded-full bg-accent font-medium text-ink shadow-soft transition-opacity duration-200 hover:opacity-90 active:opacity-80 disabled:opacity-40"
       >
         Done
       </button>

@@ -40,3 +40,32 @@ export function pickIndex(seed: string, part: string, count: number): number {
   hash ^= hash >>> 16;
   return (hash >>> 0) % count;
 }
+
+// The same deterministic choice as pickIndex, but steered away from indices
+// she's seen most recently — this is what stops a reflection or prompt from
+// repeating itself while the house stays the same for a few days running,
+// which the plain hash alone doesn't guard against with a pool this small.
+//
+// `recent` is her past picks for this exact field, most-recent-first (older
+// entries and duplicates are fine — only the first count - 1 distinct values
+// are ever used). Capping the avoid set at count - 1, rather than avoiding
+// everything she's seen in some fixed window, is what makes this a true
+// no-repeat-until-the-whole-pool-has-been-shown guarantee: there is always at
+// least one un-avoided index to land on, so this never degrades back to a
+// plain, repeatable pick the way avoiding an unbounded recent window would
+// once she'd cycled through every variant at least once.
+export function pickIndexAvoiding(seed: string, part: string, count: number, recent: readonly number[]): number {
+  const start = pickIndex(seed, part, count);
+  if (count <= 1) return start;
+  const avoid = new Set<number>();
+  for (const value of recent) {
+    if (avoid.size >= count - 1) break;
+    avoid.add(value);
+  }
+  for (let step = 0; step < count; step++) {
+    const candidate = (start + step) % count;
+    if (!avoid.has(candidate)) return candidate;
+  }
+  // Unreachable while avoid.size < count, kept only as a safety net.
+  return start;
+}

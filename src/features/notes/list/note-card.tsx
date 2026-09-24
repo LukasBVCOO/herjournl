@@ -56,11 +56,11 @@ export default function NoteCard({ note }: { note: NoteSummary }) {
     return (
       <Link
         to={`/notes/${note.id}`}
-        className="flex items-start gap-3 rounded-card bg-card px-4 py-3.5 shadow-soft transition-opacity duration-200 active:opacity-80"
+        className="flex items-center gap-3 rounded-card bg-card px-4 py-3.5 shadow-soft transition-opacity duration-200 active:opacity-80"
       >
         <div
           aria-hidden="true"
-          className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px]"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px]"
           style={{ backgroundColor: MOON_FALLBACK_VISUAL.background }}
         >
           <span

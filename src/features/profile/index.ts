@@ -7,6 +7,12 @@
 //                             chart and replaces the old one
 //   chart-section.tsx         her Sun, Moon and Rising
 //   confirm-sheet.tsx         the "are you sure?" sheet
+//   change-email-section.tsx    her email, and changing it (a confirmation link
+//                                first — see account-api.ts)
+//   change-password-section.tsx her password, and changing it (her current one
+//                                first, to prove it's really her)
+//   account-api.ts            talking to Supabase Auth directly for the two
+//                             above — not the profiles table (profile-api.ts)
 //   profile-api.ts            reading and changing her profile in the database
 //   use-profile.ts            loading it for the screen
 //   format.ts                 how a saved date and time are shown

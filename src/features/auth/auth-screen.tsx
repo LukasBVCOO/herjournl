@@ -173,10 +173,17 @@ export default function AuthScreen({ mode }: Props) {
                 <label htmlFor="password" className={labelClass}>
                   Password
                 </label>
-                {isSignup && (
+                {isSignup ? (
                   <span id="password-hint" className="text-xs text-ink-soft">
                     At least 8 characters
                   </span>
+                ) : (
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs font-medium text-ink-soft underline underline-offset-4 transition-colors duration-200 hover:text-ink"
+                  >
+                    Forgot password?
+                  </Link>
                 )}
               </div>
               <div className="relative">

@@ -3,8 +3,10 @@ import {
   AuthCallbackScreen,
   AuthScreen,
   CheckEmailScreen,
+  ForgotPasswordScreen,
   RequireNoSession,
   RequireSession,
+  ResetPasswordScreen,
   SettingsScreen,
 } from "@/features/auth";
 import { FocusScreen, ReflectCard, ReflectScreen, TodaysFocusCard } from "@/features/daily-focus";
@@ -135,6 +137,19 @@ export default function App() {
         <Route
           path="/auth/confirmed"
           element={<AuthCallbackScreen next="/onboarding" />}
+        />
+        {/* "Forgot password?" on the login screen. Not gated either way — see
+            forgot-password-screen.tsx. */}
+        <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
+        {/* The link in the password-reset email comes back here. */}
+        <Route path="/auth/reset-password" element={<ResetPasswordScreen />} />
+        {/* The link in an email-CHANGE confirmation (account/account-api.ts,
+            profile) comes back here — a different landing page from sign-up's,
+            since she's already set up and should return to her profile, not
+            onboarding. */}
+        <Route
+          path="/auth/email-changed"
+          element={<AuthCallbackScreen next="/profile" />}
         />
         {/* The "/*" lets the onboarding feature choose its own screens. */}
         <Route

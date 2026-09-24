@@ -3,6 +3,8 @@ import { Link } from "react-router";
 import { BackIcon } from "@/components/icons";
 import { getSession, subscribe } from "@/lib/session";
 import BirthDetailsSection from "./birth-details-section";
+import ChangeEmailSection from "./change-email-section";
+import ChangePasswordSection from "./change-password-section";
 import ChartSection from "./chart-section";
 import NameSection from "./name-section";
 import { useProfile } from "./use-profile";
@@ -66,12 +68,8 @@ export default function ProfileScreen() {
         <div className="flex flex-col gap-4">
           {details && <NameSection name={details.name} onSaved={reload} />}
 
-          <section className={cardClass}>
-            <p className="text-xs text-muted">Email</p>
-            <p className="mt-1 text-[17px] break-all">
-              {session.email ?? "Your account"}
-            </p>
-          </section>
+          <ChangeEmailSection email={session.email ?? ""} />
+          <ChangePasswordSection />
 
           {details ? (
             <>

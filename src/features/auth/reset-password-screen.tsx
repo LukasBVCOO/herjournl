@@ -33,7 +33,13 @@ export default function ResetPasswordScreen() {
     setError(undefined);
     const { error: updateError } = await supabase.auth.updateUser({ password });
     setPending(false);
-    if (updateError) return setError("We couldn't update your password. Please try again.");
+    if (updateError) {
+      return setError(
+        updateError.code === "same_password"
+          ? "That's your current password. Choose a different one."
+          : "We couldn't update your password. Please try again.",
+      );
+    }
     setDone(true);
   }
 

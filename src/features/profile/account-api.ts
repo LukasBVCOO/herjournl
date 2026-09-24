@@ -53,13 +53,19 @@ export async function changePassword(currentPassword: string, newPassword: strin
   if (newPassword.length < PASSWORD_MIN_LENGTH) {
     return `Your new password needs to be at least ${PASSWORD_MIN_LENGTH} characters.`;
   }
+  // Caught early rather than waiting on Supabase's own "same_password" check
+  // below, since we already have both passwords in hand to compare.
+  if (newPassword === currentPassword) return "That's your current password. Choose a different one.";
 
   try {
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
     if (signInError) return "Your current password wasn't right.";
 
     const { error } = await supabase.auth.updateUser({ password: newPassword });
-    return error ? "We couldn't update your password. Please try again." : null;
+    if (!error) return null;
+    return error.code === "same_password"
+      ? "That's your current password. Choose a different one."
+      : "We couldn't update your password. Please try again.";
   } catch {
     return "We couldn't update your password. Please try again.";
   }

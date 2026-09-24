@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { BackIcon } from "@/components/icons";
+import BottomNav from "@/components/bottom-nav";
 import { posthog } from "@/lib/posthog";
 import { HOUSE_VISUAL, houseBorderColor, type HouseNumber } from "@/features/daily-focus";
 import {
@@ -647,20 +648,26 @@ function FullChart({ dateOfBirth, birthTime, place }: {
   return <FullChartBody chart={state.chart} />;
 }
 
-const header = (
-  <header className="grid grid-cols-[44px_1fr_44px] items-center pt-[max(1.25rem,env(safe-area-inset-top))] pb-5">
-    {/* Reached from the ☰ menu on the notes list, not from /profile any
-        more, so "back" goes there too. */}
-    <Link
-      to="/"
-      aria-label="Back to your notes"
-      className="-ml-3 flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
-    >
-      <BackIcon />
-    </Link>
-    <h1 className="text-center font-serif text-[20px] font-medium">Your birth chart</h1>
-  </header>
-);
+// A function, not a plain const, so it can call useNavigate() itself: the
+// last page she was actually on, not a fixed destination — she can reach
+// this screen from more than one place now that the bottom nav (BottomNav)
+// is on every main screen.
+function Header() {
+  const navigate = useNavigate();
+  return (
+    <header className="grid grid-cols-[44px_1fr_44px] items-center pt-[max(1.25rem,env(safe-area-inset-top))] pb-5">
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
+        aria-label="Back"
+        className="-ml-3 flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
+      >
+        <BackIcon />
+      </button>
+      <h1 className="text-center font-serif text-[20px] font-medium">Your birth chart</h1>
+    </header>
+  );
+}
 
 // A little framing before the tabs, so the page opens with a warm line
 // rather than straight into data. No illustration yet — the founder's mockup
@@ -696,8 +703,9 @@ const hero = (
 );
 
 // Her complete birth chart: every planet, every house, and the angles between
-// them — reached from Profile. Loads her profile itself, the same way
-// ProfileScreen does, rather than needing the route to fetch it first.
+// them — reached from Profile, or directly from the bottom nav (BottomNav)
+// on any main screen. Loads her profile itself, the same way ProfileScreen
+// does, rather than needing the route to fetch it first.
 // Calculated fresh from her saved birth details each time this opens, never
 // saved (see full-chart.ts's top comment), so it costs nothing extra and
 // every existing account gets it immediately.
@@ -707,6 +715,26 @@ export default function FullChartScreen() {
   useEffect(() => {
     posthog?.capture("birth_chart_viewed");
   }, []);
+
+  // Her profile hasn't come back yet, so there's nothing here to show a
+  // chart from — no header, no hero, just this, rather than a page that
+  // looks ready (the back arrow, the title, the illustration) sitting above
+  // an empty gap while it's still in flight.
+  if (state.status === "loading") {
+    return (
+      <>
+        <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6 pb-32">
+          <p
+            className="mt-24 animate-breathe text-center font-serif text-[26px] text-ink-soft motion-reduce:animate-none"
+            role="status"
+          >
+            Aligning your chart <span className="text-accent">✦</span>
+          </p>
+        </main>
+        <BottomNav />
+      </>
+    );
+  }
 
   const profile = state.status === "ready" ? state.profile : null;
   const details =
@@ -725,11 +753,12 @@ export default function FullChartScreen() {
       : null;
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6 pb-12">
-      {header}
+    <>
+    <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6 pb-32">
+      <Header />
       {hero}
 
-      {state.status === "loading" ? null : state.status === "error" ? (
+      {state.status === "error" ? (
         <p className="mt-16 text-center text-[15px] text-ink-soft">
           We couldn&rsquo;t load your chart.
         </p>
@@ -760,5 +789,7 @@ export default function FullChartScreen() {
         </section>
       )}
     </main>
+    <BottomNav />
+    </>
   );
 }

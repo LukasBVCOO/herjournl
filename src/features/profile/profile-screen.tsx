@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { BackIcon } from "@/components/icons";
+import BottomNav from "@/components/bottom-nav";
 import { getSession, subscribe } from "@/lib/session";
 import BirthDetailsSection from "./birth-details-section";
 import ChangeEmailSection from "./change-email-section";
@@ -14,6 +15,7 @@ const cardClass = "rounded-card bg-card px-5 py-4 shadow-soft";
 // Where she manages her details: her name, when and where she was born, and the
 // chart that comes from them.
 export default function ProfileScreen() {
+  const navigate = useNavigate();
   const session = useSyncExternalStore(subscribe, getSession, getSession);
   const { state, reload, retry } = useProfile();
 
@@ -41,15 +43,20 @@ export default function ProfileScreen() {
       : null;
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6 pb-12">
+    <>
+    <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6 pb-32">
       <header className="flex items-center gap-1 pt-[max(1.25rem,env(safe-area-inset-top))] pb-5">
-        <Link
-          to="/"
-          aria-label="Back to notes"
+        {/* The last page she was actually on, not a fixed destination — she
+            can reach this screen from more than one place now that the
+            bottom nav (BottomNav) is on every main screen. */}
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          aria-label="Back"
           className="-ml-3 flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
         >
           <BackIcon />
-        </Link>
+        </button>
         <h1 className="font-serif text-[28px] font-medium">Profile</h1>
       </header>
 
@@ -110,5 +117,7 @@ export default function ProfileScreen() {
         </div>
       )}
     </main>
+    <BottomNav />
+    </>
   );
 }

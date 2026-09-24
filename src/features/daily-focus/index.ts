@@ -44,6 +44,18 @@
 //                          it into a note (see startNoteFromFocus in notes)
 //   focus-draft.ts         keeps what she has typed so far on her phone, so leaving
 //                          halfway loses nothing
+//   daily-plan-card.tsx     a third moment, between the morning card and the
+//                          evening reflection: once the morning card is
+//                          done, a plain "Add a task" prompt offers a blank
+//                          checklist for the rest of her day. Stays until
+//                          she makes one (see startDailyPlanNote in notes)
+//                          or, failing that, until it's evening — never
+//                          alongside the reflect card
+//   waiting-for-reflection-card.tsx a fourth moment, filling the rest of the
+//                          day: once she has today's Daily Plan note (so the
+//                          card above has nothing left to prompt), this
+//                          quiet placeholder fills the gap until 8pm rather
+//                          than leaving it blank
 //   content/evening-reflection.ts, reflect-slot.ts, reflect-card.tsx,
 //   reflect-screen.tsx     a second, smaller moment in the day: once the
 //                          morning card is done, a "Time to reflect" card
@@ -52,14 +64,21 @@
 //                          and her answer to the END of today's own
 //                          daily-focus note (see appendToNote in notes)
 //                          rather than starting a new one.
+//   done-for-today-card.tsx the last moment of the day: once the evening
+//                          reflection is done, a quiet closing note takes
+//                          the reflect card's place. Nothing to tap.
 //
 // This feature uses the notes feature (to make the note, and to append the
 // evening reflection to it); notes knows nothing about it. app.tsx puts
-// today's card and the reflect card on the notes list.
+// today's card, the Daily Plan card, the waiting card, the reflect card and
+// the closing card on the notes list.
 export { default as TodaysFocusCard } from "./todays-focus-card";
 export { default as FocusScreen } from "./focus-screen";
+export { default as DailyPlanCard } from "./daily-plan-card";
+export { default as WaitingForReflectionCard } from "./waiting-for-reflection-card";
 export { default as ReflectCard } from "./reflect-card";
 export { default as ReflectScreen } from "./reflect-screen";
+export { default as DoneForTodayCard } from "./done-for-today-card";
 // A house's icon and colours, by house number — used here by NoteCard so a
 // note written from a card can show which house it came from. A reduced-mode
 // card has no house at all, so MOON_FALLBACK_VISUAL is its one shared mark.

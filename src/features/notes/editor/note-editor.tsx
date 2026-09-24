@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
@@ -130,11 +130,13 @@ export default function NoteEditor({
   useEffect(() => () => clearTimeout(noticeTimer.current), []);
 
   // Going back doesn't wait for the save. The queue finishes it, and retries
-  // if the connection is bad, after this screen has gone.
-  function goBack(event: React.MouseEvent) {
-    event.preventDefault();
+  // if the connection is bad, after this screen has gone. Real history back,
+  // not a fixed "/" — a note or Checklist started from the bottom nav
+  // (BottomNav) while on Profile, the birth chart or Settings should return
+  // there, not always to the notes list.
+  function goBack() {
     void flushNote(id);
-    navigate("/");
+    navigate(-1);
   }
 
   async function togglePin() {
@@ -164,14 +166,14 @@ export default function NoteEditor({
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-6">
       <header className="sticky top-0 z-10 flex items-center justify-between bg-paper pt-[max(1.25rem,env(safe-area-inset-top))] pb-3">
-        <Link
-          to="/"
+        <button
+          type="button"
           onClick={goBack}
-          aria-label="Back to notes"
+          aria-label="Back"
           className="-ml-3 flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
         >
           <BackIcon />
-        </Link>
+        </button>
         <div className="flex min-w-0 items-center gap-3">
           {focusCard && <FocusInfo card={focusCard} />}
           <p

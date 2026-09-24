@@ -9,7 +9,15 @@ import {
   ResetPasswordScreen,
   SettingsScreen,
 } from "@/features/auth";
-import { FocusScreen, ReflectCard, ReflectScreen, TodaysFocusCard } from "@/features/daily-focus";
+import {
+  DailyPlanCard,
+  DoneForTodayCard,
+  FocusScreen,
+  ReflectCard,
+  ReflectScreen,
+  TodaysFocusCard,
+  WaitingForReflectionCard,
+} from "@/features/daily-focus";
 import { InstalledSync, InstallOfferPrompt, UpdatePrompt } from "@/features/install";
 import { NotificationOfferPrompt } from "@/features/notifications";
 import {
@@ -31,16 +39,22 @@ export default function App() {
           path="/"
           element={
             <RequireSession>
-              {/* Today's focus card, then the evening reflection once it's
-                  done (the two are never both shown — see reflect-slot.ts),
-                  then the install nudge if one is due, all between the
-                  search bar and her notes. */}
+              {/* Today's focus card, then the Daily Plan prompt once it's
+                  done, then a quiet "come back at 8pm" placeholder once she
+                  has today's Daily Plan note, then the evening reflection
+                  once it's due (the morning and reflect cards are never
+                  both shown — see reflect-slot.ts), then a quiet closing
+                  note once the reflection is done, then the install nudge
+                  if one is due, all between the search bar and her notes. */}
               <NotesListScreen
                 greetingSlot={<OpeningGreeting />}
                 focusSlot={
                   <>
                     <TodaysFocusCard />
+                    <DailyPlanCard />
+                    <WaitingForReflectionCard />
                     <ReflectCard />
+                    <DoneForTodayCard />
                     <InstallOfferPrompt />
                   </>
                 }

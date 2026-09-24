@@ -28,13 +28,8 @@
 //                 which questions are answered, and saving it all to her profile
 //   layout/       the back arrow and progress bar shared by the questions
 //
-//   testing/      TESTING ONLY: the sparkle icon in the notes list header. Remove
-//                 this folder, and its export below, before launch.
-//
 // The rest of the app uses only what is exported here.
 export { default as OnboardingFlow } from "./onboarding-flow";
-// Testing only: remove before launch.
-export { default as OnboardingShortcut } from "./testing/onboarding-shortcut";
 
 // Shared with the Profile screen. Changing her birth details there is entered,
 // checked, searched and recalculated exactly the way onboarding does it, because

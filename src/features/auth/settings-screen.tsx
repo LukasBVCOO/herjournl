@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { BackIcon } from "@/components/icons";
+import BottomNav from "@/components/bottom-nav";
 import { NotificationsSection } from "@/features/notifications";
 import { signOut } from "@/lib/session";
 import { useSession } from "./use-session";
@@ -26,15 +27,20 @@ export default function SettingsScreen() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6">
+    <>
+    <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6 pb-32">
       <header className="flex items-center gap-1 pt-[max(1.25rem,env(safe-area-inset-top))] pb-5">
-        <Link
-          to="/"
-          aria-label="Back to notes"
+        {/* The last page she was actually on, not a fixed destination — she
+            can reach this screen from more than one place now that the
+            bottom nav (BottomNav) is on every main screen. */}
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          aria-label="Back"
           className="-ml-3 flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
         >
           <BackIcon />
-        </Link>
+        </button>
         <h1 className="font-serif text-[28px] font-medium">Settings</h1>
       </header>
 
@@ -64,5 +70,7 @@ export default function SettingsScreen() {
         Log out
       </button>
     </main>
+    <BottomNav />
+    </>
   );
 }

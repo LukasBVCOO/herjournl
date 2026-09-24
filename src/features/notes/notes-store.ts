@@ -17,7 +17,9 @@ import { posthog } from "@/lib/posthog";
 import { getSession, registerSignOutHandler, subscribe as subscribeToSession } from "@/lib/session";
 import {
   appendNodes,
+  dailyPlanTitle,
   docFromCardAnswers,
+  docFromDailyPlan,
   isEmptyDoc,
   noteToLines,
   paragraphsFor,
@@ -264,6 +266,42 @@ export function startNoteFromFocus(
   // Straight away rather than after a second: there is no more typing to wait for.
   void flushNote(id);
   return id;
+}
+
+// The id of a note whose title is exactly `title` (once trimmed), ignoring
+// case, or null if she has none — used by startDailyPlanNote so tapping
+// "Add a task" twice the same day reopens what's already there instead of
+// making a second copy. Reads what's already loaded on this phone, the same
+// way findTodaysFocusNoteId does.
+function findNoteByTitle(title: string): string | null {
+  const target = title.trim().toLowerCase();
+  for (const note of notes.values()) {
+    if (!note.deletedAt && note.title.trim().toLowerCase() === target) return note.id;
+  }
+  return null;
+}
+
+// Starts today's Daily Plan note — its title, and a checklist of blank tasks
+// ready for her to fill in — or hands back the one she already started today,
+// for `cardDay` ("YYYY-MM-DD", daily-focus's currentCardDay). The note shows
+// in her list at once and goes to the database in the background, like any
+// other. Returns the note's id.
+export function startDailyPlanNote(cardDay: string): string {
+  const existing = findNoteByTitle(dailyPlanTitle(cardDay));
+  if (existing) return existing;
+
+  const id = crypto.randomUUID();
+  queueSave(id, docFromDailyPlan(cardDay));
+  void flushNote(id);
+  return id;
+}
+
+// Whether she has already started today's Daily Plan note — used by the
+// Daily Plan card so it disappears the moment she has one, rather than
+// waiting for the evening reflection. Reads what's already loaded on this
+// phone, so it updates the instant startDailyPlanNote adds one.
+export function hasDailyPlanNote(cardDay: string): boolean {
+  return findNoteByTitle(dailyPlanTitle(cardDay)) !== null;
 }
 
 // The id of today's daily-focus note — the one startNoteFromFocus made this

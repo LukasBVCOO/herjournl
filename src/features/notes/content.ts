@@ -9,6 +9,8 @@ export type NoteNode = {
   type?: string;
   text?: string;
   content?: NoteNode[];
+  // Only ever used by a taskItem (its checked state) — see docFromDailyPlan.
+  attrs?: Record<string, unknown>;
 };
 
 const TITLE_MAX_LENGTH = 120;
@@ -175,6 +177,77 @@ export function parseFocusCard(value: unknown): FocusCardCopy | null {
     ...(reflection ? { reflection } : {}),
     ...(beliefPrompt ? { beliefPrompt } : {}),
     ...(nextStepPrompt ? { nextStepPrompt } : {}),
+  };
+}
+
+const DAILY_PLAN_TASKS = 5;
+const CHECKLIST_TASKS = 5;
+const DAILY_PLAN_TITLE_PREFIX = "Daily Plan for ";
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+// A blank, unchecked taskList of `count` items — shared by docFromDailyPlan
+// and docFromChecklist below, the two note kinds with a preset checklist.
+function blankTaskList(count: number): NoteNode {
+  return {
+    type: "taskList",
+    content: Array.from({ length: count }, () => ({
+      type: "taskItem",
+      attrs: { checked: false },
+      content: [{ type: "paragraph" }],
+    })),
+  };
+}
+
+// "Daily Plan for 24 September" — cardDay is "YYYY-MM-DD" (daily-focus's
+// currentCardDay), read directly rather than through Date, so there is no
+// time zone to get wrong.
+export function dailyPlanTitle(cardDay: string): string {
+  const [, month, day] = cardDay.split("-").map(Number);
+  return `${DAILY_PLAN_TITLE_PREFIX}${day} ${MONTH_NAMES[month - 1]}`;
+}
+
+// Whether a note's title is one of these — used by the notes list to give it
+// the same icon-row layout as a note written from a daily focus card (see
+// list/note-card.tsx), just with a checklist mark instead of a house.
+export function isDailyPlanTitle(title: string): boolean {
+  return title.startsWith(DAILY_PLAN_TITLE_PREFIX);
+}
+
+// A Daily Plan note or a Checklist note — the notes list's "Plans" filter
+// (see list/notes-browser.tsx) groups both under one tab, since both are a
+// preset checklist rather than free writing.
+export function isPlanTitle(title: string): boolean {
+  return isDailyPlanTitle(title) || title === "Checklist";
+}
+
+// A ready-to-fill Daily Plan note: its title, a line introducing the list,
+// then a checklist of blank tasks for her to fill in and tick off — see
+// startDailyPlanNote in notes-store.ts.
+export function docFromDailyPlan(cardDay: string): NoteNode {
+  return {
+    type: "doc",
+    content: [
+      { type: "paragraph", content: [{ type: "text", text: dailyPlanTitle(cardDay) }] },
+      { type: "paragraph", content: [{ type: "text", text: "Today I would like to:" }] },
+      blankTaskList(DAILY_PLAN_TASKS),
+    ],
+  };
+}
+
+// A plain, ready-to-fill Checklist note: just "Checklist" as its title, then
+// a preset list of blank tasks. Unlike docFromDailyPlan this isn't tied to
+// any particular day, and nothing dedupes it — see startChecklistNote in
+// notes-store.ts, which makes a fresh one every time.
+export function docFromChecklist(): NoteNode {
+  return {
+    type: "doc",
+    content: [
+      { type: "paragraph", content: [{ type: "text", text: "Checklist" }] },
+      blankTaskList(CHECKLIST_TASKS),
+    ],
   };
 }
 

@@ -9,7 +9,12 @@ import { useNotesReady } from "../use-notes";
 import NoteEditor from "./note-editor";
 
 type Loaded =
-  | { kind: "new" }
+  // content is set for a note that starts with preset writing already in it
+  // (like a Checklist note — see notes-list.tsx's newChecklist), otherwise
+  // null. Either way, nothing is saved until she actually changes something:
+  // this is only ever shown, never written to the phone or the database on
+  // its own.
+  | { kind: "new"; content: unknown }
   | {
       kind: "existing";
       content: unknown;
@@ -25,19 +30,21 @@ export default function EditNoteScreen() {
   const { id = "" } = useParams();
   const location = useLocation();
   const ready = useNotesReady();
-  // The notes list sets this when it has just made the note up. It is only a
-  // hint for a note the phone has never seen: it stays on the page through a
-  // refresh, so it must never be trusted over what is actually saved.
-  const startedHere = Boolean(
-    (location.state as { isNew?: boolean } | null)?.isNew,
-  );
+  // The notes list sets these when it has just made the note up — isNew, and
+  // for a Checklist note, the preset writing to start it with. Both are only
+  // a hint for a note the phone has never seen: they stay on the page
+  // through a refresh, so they must never be trusted over what is actually
+  // saved.
+  const state = location.state as { isNew?: boolean; preset?: unknown } | null;
+  const startedHere = Boolean(state?.isNew);
+  const preset = state?.preset ?? null;
 
   // Waits for the phone's copy of her notes (a blink), then opens from it.
   if (!ready) return <div className="flex-1" />;
 
   // Keyed on the note, so opening a different one starts completely fresh and
   // nothing from the last note can linger on screen.
-  return <OneNote key={id} id={id} startedHere={startedHere} />;
+  return <OneNote key={id} id={id} startedHere={startedHere} preset={preset} />;
 }
 
 // What the phone already knows about this note, if anything.
@@ -54,13 +61,21 @@ function fromPhone(id: string): Loaded | null {
       };
 }
 
-function OneNote({ id, startedHere }: { id: string; startedHere: boolean }) {
+function OneNote({
+  id,
+  startedHere,
+  preset,
+}: {
+  id: string;
+  startedHere: boolean;
+  preset: unknown;
+}) {
   const valid = isNoteId(id);
   // Read once when the screen opens. Later changes (her own typing) must not
   // reload the editor underneath her.
   const [loaded, setLoaded] = useState<Loaded | null>(() => {
     if (!valid) return { kind: "missing" };
-    return fromPhone(id) ?? (startedHere ? { kind: "new" } : null);
+    return fromPhone(id) ?? (startedHere ? { kind: "new", content: preset } : null);
   });
 
   // The phone doesn't have this note and she didn't just make it: it may be one
@@ -108,7 +123,7 @@ function OneNote({ id, startedHere }: { id: string; startedHere: boolean }) {
     <NoteEditor
       noteId={id}
       exists={loaded.kind === "existing"}
-      initialContent={loaded.kind === "existing" ? loaded.content : null}
+      initialContent={loaded.kind === "existing" ? loaded.content : loaded.kind === "new" ? loaded.content : null}
       initialPinned={loaded.kind === "existing" ? loaded.pinned : false}
       focusCard={loaded.kind === "existing" ? loaded.focusCard : null}
     />

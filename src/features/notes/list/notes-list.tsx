@@ -1,15 +1,15 @@
 import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { PlusIcon } from "@/components/icons";
-import { OnboardingShortcut } from "@/features/onboarding";
+import BottomNav from "@/components/bottom-nav";
 import EmptyMessage from "../empty-message";
 import { retrySync } from "../notes-store";
 import { useNotes } from "../use-notes";
 import NotesBrowser from "./notes-browser";
-import ProfileMenu from "./profile-menu";
 import HeaderSearch from "../search/header-search";
 
-// The notes list screen: search bar, pinned notes, the rest, and the new note button.
+// The notes list screen: search bar, pinned notes, the rest, and the bottom
+// nav (BottomNav — the same one on every main screen, see its own comment).
 //
 // `focusSlot` is a card shown between the search bar and her notes (or at the top
 // when she has none yet). The app puts today's focus card there. It is handed in
@@ -34,8 +34,6 @@ export default function NotesListScreen({ focusSlot, greetingSlot }: { focusSlot
       <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6 pb-32">
         <header className="flex items-center gap-2 pt-[max(1.25rem,env(safe-area-inset-top))] pb-5">
           <HeaderSearch value={query} onChange={setQuery} />
-          <OnboardingShortcut />
-          <ProfileMenu />
         </header>
 
         {!stillFinding && greetingSlot}
@@ -77,18 +75,7 @@ export default function NotesListScreen({ focusSlot, greetingSlot }: { focusSlot
         )}
       </main>
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-10">
-        <div className="mx-auto flex w-full max-w-md justify-end px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-          <button
-            type="button"
-            onClick={newNote}
-            aria-label="New note"
-            className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent text-ink shadow-soft transition-opacity duration-200 hover:opacity-90 active:opacity-80"
-          >
-            <PlusIcon />
-          </button>
-        </div>
-      </div>
+      <BottomNav />
     </>
   );
 }

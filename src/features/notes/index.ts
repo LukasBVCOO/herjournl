@@ -23,9 +23,24 @@ export { default as RecentlyDeletedScreen } from "./deleted/recently-deleted-scr
 
 // For the daily focus feature: start a note from what she wrote under a card,
 // and (for the evening reflection) find that same note again later in the day
-// and add to the end of it rather than starting a second one.
-export { appendToNote, findTodaysFocusNoteId, startNoteFromFocus } from "./notes-store";
+// and add to the end of it rather than starting a second one. Also: start
+// today's Daily Plan note (its own checklist card, shown once the morning
+// card is done — see daily-focus's daily-plan-card.tsx). Its distinct title
+// (content.ts's dailyPlanTitle) is also what list/note-card.tsx checks for
+// (isDailyPlanTitle) to give it its own icon-row layout, entirely inside
+// this feature — daily-focus never needs to know.
+export {
+  appendToNote,
+  findTodaysFocusNoteId,
+  hasDailyPlanNote,
+  startDailyPlanNote,
+  startNoteFromFocus,
+} from "./notes-store";
 export type { FocusCardCopy } from "./types";
+// Also for the daily focus feature: the preset content of a Checklist note,
+// used by its own "Explore more" sheet (done-for-today-card.tsx) the same
+// way the "+" menu's own Checklist action does (list/notes-list.tsx).
+export { docFromChecklist } from "./content";
 
 // For the install feature: whether she has written any daily-focus note yet
 // (the moment that makes the first install offer due).

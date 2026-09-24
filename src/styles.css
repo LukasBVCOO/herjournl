@@ -95,6 +95,14 @@
   }
 }
 
+/* This is a phone app: nothing should ever scroll sideways. Guards against
+   any element (an intentionally bleeding image, say) pushing a touch past
+   the edge and opening up a side scroll, on any screen, not just this one. */
+html,
+body {
+  overflow-x: hidden;
+}
+
 body {
   background: var(--color-paper);
   color: var(--color-ink);

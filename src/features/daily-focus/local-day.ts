@@ -60,6 +60,14 @@ export function localDateIn(at: Date, timeZone: string): string {
   return `${p.year}-${pad(p.month)}-${pad(p.day)}`;
 }
 
+// The hour of the day (0-23), in a time zone, that a moment falls on — used
+// to gate the evening reflection to the evening (see reflect-slot.ts) the
+// same way REFERENCE_HOUR gates the morning card to the morning.
+export function localHourIn(at: Date, timeZone: string): number {
+  if (Number.isNaN(at.getTime())) throw new Error("Not a real moment in time");
+  return partsIn(at.getTime(), timeZone).hour;
+}
+
 // Which day's card she is on right now. The daily focus does not run from
 // midnight to midnight but from 08:00 to 08:00: at 03:00 on the 22nd she is still
 // on the 21st's card, and the 22nd's card begins at 08:00. So this is the calendar

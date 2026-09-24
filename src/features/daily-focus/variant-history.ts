@@ -47,3 +47,20 @@ export async function recentVariants(area: { house: number } | { category: strin
     return NO_RECENT_VARIANTS;
   }
 }
+
+// The same idea as recentVariants, but for the evening reflection's own flat
+// pool (content/evening-reflection.ts) — not grouped by house or Moon sign,
+// so this just looks at her last few cards regardless of area.
+export async function recentEveningReflectionVariants(): Promise<readonly number[]> {
+  try {
+    const { data, error } = await supabase
+      .from("daily_focus_cards")
+      .select("evening_reflection_prompt_variant")
+      .order("local_date", { ascending: false })
+      .limit(LOOKBACK);
+    if (error || !data) return [];
+    return toOrderedList(data.map((row) => row.evening_reflection_prompt_variant));
+  } catch {
+    return [];
+  }
+}

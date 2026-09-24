@@ -32,7 +32,7 @@ const REDUCED_LABEL_BY_CATEGORY: Record<string, string> = Object.fromEntries(
 // active_house, natal_moon_sign and the three moon_aspect_* columns are only
 // ever null on a reduced card (personalisation_level "reduced") — see types.ts.
 export const CARD_COLUMNS =
-  "local_date, timezone, reference_instant, moon_longitude, personalisation_level, active_house, natal_moon_sign, focus_category, focus_title, focus_statement, reflection, journal_prompt, belief_prompt, next_step_prompt, title_variant, statement_variant, reflection_variant, prompt_variant, belief_prompt_variant, next_step_prompt_variant, moon_aspect_planet, moon_aspect_name, moon_aspect_orb, opened, done";
+  "local_date, timezone, reference_instant, moon_longitude, personalisation_level, active_house, natal_moon_sign, focus_category, focus_title, focus_statement, reflection, journal_prompt, belief_prompt, next_step_prompt, evening_reflection_prompt, title_variant, statement_variant, reflection_variant, prompt_variant, belief_prompt_variant, next_step_prompt_variant, evening_reflection_prompt_variant, moon_aspect_planet, moon_aspect_name, moon_aspect_orb, opened, done, evening_reflection_opened, evening_reflection_done";
 
 export type CardRow = {
   local_date: string;
@@ -49,17 +49,21 @@ export type CardRow = {
   journal_prompt: string;
   belief_prompt: string | null;
   next_step_prompt: string | null;
+  evening_reflection_prompt: string | null;
   title_variant: number;
   statement_variant: number;
   reflection_variant: number | null;
   prompt_variant: number;
   belief_prompt_variant: number | null;
   next_step_prompt_variant: number | null;
+  evening_reflection_prompt_variant: number | null;
   moon_aspect_planet: AspectPlanet | null;
   moon_aspect_name: AspectName | null;
   moon_aspect_orb: number | null;
   opened: boolean;
   done: boolean;
+  evening_reflection_opened: boolean;
+  evening_reflection_done: boolean;
 };
 
 export function rowFromCard(card: DailyFocusCard): CardRow {
@@ -78,17 +82,21 @@ export function rowFromCard(card: DailyFocusCard): CardRow {
     journal_prompt: card.prompt,
     belief_prompt: card.beliefPrompt,
     next_step_prompt: card.nextStepPrompt,
+    evening_reflection_prompt: card.eveningReflectionPrompt,
     title_variant: card.titleVariant,
     statement_variant: card.statementVariant,
     reflection_variant: card.reflectionVariant,
     prompt_variant: card.promptVariant,
     belief_prompt_variant: card.beliefPromptVariant,
     next_step_prompt_variant: card.nextStepPromptVariant,
+    evening_reflection_prompt_variant: card.eveningReflectionPromptVariant,
     moon_aspect_planet: card.moonAspectPlanet,
     moon_aspect_name: card.moonAspectName,
     moon_aspect_orb: card.moonAspectOrb,
     opened: card.opened,
     done: card.done,
+    evening_reflection_opened: card.eveningReflectionOpened,
+    evening_reflection_done: card.eveningReflectionDone,
   };
 }
 
@@ -126,11 +134,17 @@ export function cardFromRow(row: unknown): DailyFocusCard | null {
   const reflection = r.reflection === null ? null : (text(r.reflection) ?? undefined);
   const beliefPrompt = r.belief_prompt === null ? null : (text(r.belief_prompt) ?? undefined);
   const nextStepPrompt = r.next_step_prompt === null ? null : (text(r.next_step_prompt) ?? undefined);
+  const eveningReflectionPrompt =
+    r.evening_reflection_prompt === null ? null : (text(r.evening_reflection_prompt) ?? undefined);
   const reflectionVariant = r.reflection_variant === null ? null : (whole(r.reflection_variant, 0) ?? undefined);
   const beliefPromptVariant =
     r.belief_prompt_variant === null ? null : (whole(r.belief_prompt_variant, 0) ?? undefined);
   const nextStepPromptVariant =
     r.next_step_prompt_variant === null ? null : (whole(r.next_step_prompt_variant, 0) ?? undefined);
+  const eveningReflectionPromptVariant =
+    r.evening_reflection_prompt_variant === null
+      ? null
+      : (whole(r.evening_reflection_prompt_variant, 0) ?? undefined);
   const moonLongitude =
     typeof r.moon_longitude === "number" &&
     Number.isFinite(r.moon_longitude) &&
@@ -184,10 +198,17 @@ export function cardFromRow(row: unknown): DailyFocusCard | null {
   if ((beliefPrompt === null) !== (beliefPromptVariant === null)) return null;
   if (nextStepPrompt === undefined || nextStepPromptVariant === undefined) return null;
   if ((nextStepPrompt === null) !== (nextStepPromptVariant === null)) return null;
+  if (eveningReflectionPrompt === undefined || eveningReflectionPromptVariant === undefined) return null;
+  if ((eveningReflectionPrompt === null) !== (eveningReflectionPromptVariant === null)) return null;
 
   // The two flags must be real yes/no answers, and done means opened too.
   if (typeof r.opened !== "boolean" || typeof r.done !== "boolean") return null;
   if (r.done && !r.opened) return null;
+  // Same for the evening reflection's own pair.
+  if (typeof r.evening_reflection_opened !== "boolean" || typeof r.evening_reflection_done !== "boolean") {
+    return null;
+  }
+  if (r.evening_reflection_done && !r.evening_reflection_opened) return null;
 
   // The database hands the moment back in its own format; keep it as an ISO time.
   const instant = new Date(String(r.reference_instant));
@@ -232,16 +253,20 @@ export function cardFromRow(row: unknown): DailyFocusCard | null {
     prompt,
     beliefPrompt,
     nextStepPrompt,
+    eveningReflectionPrompt,
     titleVariant,
     statementVariant,
     reflectionVariant,
     promptVariant,
     beliefPromptVariant,
     nextStepPromptVariant,
+    eveningReflectionPromptVariant,
     moonAspectPlanet: aspectComplete ? moonAspectPlanet : null,
     moonAspectName: aspectComplete ? moonAspectName : null,
     moonAspectOrb: aspectComplete ? (moonAspectOrb as number) : null,
     opened: r.opened,
     done: r.done,
+    eveningReflectionOpened: r.evening_reflection_opened,
+    eveningReflectionDone: r.evening_reflection_done,
   };
 }

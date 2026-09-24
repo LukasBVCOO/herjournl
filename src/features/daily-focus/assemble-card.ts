@@ -18,6 +18,7 @@ import type { MoonSignReading } from "./moon-sign";
 import { HOUSE_CONTENT, type HouseContent, type HouseNumber } from "./content/houses";
 import { moonAspectLine } from "./content/moon-aspects";
 import { MOON_SIGN_THEMES, type MoonSignTheme } from "./content/moon-sign-themes";
+import { EVENING_REFLECTION_PROMPTS } from "./content/evening-reflection";
 import { closestMoonAspect, closestReliableMoonAspect } from "./moon-aspect";
 import { pickIndex, pickIndexAvoiding, seedFor } from "./deterministic-seed";
 import type { DailyFocusCard } from "./types";
@@ -47,6 +48,10 @@ export type CardInput = {
   moon: MoonReading;
   chart: Chart;
   recent?: RecentVariants;
+  // Her recent evening-reflection picks, most-recent-first — a flat pool,
+  // not grouped by house/sign the way `recent` is, so this is separate. See
+  // variant-history.ts's recentEveningReflectionVariants.
+  recentEveningReflection?: readonly number[];
 };
 
 export type CardContent = {
@@ -62,7 +67,7 @@ export function assembleDailyFocusCard(
   input: CardInput,
   content: CardContent = DEFAULT_CONTENT,
 ): DailyFocusCard {
-  const { userId, moon, chart, recent = NO_RECENT_VARIANTS } = input;
+  const { userId, moon, chart, recent = NO_RECENT_VARIANTS, recentEveningReflection = [] } = input;
   if (typeof userId !== "string" || userId.length === 0) throw new Error("A card needs a person");
   const house = moon.activeHouse;
   if (!Number.isInteger(house) || house < 1 || house > 12) throw new Error("Not a house from 1 to 12");
@@ -102,6 +107,15 @@ export function assembleDailyFocusCard(
     Math.max(area.nextStepPrompts.length, 1),
     recent.nextStepPrompt,
   );
+  // A flat pool, not grouped by house — same seed (still deterministic and
+  // still unique per user per day), just its own "part" name and its own,
+  // unscoped avoid list.
+  const eveningReflectionPromptVariant = pickIndexAvoiding(
+    seed,
+    "eveningReflectionPrompt",
+    Math.max(EVENING_REFLECTION_PROMPTS.length, 1),
+    recentEveningReflection,
+  );
 
   const title = area.titles[titleVariant] ?? area.label;
   const baseStatement = area.statements[statementVariant] ?? `${area.label} is in focus today.`;
@@ -109,6 +123,7 @@ export function assembleDailyFocusCard(
   const prompt = area.intentionPrompts[promptVariant] ?? FALLBACK_PROMPT;
   const beliefPrompt = area.beliefPrompts[beliefPromptVariant] ?? null;
   const nextStepPrompt = area.nextStepPrompts[nextStepPromptVariant] ?? null;
+  const eveningReflectionPrompt = EVENING_REFLECTION_PROMPTS[eveningReflectionPromptVariant] ?? null;
 
   // How to approach it today: not a pick from a list, but always worked out
   // fresh from where the Moon actually is against her chart, so it changes even
@@ -132,18 +147,22 @@ export function assembleDailyFocusCard(
     prompt,
     beliefPrompt,
     nextStepPrompt,
+    eveningReflectionPrompt,
     titleVariant,
     statementVariant,
     reflectionVariant,
     promptVariant,
     beliefPromptVariant,
     nextStepPromptVariant,
+    eveningReflectionPromptVariant,
     moonAspectPlanet: moonAspect.planet,
     moonAspectName: moonAspect.aspect,
     moonAspectOrb: moonAspect.orb,
     // A new card has not been seen yet.
     opened: false,
     done: false,
+    eveningReflectionOpened: false,
+    eveningReflectionDone: false,
   };
 }
 
@@ -157,6 +176,7 @@ export type ReducedCardInput = {
   moon: MoonSignReading;
   chart: ReducedChart;
   recent?: RecentVariants;
+  recentEveningReflection?: readonly number[];
 };
 
 export type ReducedCardContent = {
@@ -169,7 +189,7 @@ export function assembleReducedDailyFocusCard(
   input: ReducedCardInput,
   content: ReducedCardContent = DEFAULT_REDUCED_CONTENT,
 ): DailyFocusCard {
-  const { userId, moon, chart, recent = NO_RECENT_VARIANTS } = input;
+  const { userId, moon, chart, recent = NO_RECENT_VARIANTS, recentEveningReflection = [] } = input;
   if (typeof userId !== "string" || userId.length === 0) throw new Error("A card needs a person");
 
   const theme = content.themes[moon.moonSign];
@@ -206,6 +226,12 @@ export function assembleReducedDailyFocusCard(
     Math.max(theme.nextStepPrompts.length, 1),
     recent.nextStepPrompt,
   );
+  const eveningReflectionPromptVariant = pickIndexAvoiding(
+    seed,
+    "eveningReflectionPrompt",
+    Math.max(EVENING_REFLECTION_PROMPTS.length, 1),
+    recentEveningReflection,
+  );
 
   const title = theme.titles[titleVariant] ?? theme.label;
   const baseStatement = theme.statements[statementVariant] ?? `${theme.label} is in focus today.`;
@@ -213,6 +239,7 @@ export function assembleReducedDailyFocusCard(
   const prompt = theme.intentionPrompts[promptVariant] ?? FALLBACK_PROMPT;
   const beliefPrompt = theme.beliefPrompts[beliefPromptVariant] ?? null;
   const nextStepPrompt = theme.nextStepPrompts[nextStepPromptVariant] ?? null;
+  const eveningReflectionPrompt = EVENING_REFLECTION_PROMPTS[eveningReflectionPromptVariant] ?? null;
 
   // Not every day has one — a reduced chart may have no planet both reliably
   // known and close enough — so the statement has to read as complete alone.
@@ -237,16 +264,20 @@ export function assembleReducedDailyFocusCard(
     prompt,
     beliefPrompt,
     nextStepPrompt,
+    eveningReflectionPrompt,
     titleVariant,
     statementVariant,
     reflectionVariant,
     promptVariant,
     beliefPromptVariant,
     nextStepPromptVariant,
+    eveningReflectionPromptVariant,
     moonAspectPlanet: aspect?.planet ?? null,
     moonAspectName: aspect?.aspect ?? null,
     moonAspectOrb: aspect?.orb ?? null,
     opened: false,
     done: false,
+    eveningReflectionOpened: false,
+    eveningReflectionDone: false,
   };
 }

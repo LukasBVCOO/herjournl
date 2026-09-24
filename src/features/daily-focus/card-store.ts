@@ -53,11 +53,16 @@ export async function saveCard(card: DailyFocusCard): Promise<Found<"saved" | "e
   }
 }
 
-// Records that she has opened (or answered) a day's card. Forward only: the
-// database itself refuses to turn either back to "no". Done also means opened.
+// Records that she has opened (or answered) a day's card, or its evening
+// reflection. Forward only: the database itself refuses to turn any of these
+// back to "no". Each "done" also means its own "opened".
 async function mark(
   localDate: string,
-  fields: { opened: true } | { opened: true; done: true },
+  fields:
+    | { opened: true }
+    | { opened: true; done: true }
+    | { evening_reflection_opened: true }
+    | { evening_reflection_opened: true; evening_reflection_done: true },
 ): Promise<Found<"marked">> {
   try {
     const { error, status } = await supabase
@@ -72,6 +77,9 @@ async function mark(
 
 export const markOpened = (localDate: string) => mark(localDate, { opened: true });
 export const markDone = (localDate: string) => mark(localDate, { opened: true, done: true });
+export const markReflectionOpened = (localDate: string) => mark(localDate, { evening_reflection_opened: true });
+export const markReflectionDone = (localDate: string) =>
+  mark(localDate, { evening_reflection_opened: true, evening_reflection_done: true });
 
 export type SavedChart = {
   // null when she has no chart saved, or the saved one is not usable. A full

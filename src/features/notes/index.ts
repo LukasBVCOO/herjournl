@@ -21,8 +21,10 @@ export { default as EditNoteScreen } from "./editor/edit-note-screen";
 export { default as NewNoteRedirect } from "./editor/new-note-redirect";
 export { default as RecentlyDeletedScreen } from "./deleted/recently-deleted-screen";
 
-// For the daily focus feature: start a note from what she wrote under a card.
-export { startNoteFromFocus } from "./notes-store";
+// For the daily focus feature: start a note from what she wrote under a card,
+// and (for the evening reflection) find that same note again later in the day
+// and add to the end of it rather than starting a second one.
+export { appendToNote, findTodaysFocusNoteId, startNoteFromFocus } from "./notes-store";
 export type { FocusCardCopy } from "./types";
 
 // For the install feature: whether she has written any daily-focus note yet

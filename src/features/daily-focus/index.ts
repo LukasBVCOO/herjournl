@@ -44,11 +44,22 @@
 //                          it into a note (see startNoteFromFocus in notes)
 //   focus-draft.ts         keeps what she has typed so far on her phone, so leaving
 //                          halfway loses nothing
+//   content/evening-reflection.ts, reflect-slot.ts, reflect-card.tsx,
+//   reflect-screen.tsx     a second, smaller moment in the day: once the
+//                          morning card is done, a "Time to reflect" card
+//                          appears in its place, in the same style, leading
+//                          to one question. Answering it adds the question
+//                          and her answer to the END of today's own
+//                          daily-focus note (see appendToNote in notes)
+//                          rather than starting a new one.
 //
-// This feature uses the notes feature (to make the note); notes knows nothing
-// about it. app.tsx puts today's card on the notes list.
+// This feature uses the notes feature (to make the note, and to append the
+// evening reflection to it); notes knows nothing about it. app.tsx puts
+// today's card and the reflect card on the notes list.
 export { default as TodaysFocusCard } from "./todays-focus-card";
 export { default as FocusScreen } from "./focus-screen";
+export { default as ReflectCard } from "./reflect-card";
+export { default as ReflectScreen } from "./reflect-screen";
 // A house's icon and colours, by house number — used here by NoteCard so a
 // note written from a card can show which house it came from. A reduced-mode
 // card has no house at all, so MOON_FALLBACK_VISUAL is its one shared mark.

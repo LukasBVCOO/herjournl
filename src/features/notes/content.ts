@@ -81,13 +81,24 @@ export function isEmptyDoc(doc: unknown) {
   return titleFromLines(noteToLines(doc)) === "";
 }
 
-function paragraphsFor(text: string): NoteNode[] {
+export function paragraphsFor(text: string): NoteNode[] {
   return text
     .replace(/\r\n?/g, "\n")
     .split("\n")
     .map((line) =>
       line === "" ? { type: "paragraph" } : { type: "paragraph", content: [{ type: "text", text: line }] },
     );
+}
+
+// Adds nodes to the end of an existing doc, with a blank line before them —
+// used by the evening reflection to add its own question+answer onto today's
+// daily-focus note rather than starting a new one (see notes-store.ts's
+// appendToNote). A doc with no content yet (shouldn't happen in practice,
+// since this only ever runs on a note that already has today's intention
+// answer in it) is treated as empty, not an error.
+export function appendNodes(doc: NoteNode, nodes: NoteNode[]): NoteNode {
+  const existing = Array.isArray(doc?.content) ? doc.content : [];
+  return { type: "doc", content: [...existing, { type: "paragraph" }, ...nodes] };
 }
 
 // Her three answers to a card, as one note shaped like the card itself:

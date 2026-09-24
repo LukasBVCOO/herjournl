@@ -85,7 +85,7 @@ export default function TodaysFocusCard() {
             {known.prompt}
           </p>
           <span className="mt-4 inline-flex h-10 items-center gap-1.5 rounded-full bg-ink px-4 text-[14px] font-medium text-paper">
-            Write your answer
+            Start writing
             <span aria-hidden="true">→</span>
           </span>
         </div>

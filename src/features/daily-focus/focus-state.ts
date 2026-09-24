@@ -23,13 +23,29 @@ const LEGACY_PREFIX = "becomely:focus-opened:";
 export type FocusState = {
   opened: boolean;
   done: boolean;
+  // The same idea, for the evening reflection (see types.ts's DailyFocusCard
+  // for what these mean) — kept here too, so the reflect slot also draws
+  // correctly at once, offline, the same way the morning card does.
+  eveningReflectionOpened: boolean;
+  eveningReflectionDone: boolean;
   title: string;
   label: string;
   prompt: string;
+  // The evening reflection's own question — null when the card has none (a
+  // copy saved before it existed), which is also what tells the reflect slot
+  // never to appear for this card at all (see reflect-slot.ts).
+  eveningReflectionPrompt: string | null;
   // The house (1-12), for colouring the card — null for a reduced-mode card
   // (no birth time, so no house) or an older cached copy from before this
   // was kept.
   house: number | null;
+};
+
+type Flags = {
+  opened: boolean;
+  done: boolean;
+  eveningReflectionOpened: boolean;
+  eveningReflectionDone: boolean;
 };
 
 function keyFor(date: string): string | null {
@@ -37,14 +53,18 @@ function keyFor(date: string): string | null {
   return userId ? `${PREFIX}${userId}:${date}` : null;
 }
 
-// The two yes/no answers from a card and from this phone, combined. Once either
-// says yes it stays yes, and done means opened.
-export function mergeFlags(
-  card: { opened: boolean; done: boolean },
-  local: { opened: boolean; done: boolean } | null,
-) {
+// The four yes/no answers from a card and from this phone, combined. Once
+// either says yes it stays yes, and each "done" means its own "opened".
+export function mergeFlags(card: Flags, local: Flags | null): Flags {
   const done = card.done || Boolean(local?.done);
-  return { opened: card.opened || Boolean(local?.opened) || done, done };
+  const eveningReflectionDone = card.eveningReflectionDone || Boolean(local?.eveningReflectionDone);
+  return {
+    opened: card.opened || Boolean(local?.opened) || done,
+    done,
+    eveningReflectionOpened:
+      card.eveningReflectionOpened || Boolean(local?.eveningReflectionOpened) || eveningReflectionDone,
+    eveningReflectionDone,
+  };
 }
 
 function isText(value: unknown): value is string {
@@ -59,14 +79,35 @@ export function readFocusState(date: string): FocusState | null {
     if (!raw) return null;
     const v: unknown = JSON.parse(raw);
     if (typeof v !== "object" || v === null) return null;
-    const { opened, done, title, label, prompt, house } = v as Record<string, unknown>;
-    if (typeof opened !== "boolean" || typeof done !== "boolean") return null;
-    if (!isText(title) || !isText(label) || !isText(prompt)) return null;
-    return {
-      ...mergeFlags({ opened, done }, null),
+    const {
+      opened,
+      done,
+      eveningReflectionOpened,
+      eveningReflectionDone,
       title,
       label,
       prompt,
+      eveningReflectionPrompt,
+      house,
+    } = v as Record<string, unknown>;
+    if (typeof opened !== "boolean" || typeof done !== "boolean") return null;
+    if (!isText(title) || !isText(label) || !isText(prompt)) return null;
+    return {
+      ...mergeFlags(
+        {
+          opened,
+          done,
+          // Both false, not missing, on a copy saved before these existed —
+          // never invented as "yes".
+          eveningReflectionOpened: eveningReflectionOpened === true,
+          eveningReflectionDone: eveningReflectionDone === true,
+        },
+        null,
+      ),
+      title,
+      label,
+      prompt,
+      eveningReflectionPrompt: isText(eveningReflectionPrompt) ? eveningReflectionPrompt : null,
       house: typeof house === "number" && house >= 1 && house <= 12 ? house : null,
     };
   } catch {
@@ -85,6 +126,7 @@ export function saveFocusState(card: DailyFocusCard) {
       title: card.title,
       label: card.label,
       prompt: card.prompt,
+      eveningReflectionPrompt: card.eveningReflectionPrompt,
       house: card.activeHouse,
     };
     localStorage.setItem(key, JSON.stringify(state));

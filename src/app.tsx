@@ -7,7 +7,7 @@ import {
   RequireSession,
   SettingsScreen,
 } from "@/features/auth";
-import { FocusScreen, TodaysFocusCard } from "@/features/daily-focus";
+import { FocusScreen, ReflectCard, ReflectScreen, TodaysFocusCard } from "@/features/daily-focus";
 import { InstalledSync, InstallOfferPrompt, UpdatePrompt } from "@/features/install";
 import { NotificationOfferPrompt } from "@/features/notifications";
 import {
@@ -29,13 +29,16 @@ export default function App() {
           path="/"
           element={
             <RequireSession>
-              {/* Today's focus card, then the install nudge if one is due,
-                  both between the search bar and her notes. */}
+              {/* Today's focus card, then the evening reflection once it's
+                  done (the two are never both shown — see reflect-slot.ts),
+                  then the install nudge if one is due, all between the
+                  search bar and her notes. */}
               <NotesListScreen
                 greetingSlot={<OpeningGreeting />}
                 focusSlot={
                   <>
                     <TodaysFocusCard />
+                    <ReflectCard />
                     <InstallOfferPrompt />
                   </>
                 }
@@ -48,6 +51,14 @@ export default function App() {
           element={
             <RequireSession>
               <FocusScreen />
+            </RequireSession>
+          }
+        />
+        <Route
+          path="/reflect"
+          element={
+            <RequireSession>
+              <ReflectScreen />
             </RequireSession>
           }
         />

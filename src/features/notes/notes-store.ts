@@ -15,13 +15,16 @@
 import { registerBeforeReload } from "@/lib/before-reload";
 import { getSession, registerSignOutHandler, subscribe as subscribeToSession } from "@/lib/session";
 import {
+  appendNodes,
   docFromCardAnswers,
   isEmptyDoc,
   noteToLines,
+  paragraphsFor,
   parseFocusCard,
   previewFromLines,
   textFromLines,
   titleFromLines,
+  type NoteNode,
 } from "./content";
 import { daysLeft, expiryCutoff } from "./dates";
 import * as localDb from "./local-db";
@@ -259,6 +262,37 @@ export function startNoteFromFocus(
   // Straight away rather than after a second: there is no more typing to wait for.
   void flushNote(id);
   return id;
+}
+
+// The id of today's daily-focus note — the one startNoteFromFocus made this
+// morning — or null if there isn't one (an edge case: it would have to have
+// been deleted since). Reads what's already loaded on this phone, so this
+// never waits on the internet, the same way every other screen here doesn't.
+export function findTodaysFocusNoteId(date: string): string | null {
+  for (const note of notes.values()) {
+    if (!note.deletedAt && note.focusCard?.date === date) return note.id;
+  }
+  return null;
+}
+
+// Adds the evening reflection's question and her answer to the end of an
+// existing note, with a blank line before them, rather than starting a new
+// note — see content.ts's appendNodes. True when the note was found and the
+// addition was queued to save; false if it no longer exists. Goes through
+// queueSave, the same single path every other edit in this note already
+// goes through (observeEdits keeps this store itself in step — see
+// applyEdit above), so nothing here duplicates that.
+export function appendToNote(id: string, question: string, answer: string): boolean {
+  const existing = notes.get(id);
+  if (!existing || existing.deletedAt) return false;
+
+  const doc = appendNodes(existing.content as NoteNode, [
+    { type: "heading", content: [{ type: "text", text: question }] },
+    ...paragraphsFor(answer.trim()),
+  ]);
+  queueSave(id, doc);
+  void flushNote(id);
+  return true;
 }
 
 // Pin and delete show at once and are undone if the database refuses.

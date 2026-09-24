@@ -63,6 +63,10 @@ export type DailyFocusCard = {
   // "My next step" — shown and encouraged, never required to answer. Null
   // only on a card saved before this existed.
   nextStepPrompt: string | null;
+  // The evening reflection's one question — picked this morning alongside
+  // everything else, just not shown until the morning card is done (see
+  // reflect-screen.tsx). Null only on a card saved before this existed.
+  eveningReflectionPrompt: string | null;
 
   // Which option was picked from the house's (or Moon sign's) own lists
   // (counting from 0), so a card can be recreated exactly.
@@ -72,6 +76,7 @@ export type DailyFocusCard = {
   promptVariant: number;
   beliefPromptVariant: number | null;
   nextStepPromptVariant: number | null;
+  eveningReflectionPromptVariant: number | null;
 
   // How to approach it today: the Moon's closest angle to one of her seven natal
   // planets. Not a pick from a list — worked out fresh from where the Moon
@@ -90,4 +95,11 @@ export type DailyFocusCard = {
   // list, and the next card comes tomorrow). Done always means opened too.
   opened: boolean;
   done: boolean;
+  // The same idea, for the evening reflection: opened means she's on the
+  // reflection prompt page, done means her answer has been appended to
+  // today's note. Only ever meaningful once `done` above is true — see
+  // reflect-slot.ts, which is what actually gates the reflection on the
+  // morning card being finished.
+  eveningReflectionOpened: boolean;
+  eveningReflectionDone: boolean;
 };

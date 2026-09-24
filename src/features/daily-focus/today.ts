@@ -10,13 +10,21 @@
 // if this phone knows more than the database, the database is told.
 
 import { registerSignOutHandler, getSession } from "@/lib/session";
-import { findCard, findChart, markDone, markOpened, saveCard } from "./card-store";
+import {
+  findCard,
+  findChart,
+  markDone,
+  markOpened,
+  markReflectionDone,
+  markReflectionOpened,
+  saveCard,
+} from "./card-store";
 import { mergeFlags, readFocusState, saveFocusState } from "./focus-state";
 import { generateDailyFocus } from "./generate";
 import { getOrCreateDailyFocusCard } from "./get-or-create";
 import { cardDayIn, deviceTimeZone } from "./local-day";
 import type { DailyFocusCard, DailyFocusResult } from "./types";
-import { recentVariants } from "./variant-history";
+import { recentEveningReflectionVariants, recentVariants } from "./variant-history";
 
 type Ready = Extract<DailyFocusResult, { status: "ready" }>;
 
@@ -79,7 +87,15 @@ export async function getTodaysFocus(): Promise<DailyFocusResult> {
     findChart,
     saveCard,
     generate: (userId, chart, localDate, timeZone) =>
-      generateDailyFocus(userId, chart, localDate, timeZone, undefined, recentVariants),
+      generateDailyFocus(
+        userId,
+        chart,
+        localDate,
+        timeZone,
+        undefined,
+        recentVariants,
+        recentEveningReflectionVariants,
+      ),
   });
   // Only a real card is remembered. Every other answer is asked again next time,
   // so fixing what was missing (or coming back online) just works.
@@ -90,6 +106,10 @@ export async function getTodaysFocus(): Promise<DailyFocusResult> {
   // tell the database now that it can be reached.
   if (card.done && !result.card.done) void markDone(card.localDate);
   else if (card.opened && !result.card.opened) void markOpened(card.localDate);
+  if (card.eveningReflectionDone && !result.card.eveningReflectionDone) void markReflectionDone(card.localDate);
+  else if (card.eveningReflectionOpened && !result.card.eveningReflectionOpened) {
+    void markReflectionOpened(card.localDate);
+  }
 
   saveFocusState(card);
   const ready: Ready = { ...result, card };
@@ -118,4 +138,18 @@ export function recordDone(card: DailyFocusCard) {
   if (card.done) return;
   update({ ...card, opened: true, done: true });
   void markDone(card.localDate);
+}
+
+// The same two, for the evening reflection prompt page.
+export function recordReflectionOpened(card: DailyFocusCard) {
+  if (card.eveningReflectionOpened) return;
+  update({ ...card, eveningReflectionOpened: true });
+  void markReflectionOpened(card.localDate);
+}
+
+// She answered the reflection, and it's been appended to today's note.
+export function recordReflectionDone(card: DailyFocusCard) {
+  if (card.eveningReflectionDone) return;
+  update({ ...card, eveningReflectionOpened: true, eveningReflectionDone: true });
+  void markReflectionDone(card.localDate);
 }

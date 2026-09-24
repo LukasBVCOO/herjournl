@@ -1,11 +1,12 @@
 import { Navigate } from "react-router";
 import { useSession } from "./use-session";
 
-// Where Google, and the link in the confirmation email, send her back. The
-// Supabase library spots the one-time code in the web address and swaps it for a
-// real login on its own, before this screen even appears — so all this does is
-// wait, then move her on. Google sends her home; the email link sends her to the
-// welcome, because that is the moment she has just created her account.
+// Where the link in the confirmation email sends her back (Google sign-in
+// used to land here too — removed for now, see auth-screen.tsx). The
+// Supabase library spots the one-time code in the web address and swaps it
+// for a real login on its own, before this screen even appears — so all
+// this does is wait, then move her on to the welcome, since that is the
+// moment she has just created her account.
 export default function AuthCallbackScreen({ next = "/" }: { next?: string }) {
   const session = useSession();
 

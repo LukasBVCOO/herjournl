@@ -19,7 +19,7 @@ const copy = {
   signup: {
     headline: (
       <>
-        Begin your <em>practice.</em>
+        Turn your intentions into <em>action.</em>
       </>
     ),
     sub: "Set an intention in the morning. Come back to it at night.",
@@ -46,16 +46,15 @@ export default function AuthScreen({ mode }: Props) {
 
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | undefined>(
-    // Set when a Google sign-in or an email confirmation link was sent back
-    // here because it didn't work. A confirmation link that is opened in a
-    // different browser from the one she signed up in can fail even though the
-    // email did get confirmed, so the message points her at logging in.
+    // Set when an email confirmation link was sent back here because it
+    // didn't work. A confirmation link that is opened in a different browser
+    // from the one she signed up in can fail even though the email did get
+    // confirmed, so the message points her at logging in.
     searchParams.get("error") === "callback"
       ? "Sign-in didn't work. If you just confirmed your email, you can log in below."
       : undefined,
   );
   const [pending, setPending] = useState(false);
-  const [googleBusy, setGoogleBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -119,19 +118,6 @@ export default function AuthScreen({ mode }: Props) {
 
     // A brand new account starts with the welcome; everyone else goes to her notes.
     navigate(isSignup ? "/onboarding" : "/", { replace: true });
-  }
-
-  async function continueWithGoogle() {
-    setError(undefined);
-    setGoogleBusy(true);
-    const { error: googleError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
-    if (googleError) {
-      setError("Google sign-in didn't work. Please try again.");
-      setGoogleBusy(false);
-    }
   }
 
   return (
@@ -223,17 +209,7 @@ export default function AuthScreen({ mode }: Props) {
             </button>
           </form>
 
-          <button
-            type="button"
-            onClick={continueWithGoogle}
-            disabled={googleBusy}
-            className="mt-3 flex h-[52px] w-full items-center justify-center gap-3 rounded-full border border-line bg-surface font-medium text-ink transition-colors duration-200 hover:bg-paper disabled:opacity-60"
-          >
-            <GoogleMark />
-            Continue with Google
-          </button>
-
-          <p className="mt-2 text-center text-[15px] text-ink-soft">
+          <p className="mt-4 text-center text-[15px] text-ink-soft">
             {text.switchPrompt}{" "}
             <Link
               to={text.switchHref}
@@ -268,25 +244,3 @@ function EyeIcon({ off }: { off: boolean }) {
   );
 }
 
-function GoogleMark() {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-      <path
-        fill="#4285F4"
-        d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"
-      />
-      <path
-        fill="#EA4335"
-        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z"
-      />
-    </svg>
-  );
-}

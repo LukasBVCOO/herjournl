@@ -13,6 +13,7 @@
 //      If the internet is down, it waits in the save queue and goes up later.
 
 import { registerBeforeReload } from "@/lib/before-reload";
+import { posthog } from "@/lib/posthog";
 import { getSession, registerSignOutHandler, subscribe as subscribeToSession } from "@/lib/session";
 import {
   appendNodes,
@@ -228,6 +229,7 @@ function applyEdit(id: string, doc: unknown) {
   const existing = notes.get(id);
   // A brand new note with nothing written in it doesn't exist yet.
   if (!existing && isEmptyDoc(doc)) return;
+  if (!existing) posthog?.capture("note_created");
 
   editedAt.set(id, Date.now());
   put(

@@ -8,6 +8,7 @@
 //
 // Offered at most 3 times, at progressively longer gaps, then never again.
 
+import { posthog } from "@/lib/posthog";
 import { getSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase/client";
 
@@ -85,7 +86,15 @@ export async function recordInstalled(): Promise<void> {
   const userId = getSession().userId;
   if (!userId) return;
   try {
-    await supabase.from("profiles").update({ pwa_installed: true }).eq("id", userId);
+    // Only updates while not yet marked installed, so a returned row means this
+    // is her first install and is counted in analytics exactly once per account.
+    const { data } = await supabase
+      .from("profiles")
+      .update({ pwa_installed: true })
+      .eq("id", userId)
+      .not("pwa_installed", "is", true)
+      .select("id");
+    if (data && data.length > 0) posthog?.capture("app_installed");
   } catch {
     // Best effort: the next time this runs (another visit) it tries again.
   }

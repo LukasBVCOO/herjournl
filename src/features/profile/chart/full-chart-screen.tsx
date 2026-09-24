@@ -1,6 +1,7 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router";
 import { BackIcon } from "@/components/icons";
+import { posthog } from "@/lib/posthog";
 import { HOUSE_VISUAL, houseBorderColor, type HouseNumber } from "@/features/daily-focus";
 import {
   placementDescription,
@@ -702,6 +703,10 @@ const hero = (
 // every existing account gets it immediately.
 export default function FullChartScreen() {
   const { state } = useProfile();
+
+  useEffect(() => {
+    posthog?.capture("birth_chart_viewed");
+  }, []);
 
   const profile = state.status === "ready" ? state.profile : null;
   const details =

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { getInstallState, subscribeToInstallState } from "@/features/install";
+import { posthog } from "@/lib/posthog";
 import { hasOfferedNotifications, markNotificationsOffered } from "./notification-offer";
 import { notificationPermission, pushSupported, requestPushSubscription } from "./push";
 import { saveSubscription } from "./push-api";
@@ -64,7 +65,7 @@ export default function NotificationOfferPrompt() {
   async function allow() {
     setBusy(true);
     const keys = await requestPushSubscription();
-    if (keys) await saveSubscription(keys);
+    if (keys && (await saveSubscription(keys))) posthog?.capture("notifications_enabled");
     // Offered either way: granted or denied, the browser remembers her answer
     // itself from here on, so there is nothing more for this flag to prevent.
     markNotificationsOffered();

@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { Link } from "react-router";
 import { BackIcon } from "@/components/icons";
+import { posthog } from "@/lib/posthog";
 import FocusCardView from "./focus-card-view";
 import FocusResponse from "./focus-writing";
 import { recordOpened } from "./today";
@@ -30,6 +31,11 @@ export default function FocusScreen() {
   useEffect(() => {
     if (state.status === "ready") recordOpened(state.card);
   }, [state]);
+
+  const ready = state.status === "ready";
+  useEffect(() => {
+    if (ready) posthog?.capture("daily_card_opened");
+  }, [ready]);
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6 pb-12">

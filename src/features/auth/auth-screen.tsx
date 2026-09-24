@@ -93,6 +93,7 @@ export default function AuthScreen({ mode }: Props) {
         );
         return;
       }
+      posthog?.capture("user_signed_up");
       // With email confirmation on, there is no session until she confirms, so
       // she is shown that the link has been sent. With it off, she is signed in
       // already and carries on below.

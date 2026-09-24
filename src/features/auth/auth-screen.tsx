@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
+import { posthog } from "@/lib/posthog";
 import { supabase } from "@/lib/supabase/client";
 import { confirmationRedirectUrl } from "./confirm-redirect";
 
@@ -116,6 +117,7 @@ export default function AuthScreen({ mode }: Props) {
       }
     }
 
+    if (!isSignup) posthog?.capture("user_logged_in");
     // A brand new account starts with the welcome; everyone else goes to her notes.
     navigate(isSignup ? "/onboarding" : "/", { replace: true });
   }

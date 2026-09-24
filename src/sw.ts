@@ -15,8 +15,9 @@
 // writing ends up in the wrong place.
 
 /// <reference lib="webworker" />
-import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from "workbox-precaching";
-import { NavigationRoute, registerRoute } from "workbox-routing";
+import { cleanupOutdatedCaches, matchPrecache, precacheAndRoute } from "workbox-precaching";
+import { NavigationRoute, registerRoute, setCatchHandler } from "workbox-routing";
+import { NetworkFirst } from "workbox-strategies";
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -24,8 +25,42 @@ precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 
 // Any address opens the app (a refresh on /notes/<id>, the return trip from
-// Google sign-in, and so on), the same as navigateFallback did before.
-registerRoute(new NavigationRoute(createHandlerBoundToURL("index.html")));
+// Google sign-in, and so on) — a real page load, not a made-up 404.
+//
+// This used to always hand back the index.html that was precached when THIS
+// service worker installed (createHandlerBoundToURL). That's the file a
+// plain refresh got the moment a new version went out, before she'd tapped
+// the "new version" Refresh button: still the OLD index.html, pointing at
+// the OLD build's hashed script/style files — files a new deploy no longer
+// serves. The page went white because the browser couldn't load a script
+// that no longer exists, and it only came right on a second refresh once
+// the new service worker had had a moment to install itself in the
+// background.
+//
+// Network-first fixes the actual cause: while she has internet, a refresh
+// always asks the server for the current index.html (whose script/style
+// references always match what's actually deployed, since they're built and
+// shipped together). Offline, it falls back to whatever page this was able
+// to load last time — the same "read past entries with no internet" promise
+// as before, just no longer the thing that goes stale the moment a new
+// version ships.
+registerRoute(
+  new NavigationRoute(
+    new NetworkFirst({
+      cacheName: "pages",
+      networkTimeoutSeconds: 3,
+    }),
+  ),
+);
+
+// The rare case network-first can't cover: offline, and nothing has loaded
+// successfully on this service worker yet to fall back to. Rather than a
+// browser-level connection-error page, this hands back the shell that was
+// precached when the app installed — dated, at worst, never blank.
+setCatchHandler(async ({ request }) => {
+  if (request.mode === "navigate") return (await matchPrecache("index.html")) ?? Response.error();
+  return Response.error();
+});
 
 // registerType "prompt": a new version sits waiting until she taps Refresh
 // (update-prompt.tsx), which sends this message.

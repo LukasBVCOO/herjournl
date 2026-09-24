@@ -9,11 +9,24 @@ import "@fontsource/cormorant-garamond/latin-400.css";
 import "@fontsource/cormorant-garamond/latin-400-italic.css";
 import "@fontsource/cormorant-garamond/latin-500.css";
 
+import { PostHogErrorBoundary, PostHogProvider } from "posthog-js/react";
+
 import "./styles.css";
+import { posthog } from "./lib/posthog";
 import App from "./app";
 
+const app = posthog ? (
+  <PostHogProvider client={posthog}>
+    <PostHogErrorBoundary
+      fallback={<div role="alert">Something went wrong. Please refresh and try again.</div>}
+    >
+      <App />
+    </PostHogErrorBoundary>
+  </PostHogProvider>
+) : (
+  <App />
+);
+
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+  <StrictMode>{app}</StrictMode>,
 );

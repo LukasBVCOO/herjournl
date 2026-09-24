@@ -13,6 +13,7 @@ import {
   type Place,
   type ReducedChart,
 } from "@/features/onboarding";
+import { posthog } from "@/lib/posthog";
 import BirthTimeUpgradeReveal from "./birth-time-upgrade-reveal";
 import ChartLoading, { MIN_LOADING_MS } from "./chart-loading";
 import ConfirmSheet from "./confirm-sheet";
@@ -185,6 +186,7 @@ export default function BirthDetailsSection({
     }
 
     await onSaved();
+    posthog?.capture("birth_details_updated");
     setBusy(false);
     setEditing(false);
     setUpdated(true);

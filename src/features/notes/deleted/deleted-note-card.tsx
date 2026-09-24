@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { posthog } from "@/lib/posthog";
 import { deleteNoteForever, restoreNote } from "../notes-store";
 import type { DeletedNoteSummary } from "../types";
 
@@ -17,11 +18,12 @@ export default function DeletedNoteCard({ note }: { note: DeletedNoteSummary }) 
     return () => clearTimeout(timer);
   }, [confirming]);
 
-  async function run(action: (id: string) => Promise<boolean>) {
+  async function run(action: (id: string) => Promise<boolean>, event?: string) {
     setBusy(true);
     setFailed(false);
     const ok = await action(note.id);
     if (ok) {
+      if (event) posthog?.capture(event);
       // The note has moved, so the card goes with it.
       setGone(true);
       return;
@@ -61,7 +63,7 @@ export default function DeletedNoteCard({ note }: { note: DeletedNoteSummary }) 
         <button
           type="button"
           disabled={busy}
-          onClick={() => run(restoreNote)}
+          onClick={() => run(restoreNote, "note_restored")}
           className="h-10 rounded-full bg-ink px-5 text-[15px] font-medium text-paper transition-opacity duration-200 hover:opacity-90 disabled:opacity-60"
         >
           Restore

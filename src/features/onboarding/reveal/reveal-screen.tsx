@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router";
+import { posthog } from "@/lib/posthog";
+import { posthogLogger } from "@/lib/posthog-logger";
 import { getAnswers } from "../data/answers-store";
 import PlacementCard from "./placement-card";
 import { saveOnboarding } from "../data/save-profile";
@@ -32,6 +34,8 @@ export default function RevealScreen() {
     setSaveFailed(false);
     const saved = await saveOnboarding(getAnswers());
     if (saved) {
+      posthog?.capture("onboarding_completed");
+      posthogLogger.info("Onboarding profile saved.");
       // Onboarding is complete. It ends on her first real daily focus card (the
       // daily focus feature makes it, now that her chart is saved).
       navigate("/focus", { replace: true });

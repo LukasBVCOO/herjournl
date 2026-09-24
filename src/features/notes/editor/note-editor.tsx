@@ -5,6 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { Placeholder } from "@tiptap/extensions";
 import { BackIcon } from "@/components/icons";
+import { posthog } from "@/lib/posthog";
 import { deleteNote, pinNote } from "../notes-store";
 import {
   flushNote,
@@ -143,7 +144,9 @@ export default function NoteEditor({
     if (!ok) {
       setPinned(!next);
       showNotice("Couldn't update the pin.");
+      return;
     }
+    if (next) posthog?.capture("note_pinned");
   }
 
   async function moveToRecentlyDeleted() {
@@ -154,6 +157,7 @@ export default function NoteEditor({
       showNotice("Couldn't delete the note.");
       return;
     }
+    posthog?.capture("note_deleted");
     navigate("/");
   }
 

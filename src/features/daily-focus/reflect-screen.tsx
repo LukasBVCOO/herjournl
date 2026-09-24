@@ -2,6 +2,8 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
 import { BackIcon } from "@/components/icons";
 import { appendToNote, findTodaysFocusNoteId } from "@/features/notes";
+import { posthog } from "@/lib/posthog";
+import { posthogLogger } from "@/lib/posthog-logger";
 import { deviceTimeZone, localHourIn } from "./local-day";
 import { REFLECT_HOUR } from "./reflect-slot";
 import { recordReflectionDone, recordReflectionOpened } from "./today";
@@ -42,6 +44,8 @@ function ReflectWriting({ card }: { card: DailyFocusCard }) {
     }
     setFinished(true);
     recordReflectionDone(card);
+    posthog?.capture("evening_reflection_completed");
+    posthogLogger.info("Evening reflection saved.");
     // Replaces this screen, so "back" from the note goes to her notes.
     navigate(`/notes/${noteId}`, { replace: true });
   }

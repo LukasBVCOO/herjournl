@@ -1,5 +1,6 @@
 import { useState, useSyncExternalStore } from "react";
 import { getInstallState, InstallSheet, isIphone, subscribeToInstallState } from "@/features/install";
+import { posthog } from "@/lib/posthog";
 import { cancelPushSubscription, currentPushSubscription, requestPushSubscription } from "./push";
 import { removeSubscription, saveSubscription } from "./push-api";
 import { usePushState } from "./use-push";
@@ -39,6 +40,7 @@ export default function NotificationsSection() {
     }
     const saved = await saveSubscription(keys);
     if (!saved) setProblem("Saved on this phone, but couldn't reach the server. Try again shortly.");
+    else posthog?.capture("notifications_enabled");
     setBusy(false);
     refresh();
   }
@@ -50,6 +52,7 @@ export default function NotificationsSection() {
     const cancelled = await cancelPushSubscription();
     if (cancelled && subscription) await removeSubscription(subscription.endpoint);
     if (!cancelled) setProblem("Couldn't turn off notifications. Please try again.");
+    else posthog?.capture("notifications_disabled");
     setBusy(false);
     refresh();
   }

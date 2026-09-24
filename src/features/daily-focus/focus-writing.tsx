@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { startNoteFromFocus } from "@/features/notes";
+import { posthog } from "@/lib/posthog";
+import { posthogLogger } from "@/lib/posthog-logger";
 import { clearDraft, readDraft, saveDraft, type FocusDraftField } from "./focus-draft";
 import { recordDone } from "./today";
 import type { DailyFocusCard } from "./types";
@@ -108,6 +110,8 @@ function FocusWriting({ card }: { card: DailyFocusCard }) {
     clearDraft(card.localDate);
     // Marks the card as done, so it leaves the top of her list for the day.
     recordDone(card);
+    posthog?.capture("daily_focus_completed");
+    posthogLogger.info("Daily focus response saved.");
     // Replaces this screen, so "back" from the note goes to her notes, not to a
     // card she has already answered.
     navigate(`/notes/${id}`, { replace: true });

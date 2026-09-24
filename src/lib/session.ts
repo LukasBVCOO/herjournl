@@ -6,6 +6,7 @@
 // lib/ rather than in a feature folder because both signing in and the notes
 // themselves need to know who she is.
 
+import { posthog } from "./posthog";
 import { supabase } from "./supabase/client";
 
 export type Session = {
@@ -16,6 +17,7 @@ export type Session = {
 };
 
 let session: Session = { status: "loading" };
+let identifiedUserId: string | undefined;
 const listeners = new Set<() => void>();
 
 function publish(next: Session) {
@@ -58,6 +60,16 @@ function remember(user: KnownUser | null) {
 }
 
 function signedIn(user: KnownUser) {
+  if (identifiedUserId !== user.userId) {
+    // A direct account switch must not retain the previous person's identity.
+    if (identifiedUserId) posthog?.reset();
+    posthog?.identify(
+      user.userId,
+      user.email ? { email: user.email } : undefined,
+    );
+    identifiedUserId = user.userId;
+  }
+
   remember(user);
   publish({ status: "signed-in", userId: user.userId, email: user.email });
 }
@@ -68,6 +80,8 @@ supabase.auth.onAuthStateChange((event, next) => {
     signedIn({ userId: next.user.id, email: next.user.email ?? undefined });
   } else if (event === "SIGNED_OUT") {
     // A real sign out, or a login that was refused for good.
+    posthog?.reset();
+    identifiedUserId = undefined;
     remember(null);
     publish({ status: "signed-out" });
   }

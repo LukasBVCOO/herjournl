@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { NodeViewWrapper, type ReactNodeViewProps } from "@tiptap/react";
-import { PhotoIcon, PlusIcon } from "@/components/icons";
+import { PlusIcon } from "@/components/icons";
 import { posthog } from "@/lib/posthog";
 import AddSheet from "./add-sheet";
 import PhotoSheet from "./photo-sheet";
@@ -162,11 +162,24 @@ export default function BoardView({ node, updateAttributes, editor, getPos }: Re
           onClick={() => setSheet({ kind: "add" })}
           className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl bg-card px-6 py-10 text-center transition-opacity duration-200 active:opacity-80"
         >
-          <span className="text-accent-ink">
-            <PhotoIcon size={28} />
-          </span>
-          <span className="font-serif text-[1.25rem] leading-tight text-ink">Add your first tile ✦</span>
+          {/* An 800px copy of the founder's artwork (the original is kept in
+              design/vision-board/, too big to ship), small enough to keep
+              offline. */}
+          <img
+            src="/vision-board/empty-board.png"
+            alt=""
+            width={800}
+            height={479}
+            className="h-auto w-full max-w-72"
+          />
+          <span className="mt-2 font-serif text-[1.25rem] leading-tight text-ink">Your vision starts here ✦</span>
           <span className="text-sm text-ink-soft">The photos and words you’re calling in.</span>
+          {/* Looks like a button so it's obvious where to tap; the whole
+              panel is the actual button, so tapping anywhere on it works. */}
+          <span className="mt-3 inline-flex h-11 items-center gap-1.5 rounded-full bg-ink px-5 text-[15px] font-medium text-paper">
+            <PlusIcon size={18} />
+            Add your first card
+          </span>
         </button>
       ) : (
         <div className="columns-2 gap-3">

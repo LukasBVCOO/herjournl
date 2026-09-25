@@ -22,6 +22,7 @@ import { VisionBoard } from "../vision-board/board-node";
 import FocusInfo from "./focus-info";
 import FormatBar from "./format-bar";
 import NoteMenu from "./note-menu";
+import { PromptLabels } from "./prompt-labels";
 
 const PLACEHOLDER = "Write your intention, a script, or anything on your mind.";
 
@@ -114,6 +115,7 @@ export default function NoteEditor({
       TaskList,
       TaskItem.configure({ nested: true }),
       VisionBoard,
+      PromptLabels.configure({ card: focusCard }),
       Placeholder.configure({
         placeholder: ({ pos }) => (pos === 0 ? PLACEHOLDER : ""),
       }),

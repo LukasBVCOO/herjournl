@@ -332,6 +332,16 @@ export function appendToNote(id: string, question: string, answer: string): bool
   const existing = notes.get(id);
   if (!existing || existing.deletedAt) return false;
 
+  // The note's card copy also keeps the evening question, so the note can
+  // show its "Evening reflection" label (editor/prompt-labels.ts). Set on the
+  // phone's copy before the edit (which keeps whatever card the note has) and
+  // on the save queue (which sends the card with every save of this note).
+  const card = existing.focusCard ? parseFocusCard({ ...existing.focusCard, eveningPrompt: question }) : null;
+  if (card) {
+    notes.set(id, { ...existing, focusCard: card });
+    attachFocusCard(id, card);
+  }
+
   const doc = appendNodes(existing.content as NoteNode, [
     { type: "heading", content: [{ type: "text", text: question }] },
     ...paragraphsFor(answer.trim()),

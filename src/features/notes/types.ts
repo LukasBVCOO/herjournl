@@ -43,6 +43,11 @@ export type FocusCardCopy = {
   // required to answer. Missing on notes made before these existed.
   beliefPrompt?: string;
   nextStepPrompt?: string;
+  // The evening reflection's question, kept once she has answered it (her
+  // answer is added to the end of this same note — notes-store's
+  // appendToNote), so the note can label it. Missing until then, and on notes
+  // reflected on before this was kept.
+  eveningPrompt?: string;
 };
 
 // A note in the list, with all of its writing so the search box at the top can

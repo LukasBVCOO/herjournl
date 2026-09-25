@@ -178,6 +178,7 @@ const FOCUS_LIMITS = {
   prompt: 400,
   beliefPrompt: 400,
   nextStepPrompt: 400,
+  eveningPrompt: 400,
 } as const;
 
 // A card copy read back from the phone or the database, or null if it isn't a
@@ -205,6 +206,7 @@ export function parseFocusCard(value: unknown): FocusCardCopy | null {
   const reflection = text(v.reflection, FOCUS_LIMITS.reflection);
   const beliefPrompt = text(v.beliefPrompt, FOCUS_LIMITS.beliefPrompt);
   const nextStepPrompt = text(v.nextStepPrompt, FOCUS_LIMITS.nextStepPrompt);
+  const eveningPrompt = text(v.eveningPrompt, FOCUS_LIMITS.eveningPrompt);
   if (!date || !title || !statement || !prompt) return null;
   return {
     date,
@@ -216,6 +218,7 @@ export function parseFocusCard(value: unknown): FocusCardCopy | null {
     ...(reflection ? { reflection } : {}),
     ...(beliefPrompt ? { beliefPrompt } : {}),
     ...(nextStepPrompt ? { nextStepPrompt } : {}),
+    ...(eveningPrompt ? { eveningPrompt } : {}),
   };
 }
 

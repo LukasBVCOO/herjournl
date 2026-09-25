@@ -21,15 +21,17 @@ import {
   docFromCardAnswers,
   docFromDailyPlan,
   isEmptyDoc,
+  isVisionBoardDoc,
+  noteTitle,
   noteToLines,
   paragraphsFor,
   parseFocusCard,
   previewFromLines,
   textFromLines,
-  titleFromLines,
   type NoteNode,
 } from "./content";
 import { daysLeft, expiryCutoff } from "./dates";
+import { wipeCachedPhotos } from "./vision-board/photo-cache";
 import * as localDb from "./local-db";
 import type { StoredNote } from "./local-db";
 import * as api from "./notes-api";
@@ -138,6 +140,7 @@ function buildSnapshot(): NotesSnapshot {
       // Older copies have no area, so their card's title stands in for it.
       focusLabel: note.focusCard ? (note.focusCard.label ?? note.focusCard.title) : null,
       focusHouse: note.focusCard?.house ?? null,
+      isVisionBoard: isVisionBoardDoc(note.content),
     })),
     deleted: gone.map((note) => ({
       id: note.id,
@@ -183,7 +186,7 @@ function makeNote(
     updatedAt,
     deletedAt,
     focusCard,
-    title: titleFromLines(lines),
+    title: noteTitle(content, lines),
     preview: previewFromLines(lines),
     text: textFromLines(lines),
   };
@@ -231,7 +234,10 @@ function applyEdit(id: string, doc: unknown) {
   const existing = notes.get(id);
   // A brand new note with nothing written in it doesn't exist yet.
   if (!existing && isEmptyDoc(doc)) return;
-  if (!existing) posthog?.capture("note_created");
+  if (!existing) {
+    posthog?.capture("note_created");
+    if (isVisionBoardDoc(doc)) posthog?.capture("vision_board_created");
+  }
 
   editedAt.set(id, Date.now());
   put(
@@ -387,8 +393,10 @@ async function begin(uid: string) {
 
   let stored = saved;
   if (saved.owner !== uid) {
-    // These notes belong to someone else (or to nobody yet). Never show them.
+    // These notes belong to someone else (or to nobody yet). Never show them,
+    // nor keep that person's vision board photos on the phone.
     await localDb.wipeAll();
+    await wipeCachedPhotos();
     await localDb.setMeta("owner", uid);
     stored = { owner: uid, lastSync: null, notes: [], outbox: [] };
   }

@@ -1,14 +1,22 @@
 import { useDeferredValue, useMemo, useState, type ReactNode } from "react";
-import { Link } from "react-router";
-import { ListCheckIcon, MenuIcon, StickerIcon } from "@/components/icons";
+import { LayoutDashboardIcon, ListCheckIcon, MenuIcon, StickerIcon } from "@/components/icons";
 import { isPlanTitle } from "../content";
 import EmptyMessage from "../empty-message";
-import { TrashIcon } from "../note-icons";
 import { buildIndex, searchNotes } from "../search/search-logic";
 import type { ListedNote, NoteSummary } from "../types";
 import NoteCard from "./note-card";
 
-type Filter = "all" | "notes" | "plans" | "focus";
+type Filter = "all" | "notes" | "plans" | "focus" | "vision";
+
+// The last filter she picked, kept outside React so it survives this screen
+// being left and come back to (opening a note, then going back) instead of
+// snapping back to "All". It lives only as long as the app stays open — a
+// fresh open starts on "All" again.
+let rememberedFilter: Filter = "all";
+
+function rememberFilter(next: Filter) {
+  rememberedFilter = next;
+}
 
 const FILTERS: { value: Filter; label: string; icon: ReactNode }[] = [
   { value: "all", label: "All", icon: <MenuIcon /> },
@@ -20,13 +28,18 @@ const FILTERS: { value: Filter; label: string; icon: ReactNode }[] = [
   // note with no house icon of its own (daily-focus's MOON_FALLBACK_VISUAL)
   // — nothing else stands for "a focus card" in general, only per-house.
   { value: "focus", label: "Focus", icon: <span className="font-serif text-[19px] leading-none">✦</span> },
+  // The same mark a Vision board entry carries in the list (note-card.tsx).
+  { value: "vision", label: "Boards", icon: <LayoutDashboardIcon /> },
 ];
 
 function matchesFilter(note: NoteSummary, filter: Filter): boolean {
   if (filter === "focus") return note.focusLabel !== null;
   if (filter === "plans") return isPlanTitle(note.title);
-  // Plain notes: everything that isn't a focus-card note or a Plan.
-  if (filter === "notes") return note.focusLabel === null && !isPlanTitle(note.title);
+  if (filter === "vision") return note.isVisionBoard;
+  // Plain notes: everything that isn't a focus-card note, a Plan or a board.
+  if (filter === "notes") {
+    return note.focusLabel === null && !isPlanTitle(note.title) && !note.isVisionBoard;
+  }
   return true;
 }
 
@@ -36,6 +49,7 @@ const SECTION_HEADING: Record<Filter, string> = {
   notes: "Your Writing",
   plans: "Your Plans",
   focus: "Your Focus",
+  vision: "Your Vision Boards",
 };
 
 // The search bar and the list beneath it. While she types, the list narrows to
@@ -45,12 +59,11 @@ const SECTION_HEADING: Record<Filter, string> = {
 // marked on its own card (a small pin icon), not by living in a separate section.
 //
 // `belowSearch` (today's focus card, handed in by the app) sits between the two.
-// Just under it, four filter chips narrow "Your Notes" to plain Notes, Plans
-// (Daily Plan and Checklist notes — see content.ts's isPlanTitle) or Focus
-// cards (notes written from a daily focus card), with a fifth circle at the
-// end leading to Recently deleted instead — its own screen, not a filter on
-// this list. All of it steps aside while she is searching, so the results
-// are all she sees.
+// Just under it, five filter chips narrow the list to plain Notes, Plans
+// (Daily Plan and Checklist notes — see content.ts's isPlanTitle), Focus
+// cards (notes written from a daily focus card) or Vision boards. Recently
+// deleted lives in Settings. All of it steps aside while she is searching,
+// so the results are all she sees.
 export default function NotesBrowser({
   notes,
   query,
@@ -60,7 +73,11 @@ export default function NotesBrowser({
   query: string;
   belowSearch?: ReactNode;
 }) {
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilterState] = useState<Filter>(() => rememberedFilter);
+  function setFilter(next: Filter) {
+    rememberFilter(next);
+    setFilterState(next);
+  }
   const deferredQuery = useDeferredValue(query);
   const index = useMemo(() => buildIndex(notes), [notes]);
   const results = useMemo(
@@ -103,13 +120,6 @@ export default function NotesBrowser({
               </span>
             </button>
           ))}
-
-          <Link to="/recently-deleted" className="flex flex-col items-center gap-1.5">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-card text-ink-soft transition-colors duration-200 hover:text-ink">
-              <TrashIcon />
-            </span>
-            <span className="text-xs font-medium text-ink-soft">Deleted</span>
-          </Link>
         </div>
       )}
 

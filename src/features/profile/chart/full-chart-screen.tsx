@@ -1,8 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { BackIcon } from "@/components/icons";
 import BottomNav from "@/components/bottom-nav";
 import { posthog } from "@/lib/posthog";
+import { useGoBack } from "@/lib/use-go-back";
 import { HOUSE_VISUAL, houseBorderColor, type HouseNumber } from "@/features/daily-focus";
 import {
   placementDescription,
@@ -648,17 +649,17 @@ function FullChart({ dateOfBirth, birthTime, place }: {
   return <FullChartBody chart={state.chart} />;
 }
 
-// A function, not a plain const, so it can call useNavigate() itself: the
+// A function, not a plain const, so it can use the back hook itself: the
 // last page she was actually on, not a fixed destination — she can reach
 // this screen from more than one place now that the bottom nav (BottomNav)
 // is on every main screen.
 function Header() {
-  const navigate = useNavigate();
+  const goBack = useGoBack();
   return (
     <header className="grid grid-cols-[44px_1fr_44px] items-center pt-[max(1.25rem,env(safe-area-inset-top))] pb-5">
       <button
         type="button"
-        onClick={() => navigate(-1)}
+        onClick={goBack}
         aria-label="Back"
         className="-ml-3 flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
       >

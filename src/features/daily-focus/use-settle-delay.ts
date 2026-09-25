@@ -14,24 +14,21 @@ const shownThisSession = new Set<string>();
 // navigates back to this screen. Give the key a day in it (daily-plan-card.tsx
 // does `daily-plan:${cardDay}`) so a genuinely new day still gets its own
 // first pause rather than inheriting yesterday's.
+//
+// Worked out while drawing rather than stored: only the pause itself needs a
+// timer, which records the key and redraws once it has played.
 export function useSettleDelay(due: boolean, key: string, delayMs: number): boolean {
-  const [visible, setVisible] = useState(() => due && shownThisSession.has(key));
+  // Changing this is only a nudge to redraw once a pause has played.
+  const [, setSettledKey] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!due) {
-      setVisible(false);
-      return;
-    }
-    if (shownThisSession.has(key)) {
-      setVisible(true);
-      return;
-    }
+    if (!due || shownThisSession.has(key)) return;
     const timer = setTimeout(() => {
       shownThisSession.add(key);
-      setVisible(true);
+      setSettledKey(key);
     }, delayMs);
     return () => clearTimeout(timer);
   }, [due, key, delayMs]);
 
-  return visible;
+  return due && shownThisSession.has(key);
 }

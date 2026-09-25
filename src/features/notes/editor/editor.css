@@ -124,6 +124,14 @@
   content: "";
 }
 
+/* A vision board (vision-board/board-view.tsx) sits a little apart from the
+   writing around it and never shows a text cursor */
+.note-prose .vision-board {
+  margin-block: 1rem;
+  cursor: default;
+  user-select: none;
+}
+
 .note-prose li[data-checked="true"] > div {
   color: var(--color-muted);
   text-decoration: line-through;

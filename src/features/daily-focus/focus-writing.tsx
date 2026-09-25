@@ -40,14 +40,12 @@ function FocusField({
   prompt,
   value,
   onChange,
-  autoFocus,
 }: {
   label: string;
   required?: boolean;
   prompt: string;
   value: string;
   onChange: (value: string) => void;
-  autoFocus?: boolean;
 }) {
   return (
     <div>
@@ -61,7 +59,6 @@ function FocusField({
         onChange={(event) => onChange(event.target.value)}
         placeholder="Start writing…"
         aria-label={label}
-        autoFocus={autoFocus}
         rows={4}
         className="field-sizing-content block min-h-32 w-full resize-none rounded-card bg-surface px-5 py-4 text-[17px] leading-relaxed shadow-soft placeholder:text-muted"
       />
@@ -125,7 +122,6 @@ function FocusWriting({ card }: { card: DailyFocusCard }) {
         prompt={card.prompt}
         value={intention}
         onChange={(value) => change("intention", setIntention, value)}
-        autoFocus
       />
       {structured && (
         <>

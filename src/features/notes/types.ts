@@ -14,6 +14,8 @@ export type NoteSummary = {
   // for a reduced-mode card (no birth time, so no house), and for notes made
   // before this was kept.
   focusHouse: number | null;
+  // A Vision board note: shown in the list with a photo mark on the left.
+  isVisionBoard: boolean;
 };
 
 // The copy of a daily focus card that a note written from it keeps: the day, the

@@ -2,9 +2,20 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
+// The app's version, from package.json — only this one number is handed to
+// the app (shown under Log out in Settings), not the whole file.
+const { version } = JSON.parse(
+  readFileSync(new URL("./package.json", import.meta.url), "utf8"),
+) as { version: string };
+
 export default defineConfig({
+  define: {
+    "import.meta.env.VITE_APP_VERSION": JSON.stringify(version),
+  },
+
   plugins: [
     react(),
     tailwindcss(),

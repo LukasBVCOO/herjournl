@@ -39,7 +39,7 @@ export default function ReflectCard() {
           src="/daily-cards/reflection-hand-journal.png"
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 h-full w-[64%] translate-x-[14%] object-cover object-right"
+          className="pointer-events-none absolute top-1/2 right-0 h-[125%] w-auto max-w-none translate-x-[12%] -translate-y-1/2"
         />
         <div className="relative max-w-[58%]">
           <p className={label}>Evening reflection</p>
@@ -66,13 +66,17 @@ export default function ReflectCard() {
       to="/reflect"
       className="relative block overflow-hidden rounded-card bg-[#f2e0d8] px-5 py-6 shadow-soft transition-opacity duration-200 active:opacity-80"
     >
-      {/* The illustration bleeds off the right edge on purpose, same
-          treatment as the morning card's own unrevealed illustration. */}
+      {/* The illustration bleeds off the right edge on purpose. Sized by
+          height (a little taller than the card, centred) at its natural
+          width rather than cropped to a fixed box, so it reads bigger and
+          its left side — flowers, notebook — isn't cut off at a box edge.
+          The picture's own left side is transparent, so the text stays
+          clear. */}
       <img
         src="/daily-cards/reflection-hand-journal.png"
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 right-0 h-full w-[64%] translate-x-[14%] object-cover object-right"
+        className="pointer-events-none absolute top-1/2 right-0 h-[125%] w-auto max-w-none translate-x-[12%] -translate-y-1/2"
       />
       <div className="relative max-w-[58%]">
         <p className={label}>Evening reflection</p>

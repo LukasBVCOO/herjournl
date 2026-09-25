@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
-import { noteToLines, titleFromLines } from "./content";
+import { noteTitle } from "./content";
 import type { FocusCardCopy } from "./types";
 
 // Saving a note to the database. Runs on her phone. Creating and updating are
@@ -19,7 +19,7 @@ export async function saveNoteContent(
   // No point asking when the phone knows it has no internet.
   if (!navigator.onLine) return false;
 
-  const title = titleFromLines(noteToLines(doc));
+  const title = noteTitle(doc);
   try {
     const { error } = await supabase.from("notes").upsert({
       id,

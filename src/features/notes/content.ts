@@ -4,6 +4,9 @@
 // every note written earlier can still be opened when the editor grows.
 
 import type { FocusCardCopy } from "./types";
+import { readTiles } from "./vision-board/tiles";
+
+const VISION_BOARD_TITLE = "Vision board";
 
 export type NoteNode = {
   type?: string;
@@ -27,6 +30,16 @@ function inlineText(nodes: NoteNode[]) {
 }
 
 function collectLines(node: NoteNode, lines: string[]) {
+  // A vision board's word tiles are part of the note's writing, one line
+  // each, so search finds them and the list card can preview them. Its
+  // photos have no words, so they add nothing here.
+  if (node.type === "visionBoard") {
+    readTiles(node.attrs?.tiles).forEach((tile) => {
+      if (tile.kind === "words") lines.push(tile.text);
+    });
+    return;
+  }
+
   const children = node.content ?? [];
   const isTextBlock =
     node.type === "paragraph" ||
@@ -79,8 +92,34 @@ export function textFromLines(lines: string[]) {
     .join(" ");
 }
 
+// Whether a note is a Vision board note (made from the "+" menu, see
+// docFromVisionBoard). Told from its content, not its title, because she can
+// rename a board to anything.
+export function isVisionBoardDoc(doc: unknown) {
+  const blocks = (doc as NoteNode | null)?.content;
+  return Array.isArray(blocks) && blocks.some((block) => block?.type === "visionBoard");
+}
+
+function hasBoardTiles(doc: unknown) {
+  const blocks = (doc as NoteNode | null)?.content;
+  if (!Array.isArray(blocks)) return false;
+  return blocks.some(
+    (block) => block?.type === "visionBoard" && readTiles(block.attrs?.tiles).length > 0,
+  );
+}
+
+// A note's title: its first written line. A vision board with only photos
+// and its title line erased still has something in it, so it is called
+// "Vision board" rather than counting as an empty note (empty notes are
+// cleared away automatically — see notes-store.ts's sync).
+export function noteTitle(doc: unknown, lines: string[] = noteToLines(doc)) {
+  const title = titleFromLines(lines);
+  if (title !== "") return title;
+  return hasBoardTiles(doc) ? VISION_BOARD_TITLE : "";
+}
+
 export function isEmptyDoc(doc: unknown) {
-  return titleFromLines(noteToLines(doc)) === "";
+  return noteTitle(doc) === "";
 }
 
 export function paragraphsFor(text: string): NoteNode[] {
@@ -247,6 +286,20 @@ export function docFromChecklist(): NoteNode {
     content: [
       { type: "paragraph", content: [{ type: "text", text: "Checklist" }] },
       blankTaskList(CHECKLIST_TASKS),
+    ],
+  };
+}
+
+// A new Vision board note: "Vision board" as its title (she can rename it,
+// like any note's first line), then an empty board block — see
+// vision-board/board-node.ts. She can make as many as she likes; like a
+// Checklist, nothing is saved until she changes something.
+export function docFromVisionBoard(): NoteNode {
+  return {
+    type: "doc",
+    content: [
+      { type: "paragraph", content: [{ type: "text", text: VISION_BOARD_TITLE }] },
+      { type: "visionBoard", attrs: { tiles: [] } },
     ],
   };
 }

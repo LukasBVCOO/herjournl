@@ -9,6 +9,7 @@
 //   search/           the search bar and how notes are matched
 //   editor/           the writing screen, formatting bar, menu and its styles
 //   deleted/          the Recently deleted screen
+//   vision-board/     the vision board block a Vision board note holds
 //
 // A note can be written from a daily focus card: it keeps a copy of the card
 // (types.ts FocusCardCopy), shown as the question above her writing and in a
@@ -41,6 +42,9 @@ export type { FocusCardCopy } from "./types";
 // used by its own "Explore more" sheet (done-for-today-card.tsx) the same
 // way the "+" menu's own Checklist action does (list/notes-list.tsx).
 export { docFromChecklist } from "./content";
+// For the "+" menu (components/bottom-nav.tsx): the preset content of a new
+// Vision board note. The board itself lives in vision-board/.
+export { docFromVisionBoard } from "./content";
 
 // For the install feature: whether she has written any daily-focus note yet
 // (the moment that makes the first install offer due).

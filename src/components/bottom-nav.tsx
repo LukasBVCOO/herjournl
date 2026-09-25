@@ -1,10 +1,11 @@
 import { useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-import { docFromChecklist } from "@/features/notes";
+import { docFromChecklist, docFromVisionBoard } from "@/features/notes";
 import {
   HomeIcon,
   ListIcon,
   MoonStarsIcon,
+  LayoutDashboardIcon,
   PlusIcon,
   ProfileIcon,
   SettingsIcon,
@@ -55,8 +56,16 @@ export default function BottomNav() {
     });
   }
 
+  // Same again for a Vision board note: its title and an empty board.
+  function newVisionBoard() {
+    navigate(`/notes/${crypto.randomUUID()}`, {
+      state: { isNew: true, preset: docFromVisionBoard() },
+    });
+  }
+
   // What the "+" button fans out into.
   const fabActions: FabAction[] = [
+    { label: "Vision board", icon: <LayoutDashboardIcon />, onClick: newVisionBoard },
     { label: "Checklist", icon: <ListIcon />, onClick: newChecklist },
     { label: "New note", icon: <StickerIcon />, onClick: newNote },
   ];
@@ -80,7 +89,7 @@ export default function BottomNav() {
         />
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-paper pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-paper pb-[max(0.25rem,env(safe-area-inset-bottom))]">
         <div className="relative mx-auto flex w-full max-w-md items-center justify-between px-8 py-1.5">
           <Link to="/" aria-label="Home" className={navIconClass(pathname === "/")}>
             <HomeIcon size={28} />
@@ -111,7 +120,8 @@ export default function BottomNav() {
                 reserves space for them while closed) and visibly rise up
                 out of it when it opens, rather than just fading in where
                 they already sit. */}
-            <div className="pointer-events-none absolute bottom-full left-1/2 flex -translate-x-1/2 flex-col items-center gap-3 pb-3">
+            {/* One row, side by side, centred over the "+". */}
+            <div className="pointer-events-none absolute bottom-full left-1/2 flex -translate-x-1/2 flex-row items-center gap-3 pb-3">
               {fabActions.map((action) => (
                 <button
                   key={action.label}

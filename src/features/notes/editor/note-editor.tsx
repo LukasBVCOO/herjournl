@@ -6,6 +6,7 @@ import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { Placeholder } from "@tiptap/extensions";
 import { BackIcon } from "@/components/icons";
 import { posthog } from "@/lib/posthog";
+import { useGoBack } from "@/lib/use-go-back";
 import { deleteNote, pinNote } from "../notes-store";
 import {
   flushNote,
@@ -17,6 +18,7 @@ import {
   type SaveStatus,
 } from "../save-queue";
 import type { FocusCardCopy } from "../types";
+import { VisionBoard } from "../vision-board/board-node";
 import FocusInfo from "./focus-info";
 import FormatBar from "./format-bar";
 import NoteMenu from "./note-menu";
@@ -60,6 +62,7 @@ export default function NoteEditor({
   focusCard,
 }: Props) {
   const navigate = useNavigate();
+  const goBackInApp = useGoBack();
   // A new note's id was chosen on her phone before this screen opened, so
   // saving is always the same call and never makes two copies of a note.
   const isNew = !exists;
@@ -110,6 +113,7 @@ export default function NoteEditor({
       }),
       TaskList,
       TaskItem.configure({ nested: true }),
+      VisionBoard,
       Placeholder.configure({
         placeholder: ({ pos }) => (pos === 0 ? PLACEHOLDER : ""),
       }),
@@ -136,7 +140,7 @@ export default function NoteEditor({
   // there, not always to the notes list.
   function goBack() {
     void flushNote(id);
-    navigate(-1);
+    goBackInApp();
   }
 
   async function togglePin() {

@@ -108,13 +108,16 @@ export default function TodaysFocusCard() {
       className="relative block overflow-hidden rounded-card bg-[#f2e0d8] px-5 py-6 shadow-soft transition-opacity duration-200 active:opacity-80"
     >
       {/* The illustration bleeds off the right edge on purpose — the card is
-          clipped (overflow-hidden), and the source picture is mostly empty on
-          its own left side, so object-right shows the part that matters. */}
+          clipped (overflow-hidden). Sized by height only (w-auto, max-w-none)
+          rather than cropped to a fixed-width box, so its left side — the
+          flowers and the hand — runs freely behind the text instead of being
+          cut off at a box edge. The picture's own left side is transparent,
+          so nothing covers the text. */}
       <img
         src="/daily-cards/unrevealed-hand-envelope.png"
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 right-0 h-full w-[64%] translate-x-[14%] object-cover object-right"
+        className="pointer-events-none absolute inset-y-0 right-0 h-full w-auto max-w-none translate-x-[14%]"
       />
       <div className="relative max-w-[58%]">
         <p className={label}>Today&rsquo;s focus</p>

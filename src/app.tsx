@@ -27,7 +27,7 @@ import {
   RecentlyDeletedScreen,
 } from "@/features/notes";
 import { OnboardingFlow } from "@/features/onboarding";
-import { FullChartScreen, OpeningGreeting, ProfileScreen } from "@/features/profile";
+import { FullChartScreen, ProfileScreen } from "@/features/profile";
 
 // Every screen in the app and the web address that opens it. Moving between
 // them never asks the server for a new page, which is what makes it quick.
@@ -47,7 +47,6 @@ export default function App() {
                   note once the reflection is done, then the install nudge
                   if one is due, all between the search bar and her notes. */}
               <NotesListScreen
-                greetingSlot={<OpeningGreeting />}
                 focusSlot={
                   <>
                     <TodaysFocusCard />

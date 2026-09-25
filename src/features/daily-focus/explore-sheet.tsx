@@ -1,11 +1,11 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import { docFromChecklist } from "@/features/notes";
+import { docFromChecklist, docFromVisionBoard } from "@/features/notes";
 
 // Where "Explore more" on the closing card (done-for-today-card.tsx) leads:
-// a plain checklist, a plain note, her birth chart, or just a look back at
-// what she's already written — the last one only closes this sheet, since
-// her journal is already the list sitting right behind it.
+// a plain checklist, a plain note, a vision board, her birth chart, or just a
+// look back at what she's already written — the last one only closes this
+// sheet, since her journal is already the list sitting right behind it.
 export default function ExploreSheet({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const firstOption = useRef<HTMLButtonElement>(null);
@@ -36,6 +36,13 @@ export default function ExploreSheet({ onClose }: { onClose: () => void }) {
     });
   }
 
+  function newVisionBoard() {
+    onClose();
+    navigate(`/notes/${crypto.randomUUID()}`, {
+      state: { isNew: true, preset: docFromVisionBoard() },
+    });
+  }
+
   const options = [
     {
       label: "Make a list",
@@ -46,6 +53,11 @@ export default function ExploreSheet({ onClose }: { onClose: () => void }) {
       label: "Write a note",
       description: "Give your thoughts a little space.",
       onSelect: newNote,
+    },
+    {
+      label: "Create a vision board",
+      description: "Picture the life you're calling in.",
+      onSelect: newVisionBoard,
     },
     {
       label: "View your birth chart",
@@ -76,7 +88,7 @@ export default function ExploreSheet({ onClose }: { onClose: () => void }) {
         className="relative w-full max-w-md animate-fade-in rounded-t-sheet bg-surface px-3 pt-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-sheet"
       >
         <h2 id="explore-title" className="px-3 font-serif text-[28px] leading-tight font-medium">
-          Explore more
+          Explore more <span className="text-accent">✦</span>
         </h2>
 
         <div className="mt-4 flex flex-col">

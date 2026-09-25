@@ -1,8 +1,9 @@
 import { useSyncExternalStore } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { BackIcon } from "@/components/icons";
 import BottomNav from "@/components/bottom-nav";
 import { getSession, subscribe } from "@/lib/session";
+import { useGoBack } from "@/lib/use-go-back";
 import BirthDetailsSection from "./birth-details-section";
 import ChangeEmailSection from "./change-email-section";
 import ChangePasswordSection from "./change-password-section";
@@ -15,7 +16,7 @@ const cardClass = "rounded-card bg-card px-5 py-4 shadow-soft";
 // Where she manages her details: her name, when and where she was born, and the
 // chart that comes from them.
 export default function ProfileScreen() {
-  const navigate = useNavigate();
+  const goBack = useGoBack();
   const session = useSyncExternalStore(subscribe, getSession, getSession);
   const { state, reload, retry } = useProfile();
 
@@ -51,7 +52,7 @@ export default function ProfileScreen() {
             bottom nav (BottomNav) is on every main screen. */}
         <button
           type="button"
-          onClick={() => navigate(-1)}
+          onClick={goBack}
           aria-label="Back"
           className="-ml-3 flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
         >

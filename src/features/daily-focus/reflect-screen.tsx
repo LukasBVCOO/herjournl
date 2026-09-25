@@ -51,11 +51,26 @@ function ReflectWriting({ card }: { card: DailyFocusCard }) {
   }
 
   return (
-    <section className="mt-6">
-      <p className="text-xs font-medium tracking-wider text-muted uppercase">Time to reflect ✦</p>
-      <p className="mt-2 mb-6 font-serif text-[24px] leading-snug font-medium">
-        {card.eveningReflectionPrompt}
-      </p>
+    <section className="mt-2">
+      {/* A square card of its own: "Time to reflect" and her question centred,
+          the sunset over the hills running the full width along the bottom.
+          The picture is square too and see-through across its top
+          two-thirds, so it fills the card edge to edge without covering the
+          words; pb-[30%] lifts them clear of the hills. */}
+      <div className="relative mb-6 flex aspect-square flex-col items-center justify-center overflow-hidden rounded-card bg-[#f2e0d8] px-6 pb-[30%] text-center shadow-soft">
+        <img
+          src="/daily-cards/reflection-sunset-hills.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-bottom"
+        />
+        <div className="relative">
+          <p className="text-xs font-medium tracking-wider text-muted uppercase">Time to reflect ✦</p>
+          <p className="mt-3 font-serif text-[24px] leading-snug font-medium">
+            {card.eveningReflectionPrompt}
+          </p>
+        </div>
+      </div>
       <textarea
         value={text}
         onChange={(event) => setText(event.target.value)}

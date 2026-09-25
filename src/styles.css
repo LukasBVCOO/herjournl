@@ -41,7 +41,6 @@
       opacity: 1;
     }
   }
-
   /* The "Mapping your chart" picture: points appear one by one, a line slowly
      draws between them, and the outer circle gently breathes. */
   --animate-star-in: star-in 900ms ease-out both;

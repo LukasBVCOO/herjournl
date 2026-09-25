@@ -1,5 +1,5 @@
-import { Link } from "react-router";
 import { BackIcon } from "@/components/icons";
+import { useGoBack } from "@/lib/use-go-back";
 import EmptyMessage from "../empty-message";
 import { retrySync } from "../notes-store";
 import { useNotes } from "../use-notes";
@@ -7,6 +7,7 @@ import DeletedNoteCard from "./deleted-note-card";
 
 // Deleted notes wait here for 30 days before they are removed for good.
 export default function RecentlyDeletedScreen() {
+  const goBack = useGoBack();
   const { ready, hasSynced, syncFailed, deleted } = useNotes();
 
   const stillFinding = !ready || (deleted.length === 0 && !hasSynced && !syncFailed);
@@ -14,13 +15,16 @@ export default function RecentlyDeletedScreen() {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6 pb-12">
       <header className="flex items-center gap-1 pt-[max(1.25rem,env(safe-area-inset-top))] pb-2">
-        <Link
-          to="/"
-          aria-label="Back to notes"
+        {/* Reached from Settings now, so back returns there (or to the notes
+            list if there's no earlier page — see useGoBack). */}
+        <button
+          type="button"
+          onClick={goBack}
+          aria-label="Back"
           className="-ml-3 flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
         >
           <BackIcon />
-        </Link>
+        </button>
         <h1 className="font-serif text-[28px] font-medium">Recently deleted</h1>
       </header>
       <p className="mb-6 text-sm text-ink-soft">

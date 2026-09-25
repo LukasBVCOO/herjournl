@@ -14,7 +14,7 @@ import HeaderSearch from "../search/header-search";
 // `focusSlot` is a card shown between the search bar and her notes (or at the top
 // when she has none yet). The app puts today's focus card there. It is handed in
 // rather than imported so this feature knows nothing about it.
-export default function NotesListScreen({ focusSlot, greetingSlot }: { focusSlot?: ReactNode; greetingSlot?: ReactNode }) {
+export default function NotesListScreen({ focusSlot }: { focusSlot?: ReactNode }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const { ready, hasSynced, syncFailed, notes } = useNotes();
@@ -35,8 +35,6 @@ export default function NotesListScreen({ focusSlot, greetingSlot }: { focusSlot
         <header className="flex items-center gap-2 pt-[max(1.25rem,env(safe-area-inset-top))] pb-5">
           <HeaderSearch value={query} onChange={setQuery} />
         </header>
-
-        {!stillFinding && greetingSlot}
 
         {stillFinding ? null : notes.length === 0 && !hasSynced ? (
           <>

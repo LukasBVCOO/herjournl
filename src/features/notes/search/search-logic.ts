@@ -82,5 +82,6 @@ export function searchNotes(index: IndexedNote[], query: string): NoteSummary[] 
       updatedAt: note.updatedAt,
       focusLabel: note.focusLabel,
       focusHouse: note.focusHouse,
+      isVisionBoard: note.isVisionBoard,
     }));
 }

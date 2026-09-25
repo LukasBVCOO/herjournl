@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
-import { BackIcon } from "@/components/icons";
+import { Link, useNavigate } from "react-router";
+import { BackIcon, PackIcon } from "@/components/icons";
 import BottomNav from "@/components/bottom-nav";
 import { NotificationsSection } from "@/features/notifications";
 import { signOut } from "@/lib/session";
+import { useGoBack } from "@/lib/use-go-back";
 import { useSession } from "./use-session";
 
 export default function SettingsScreen() {
   const session = useSession();
   const navigate = useNavigate();
+  const goBack = useGoBack();
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
 
@@ -35,7 +37,7 @@ export default function SettingsScreen() {
             bottom nav (BottomNav) is on every main screen. */}
         <button
           type="button"
-          onClick={() => navigate(-1)}
+          onClick={goBack}
           aria-label="Back"
           className="-ml-3 flex h-11 w-11 items-center justify-center text-ink-soft transition-colors duration-200 hover:text-ink"
         >
@@ -55,6 +57,19 @@ export default function SettingsScreen() {
         <NotificationsSection />
       </div>
 
+      <Link
+        to="/recently-deleted"
+        className="mt-4 flex items-center gap-3 rounded-card bg-card px-5 py-4 text-[17px] text-ink shadow-soft transition-opacity duration-200 active:opacity-80"
+      >
+        <span className="text-ink-soft">
+          <PackIcon name="trash" />
+        </span>
+        <span className="flex-1">Recently deleted</span>
+        <span aria-hidden="true" className="text-ink-soft">
+          →
+        </span>
+      </Link>
+
       {problem && (
         <p role="alert" className="mt-6 animate-fade-in text-sm text-alert">
           {problem}
@@ -69,6 +84,10 @@ export default function SettingsScreen() {
       >
         Log out
       </button>
+
+      <p className="mt-4 text-center text-xs text-muted">
+        Version {import.meta.env.VITE_APP_VERSION}
+      </p>
     </main>
     <BottomNav />
     </>

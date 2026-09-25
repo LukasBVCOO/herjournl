@@ -16,7 +16,9 @@ export function PackIcon({ name, size = 24 }: {
     | "list-check"
     | "sticker-2"
     | "home"
-    | "moon-stars";
+    | "moon-stars"
+    | "photo"
+    | "layout-dashboard";
   size?: number;
 }) {
   return (
@@ -90,4 +92,12 @@ export function HomeIcon({ size }: { size?: number } = {}) {
 
 export function MoonStarsIcon({ size }: { size?: number } = {}) {
   return <PackIcon name="moon-stars" size={size} />;
+}
+
+export function PhotoIcon({ size }: { size?: number } = {}) {
+  return <PackIcon name="photo" size={size} />;
+}
+
+export function LayoutDashboardIcon({ size }: { size?: number } = {}) {
+  return <PackIcon name="layout-dashboard" size={size} />;
 }

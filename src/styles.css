@@ -20,6 +20,12 @@
   --color-accent-ink: #8a6256;
   --color-alert: #9a5b4f;
   --color-ink-soft: #6b635c;
+  /* The warm gold of the daily card's small drawn marks and the outline of
+     its one required question (daily-focus/focus-writing.tsx) */
+  --color-gold: #c29a62;
+  /* The warm blush behind the daily card's "A thought to reflect on"
+     (daily-focus/reflection-card.tsx) — the same for every area of life */
+  --color-blush: #f2e7e3;
 
   --font-serif: var(--font-cormorant), Georgia, serif;
   --font-sans: var(--font-dm-sans), system-ui, sans-serif;

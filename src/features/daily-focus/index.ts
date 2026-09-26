@@ -94,7 +94,15 @@ export {
 // same way everywhere they appear, not duplicated in a second content file.
 export { HOUSE_CONTENT, type HouseContent, type HouseNumber } from "./content/houses";
 export { MOON_MODIFIERS, type MoonModifier } from "./content/moon-modifiers";
-export { cardDayIn, deviceTimeZone, localDateIn, localInstant, referenceInstant, REFERENCE_HOUR } from "./local-day";
+export {
+  cardDayIn,
+  deviceTimeZone,
+  localDateIn,
+  localHourIn,
+  localInstant,
+  referenceInstant,
+  REFERENCE_HOUR,
+} from "./local-day";
 export { moonHouse, readMoon, type MoonReading } from "./active-house";
 export { assembleDailyFocusCard } from "./assemble-card";
 export { generateDailyFocus } from "./generate";

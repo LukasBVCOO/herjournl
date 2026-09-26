@@ -10,7 +10,6 @@
 //                          enter her email, a reset link is sent
 //   reset-password-screen.tsx   where that reset link sends her back: choose a
 //                          new password
-//   settings-screen.tsx    her email and the log out button
 //   opening-screen.tsx     the blink before the app knows who she is
 //
 // The rest of the app uses only what is exported here.
@@ -19,5 +18,4 @@ export { default as CheckEmailScreen } from "./check-email-screen";
 export { default as AuthCallbackScreen } from "./auth-callback-screen";
 export { default as ForgotPasswordScreen } from "./forgot-password-screen";
 export { default as ResetPasswordScreen } from "./reset-password-screen";
-export { default as SettingsScreen } from "./settings-screen";
 export { RequireSession, RequireNoSession } from "./require-session";

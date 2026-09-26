@@ -23,7 +23,11 @@ function Notice({ title, children }: { title: string; children: ReactNode }) {
 }
 
 // Today's focus, in full. She arrives here from the card on her notes list.
-export default function FocusScreen() {
+//
+// `affirmationSlot` is the morning 3x of the day's affirmation, shown as the
+// last part of her entry (after "My next step", before Done). Handed in by
+// the app rather than imported, so this feature knows nothing about it.
+export default function FocusScreen({ affirmationSlot }: { affirmationSlot?: ReactNode }) {
   const { state, retry } = useTodaysFocus();
 
   // Once she has seen the card it is marked as opened, in the database and on
@@ -60,7 +64,7 @@ export default function FocusScreen() {
       ) : state.status === "ready" ? (
         <>
           <FocusCardView card={state.card} />
-          <FocusResponse card={state.card} />
+          <FocusResponse card={state.card} affirmationSlot={affirmationSlot} />
         </>
       ) : state.status === "offline" ? (
         <Notice title="You're offline.">

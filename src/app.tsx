@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import { AffirmationPracticeScreen, AffirmationSession, AffirmationsScreen } from "@/features/affirmations";
 import {
   AuthCallbackScreen,
   AuthScreen,
@@ -7,7 +8,6 @@ import {
   RequireNoSession,
   RequireSession,
   ResetPasswordScreen,
-  SettingsScreen,
 } from "@/features/auth";
 import {
   DailyPlanCard,
@@ -65,7 +65,8 @@ export default function App() {
           path="/focus"
           element={
             <RequireSession>
-              <FocusScreen />
+              {/* The morning 3x of the day's affirmation closes her entry. */}
+              <FocusScreen affirmationSlot={<AffirmationSession session="morning" />} />
             </RequireSession>
           }
         />
@@ -73,7 +74,29 @@ export default function App() {
           path="/reflect"
           element={
             <RequireSession>
-              <ReflectScreen />
+              {/* The evening 9x comes before her journal; the ninth moves
+                  her straight on to the recap. */}
+              <ReflectScreen
+                affirmationSlot={(onComplete) => (
+                  <AffirmationSession session="evening" onComplete={onComplete} />
+                )}
+              />
+            </RequireSession>
+          }
+        />
+        <Route
+          path="/affirmations"
+          element={
+            <RequireSession>
+              <AffirmationsScreen />
+            </RequireSession>
+          }
+        />
+        <Route
+          path="/affirmations/today"
+          element={
+            <RequireSession>
+              <AffirmationPracticeScreen />
             </RequireSession>
           }
         />
@@ -119,11 +142,9 @@ export default function App() {
         />
         <Route
           path="/settings"
-          element={
-            <RequireSession>
-              <SettingsScreen />
-            </RequireSession>
-          }
+          // Settings now lives at the bottom of Profile; the old address
+          // (bookmarks, older links) still lands somewhere sensible.
+          element={<Navigate to="/profile" replace />}
         />
 
         <Route

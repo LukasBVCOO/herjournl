@@ -9,12 +9,15 @@ import ChangeEmailSection from "./change-email-section";
 import ChangePasswordSection from "./change-password-section";
 import ChartSection from "./chart-section";
 import NameSection from "./name-section";
+import SettingsSection from "./settings-section";
 import { useProfile } from "./use-profile";
 
 const cardClass = "rounded-card bg-card px-5 py-4 shadow-soft";
 
 // Where she manages her details: her name, when and where she was born, and the
-// chart that comes from them.
+// chart that comes from them — and, at the bottom, the app's settings
+// (notifications, Recently deleted, log out), which used to be a screen of
+// their own.
 export default function ProfileScreen() {
   const goBack = useGoBack();
   const session = useSyncExternalStore(subscribe, getSession, getSession);
@@ -117,6 +120,11 @@ export default function ProfileScreen() {
 
         </div>
       )}
+
+      {/* Notifications, Recently deleted and Log out (what used to be the
+          Settings screen). Outside the checks above, so logging out works
+          even if her profile couldn't load. */}
+      {state.status !== "loading" && <SettingsSection />}
     </main>
     <BottomNav />
     </>

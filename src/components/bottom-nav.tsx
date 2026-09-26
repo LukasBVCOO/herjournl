@@ -2,13 +2,13 @@ import { useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { docFromChecklist, docFromVisionBoard } from "@/features/notes";
 import {
+  CrownIcon,
   HomeIcon,
   ListIcon,
   MoonStarsIcon,
   LayoutDashboardIcon,
   PlusIcon,
   ProfileIcon,
-  SettingsIcon,
   StickerIcon,
 } from "./icons";
 
@@ -23,11 +23,12 @@ function navIconClass(active: boolean) {
 
 type FabAction = { label: string; icon: ReactNode; onClick: () => void };
 
-// The app's own bottom bar, the same on every one of its four main screens
-// (notes list, birth chart, profile, settings — each renders this at the end
-// of its own JSX, with matching bottom padding on its scrollable content so
-// nothing sits underneath it). Home and Chart on the left, Profile and
-// Settings on the right, one flat bar like a native tab bar. "+" isn't one
+// The app's own bottom bar, the same on every one of its three main screens
+// (notes list, birth chart, profile — each renders this at the end of its own
+// JSX, with matching bottom padding on its scrollable content so nothing sits
+// underneath it). Home and Chart on the left, Affirmations (the crown) and
+// Profile on the right (settings live at the bottom of Profile now), one flat
+// bar like a native tab bar. "+" isn't one
 // of the row's flex items — it's absolutely centered and pulled up so it
 // pokes out above the bar rather than sitting flush inside it, the only
 // filled circle among plain outline icons.
@@ -90,29 +91,40 @@ export default function BottomNav() {
       )}
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-paper pb-[max(0.25rem,env(safe-area-inset-bottom))]">
-        <div className="relative mx-auto flex w-full max-w-md items-center justify-between px-8 py-1.5">
-          <Link to="/" aria-label="Home" className={navIconClass(pathname === "/")}>
-            <HomeIcon size={28} />
-          </Link>
-          <Link
-            to="/profile/chart"
-            aria-label="Your birth chart"
-            className={navIconClass(pathname === "/profile/chart")}
-          >
-            <MoonStarsIcon size={28} />
-          </Link>
+        <div className="relative mx-auto flex w-full max-w-md items-center px-4 py-1.5">
+          {/* Each side of "+" spreads its own icons evenly across its half, so
+              the single Profile icon sits in the middle of the right half
+              rather than hugging "+" or the edge. */}
+          <div className="flex flex-1 items-center justify-evenly">
+            <Link to="/" aria-label="Home" className={navIconClass(pathname === "/")}>
+              <HomeIcon size={28} />
+            </Link>
+            <Link
+              to="/profile/chart"
+              aria-label="Your birth chart"
+              className={navIconClass(pathname === "/profile/chart")}
+            >
+              <MoonStarsIcon size={28} />
+            </Link>
+          </div>
 
           {/* Reserves the "+" button's own footprint in the row, so the two
-              side pairs stay evenly split around true center instead of
-              drifting together now that "+" is positioned outside the flow. */}
+              sides stay evenly split around true center now that "+" is
+              positioned outside the flow. */}
           <div className="w-16 shrink-0" aria-hidden="true" />
 
-          <Link to="/profile" aria-label="Profile" className={navIconClass(pathname === "/profile")}>
-            <ProfileIcon size={28} />
-          </Link>
-          <Link to="/settings" aria-label="Settings" className={navIconClass(pathname === "/settings")}>
-            <SettingsIcon size={28} />
-          </Link>
+          <div className="flex flex-1 items-center justify-evenly">
+            <Link
+              to="/affirmations"
+              aria-label="Daily Affirmations"
+              className={navIconClass(pathname.startsWith("/affirmations"))}
+            >
+              <CrownIcon size={28} />
+            </Link>
+            <Link to="/profile" aria-label="Profile" className={navIconClass(pathname === "/profile")}>
+              <ProfileIcon size={28} />
+            </Link>
+          </div>
 
           <div className="absolute -top-6 left-1/2 -translate-x-1/2">
             {/* Anchors the two extra buttons to the "+" button itself, so

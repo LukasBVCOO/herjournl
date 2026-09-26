@@ -18,7 +18,8 @@ export function PackIcon({ name, size = 24 }: {
     | "home"
     | "moon-stars"
     | "photo"
-    | "layout-dashboard";
+    | "layout-dashboard"
+    | "crown";
   size?: number;
 }) {
   return (
@@ -100,4 +101,8 @@ export function PhotoIcon({ size }: { size?: number } = {}) {
 
 export function LayoutDashboardIcon({ size }: { size?: number } = {}) {
   return <PackIcon name="layout-dashboard" size={size} />;
+}
+
+export function CrownIcon({ size }: { size?: number } = {}) {
+  return <PackIcon name="crown" size={size} />;
 }

@@ -12,7 +12,13 @@ import type { DailyFocusCard } from "./types";
 // turns them into a note and opens it. A card that has been answered (it
 // says so in the database) offers no writing box: the day has one answer,
 // and it is a note now.
-export default function FocusResponse({ card }: { card: DailyFocusCard }) {
+export default function FocusResponse({
+  card,
+  affirmationSlot,
+}: {
+  card: DailyFocusCard;
+  affirmationSlot?: ReactNode;
+}) {
   return card.done ? (
     <section className="mt-6 animate-fade-in text-center">
       <p className="font-serif text-[24px] leading-tight text-ink-soft">
@@ -29,7 +35,7 @@ export default function FocusResponse({ card }: { card: DailyFocusCard }) {
       </Link>
     </section>
   ) : (
-    <FocusWriting card={card} />
+    <FocusWriting card={card} affirmationSlot={affirmationSlot} />
   );
 }
 
@@ -80,7 +86,13 @@ function FocusField({
   );
 }
 
-function FocusWriting({ card }: { card: DailyFocusCard }) {
+function FocusWriting({
+  card,
+  affirmationSlot,
+}: {
+  card: DailyFocusCard;
+  affirmationSlot?: ReactNode;
+}) {
   const navigate = useNavigate();
   // A card saved before the belief/next-step prompts existed only has "My
   // intention" — the same single-question flow it's always had, rather than
@@ -156,6 +168,9 @@ function FocusWriting({ card }: { card: DailyFocusCard }) {
           />
         </>
       )}
+      {/* The morning 3x of the day's affirmation, as the last part of the
+          entry. Never required: Done works whether she's said it or not. */}
+      {affirmationSlot}
       <button
         type="button"
         onClick={done}

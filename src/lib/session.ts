@@ -129,6 +129,21 @@ export function registerSignOutHandler(handler: SignOutHandler) {
   signOutHandlers.add(handler);
 }
 
+// Clears everything of hers off this phone and ends the login here, without
+// the "is anything still unsent?" check Log out makes. Only for after her
+// account has been deleted: there is nowhere left to send unsent writing to,
+// and none of it may stay on the phone.
+export async function forgetThisDevice() {
+  for (const handler of signOutHandlers) {
+    try {
+      await handler.clear();
+    } catch {
+      // Keep clearing the rest.
+    }
+  }
+  await supabase.auth.signOut({ scope: "local" });
+}
+
 // Logs her out. Returns a message when it wouldn't be safe, otherwise null.
 export async function signOut(): Promise<string | null> {
   for (const handler of signOutHandlers) {

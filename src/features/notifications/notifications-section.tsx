@@ -61,8 +61,8 @@ export default function NotificationsSection() {
     <section className={cardClass}>
       <p className="font-medium text-[17px]">Notifications</p>
       <p className="mt-1 text-[15px] text-ink-soft">
-        A nudge in the morning for today&rsquo;s focus, and in the evening to
-        reflect on your day.
+        A nudge in the morning for today&rsquo;s focus, in the afternoon for
+        your affirmation, and in the evening to reflect on your day.
       </p>
 
       {state.status === "checking" ? null : state.status === "unsupported" ? (

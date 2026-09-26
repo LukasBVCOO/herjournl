@@ -43,7 +43,7 @@ type DueRow = {
   endpoint: string;
   p256dh: string;
   auth_key: string;
-  kind: "morning" | "evening";
+  kind: "morning" | "afternoon" | "evening";
   title: string;
   body: string;
   local_date: string;
@@ -77,7 +77,9 @@ Deno.serve(async (req: Request) => {
     const payload = JSON.stringify({
       title: row.title,
       body: row.body,
-      url: row.kind === "morning" ? "/focus" : "/",
+      // The afternoon one opens today's affirmation practice, on its six
+      // repetitions.
+      url: row.kind === "morning" ? "/focus" : row.kind === "afternoon" ? "/affirmations/today" : "/",
     });
 
     try {

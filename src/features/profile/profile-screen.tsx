@@ -140,19 +140,27 @@ export default function ProfileScreen() {
               />
             </Group>
           ) : (
-            <section className="rounded-card bg-card px-5 py-5 shadow-soft">
-              <p className="font-serif text-[24px] leading-tight font-medium">
-                Your profile isn&rsquo;t set up yet.
-              </p>
-              <p className="mt-2 text-[15px] text-ink-soft">
-                Answer a few questions and we&rsquo;ll create your chart.
-              </p>
-              <Link
-                to="/onboarding"
-                className="mt-4 inline-flex h-11 items-center rounded-full bg-ink px-6 text-[15px] font-medium text-paper transition-opacity duration-200 hover:opacity-90"
-              >
-                Set up my profile
-              </Link>
+            <section className="relative overflow-hidden rounded-card bg-card px-5 py-5 shadow-soft">
+              <img
+                src="/onboarding-images/onboarding-incomplete-lock-key.png"
+                alt=""
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 -right-4 h-[128px] w-[128px] -translate-y-1/2"
+              />
+              <div className="relative max-w-[64%]">
+                <p className="font-serif text-[24px] leading-tight font-medium">
+                  Your profile isn&rsquo;t set up yet.
+                </p>
+                <p className="mt-2 text-[15px] text-ink-soft">
+                  Answer a few questions and we&rsquo;ll create your chart.
+                </p>
+                <Link
+                  to="/onboarding"
+                  className="mt-4 inline-flex h-11 items-center rounded-full bg-ink px-6 text-[15px] font-medium text-paper transition-opacity duration-200 hover:opacity-90"
+                >
+                  Set up my profile
+                </Link>
+              </div>
             </section>
           )}
 

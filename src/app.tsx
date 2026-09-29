@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import BottomNav from "@/components/bottom-nav";
 import { AffirmationPracticeScreen, AffirmationsScreen } from "@/features/affirmations";
 import {
   AuthCallbackScreen,
@@ -36,7 +37,7 @@ import {
   NotesListScreen,
   RecentlyDeletedScreen,
 } from "@/features/notes";
-import { OnboardingFlow } from "@/features/onboarding";
+import { OnboardingFlow, RequireOnboarding } from "@/features/onboarding";
 import { FullChartScreen, ProfileScreen } from "@/features/profile";
 import {
   HiddenDuringWeeklyRecap,
@@ -117,9 +118,13 @@ export default function App() {
           path="/affirmations"
           element={
             <RequireSession>
-              <PremiumOnly>
-                <AffirmationsScreen />
-              </PremiumOnly>
+              {/* Needs her chart: until onboarding is finished, a short
+                  "you haven't set up your profile yet" instead. */}
+              <RequireOnboarding unlocks="your daily affirmations" footer={<BottomNav />}>
+                <PremiumOnly>
+                  <AffirmationsScreen />
+                </PremiumOnly>
+              </RequireOnboarding>
             </RequireSession>
           }
         />
@@ -127,9 +132,11 @@ export default function App() {
           path="/affirmations/today"
           element={
             <RequireSession>
-              <PremiumOnly>
-                <AffirmationPracticeScreen />
-              </PremiumOnly>
+              <RequireOnboarding unlocks="your daily affirmations" footer={<BottomNav />}>
+                <PremiumOnly>
+                  <AffirmationPracticeScreen />
+                </PremiumOnly>
+              </RequireOnboarding>
             </RequireSession>
           }
         />
@@ -213,7 +220,9 @@ export default function App() {
           path="/profile/chart"
           element={
             <RequireSession>
-              <FullChartScreen />
+              <RequireOnboarding unlocks="your birth chart" footer={<BottomNav />}>
+                <FullChartScreen />
+              </RequireOnboarding>
             </RequireSession>
           }
         />

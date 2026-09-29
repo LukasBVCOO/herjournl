@@ -5,6 +5,7 @@ import { getSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase/client";
 import type { Answers } from "./answers-store";
 import { parseBirthTime } from "../validation/birth-time";
+import { markOnboardingDone } from "../gate/onboarding-status";
 import { formatPlace } from "../places/places";
 
 const two = (value: number | string) => String(value).padStart(2, "0");
@@ -43,6 +44,7 @@ export async function saveOnboarding(answers: Answers): Promise<boolean> {
       placements: chart,
       onboarding_completed_at: new Date().toISOString(),
     });
+    if (!error) markOnboardingDone();
     return !error;
   } catch {
     return false;

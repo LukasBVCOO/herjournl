@@ -152,9 +152,9 @@ function FocusSlotCard({ state }: { state: ReturnType<typeof useTodaysFocus>["st
   );
 }
 
-// In place of today's card while onboarding isn't finished: the same card, the
-// same picture, but the way in is finishing setup (a few birth details), after
-// which her first real card is waiting.
+// In place of today's card while onboarding isn't finished: the same card,
+// with the padlock and key (the picture for every place that waits on setup),
+// and the way in is finishing setup, after which her first real card is waiting.
 function FinishSetupCard() {
   return (
     <Link
@@ -162,12 +162,12 @@ function FinishSetupCard() {
       className="relative block overflow-hidden rounded-card bg-[#f2e0d8] px-5 py-6 shadow-soft transition-opacity duration-200 active:opacity-80"
     >
       <img
-        src="/daily-cards/unrevealed-hand-envelope.png"
+        src="/onboarding-images/onboarding-incomplete-lock-key.png"
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 right-0 h-full w-auto max-w-none translate-x-[14%]"
+        className="pointer-events-none absolute top-1/2 -right-10 h-[240px] w-[240px] -translate-y-1/2"
       />
-      <div className="relative max-w-[58%]">
+      <div className="relative max-w-[60%]">
         <p className={label}>Today&rsquo;s focus</p>
         <h2 className="mt-2 font-serif text-[25px] leading-[1.15] font-medium">
           Finish setting up <span className="text-accent">✦</span>

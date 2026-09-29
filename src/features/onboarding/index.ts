@@ -30,6 +30,9 @@
 //
 // The rest of the app uses only what is exported here.
 export { default as OnboardingFlow } from "./onboarding-flow";
+// "You haven't set up your profile yet" in place of a screen that needs her
+// chart (gate/), until onboarding is finished.
+export { default as RequireOnboarding } from "./gate/require-onboarding";
 
 // Shared with the Profile screen. Changing her birth details there is entered,
 // checked, searched and recalculated exactly the way onboarding does it, because

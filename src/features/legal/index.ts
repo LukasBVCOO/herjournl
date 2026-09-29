@@ -11,3 +11,4 @@
 export { default as PrivacyScreen } from "./privacy-screen";
 export { default as TermsScreen } from "./terms-screen";
 export { DataCredit, LegalLinks } from "./legal-footer";
+export { CONTACT_EMAIL } from "./contact";

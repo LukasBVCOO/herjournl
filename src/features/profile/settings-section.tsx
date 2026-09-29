@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { PackIcon } from "@/components/icons";
-import { DataCredit, LegalLinks } from "@/features/legal";
+import { CONTACT_EMAIL, DataCredit, LegalLinks } from "@/features/legal";
 import { NotificationsSection } from "@/features/notifications";
 import { signOut } from "@/lib/session";
 import DeleteAccountSection from "./delete-account-section";
-import { Group, LinkRow } from "./settings-ui";
+import { ExternalRow, Group, LinkRow } from "./settings-ui";
 
 // What used to be the separate Settings screen, now the bottom of her
-// profile: the "App" group (notifications, Recently deleted, reporting a bug),
+// profile: the "App" group (notifications, Recently deleted, reporting a bug,
+// emailing us),
 // then logging out, deleting her account and the app's version. Shown whether
 // or not her profile itself loaded, so she can always log out.
 export default function SettingsSection() {
@@ -36,6 +37,12 @@ export default function SettingsSection() {
         <NotificationsSection />
         <LinkRow to="/recently-deleted" icon={<PackIcon name="trash" size={22} />} label="Recently deleted" />
         <LinkRow to="/report-bug" icon={<PackIcon name="bug" size={22} />} label="Report a bug" />
+        <ExternalRow
+          href={`mailto:${CONTACT_EMAIL}`}
+          icon={<PackIcon name="mail" size={22} />}
+          label="Contact us"
+          detail={CONTACT_EMAIL}
+        />
       </Group>
 
       <div className="mt-4 flex flex-col">

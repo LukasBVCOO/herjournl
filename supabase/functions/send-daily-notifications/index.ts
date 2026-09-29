@@ -18,7 +18,9 @@ const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY")!;
 const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY")!;
 const CRON_SECRET = Deno.env.get("CRON_SECRET")!;
 
-webpush.setVapidDetails("mailto:hello@becomely.co", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+// The address push services (Apple, Google, Mozilla) may write to if there's
+// a problem with our sends. A real, read mailbox.
+webpush.setVapidDetails("mailto:info@becomely.co", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
 // How a push is delivered, rather than what it says.
 //

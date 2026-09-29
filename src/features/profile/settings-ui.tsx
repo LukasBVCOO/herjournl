@@ -44,18 +44,47 @@ export function Group({
   );
 }
 
-// A row that opens another screen.
-export function LinkRow({ to, icon, label }: { to: string; icon: ReactNode; label: string }) {
+const linkRowClass = `${rowClass} flex items-center gap-3 text-[17px] text-ink transition-opacity duration-200 active:opacity-70`;
+
+function RowInside({ icon, label, detail }: { icon: ReactNode; label: string; detail?: string }) {
   return (
-    <Link
-      to={to}
-      className={`${rowClass} flex items-center gap-3 text-[17px] text-ink transition-opacity duration-200 active:opacity-70`}
-    >
+    <>
       <span className="text-ink-soft">{icon}</span>
-      <span className="flex-1">{label}</span>
+      <span className="min-w-0 flex-1">
+        {label}
+        {detail && <span className="block truncate text-[14px] text-ink-soft">{detail}</span>}
+      </span>
       <span className="text-ink-soft">
         <PackIcon name="arrow-right" size={18} />
       </span>
+    </>
+  );
+}
+
+// A row that opens another screen.
+export function LinkRow({ to, icon, label }: { to: string; icon: ReactNode; label: string }) {
+  return (
+    <Link to={to} className={linkRowClass}>
+      <RowInside icon={icon} label={label} />
     </Link>
+  );
+}
+
+// A row that leaves the app (an email to us), with the address shown under it.
+export function ExternalRow({
+  href,
+  icon,
+  label,
+  detail,
+}: {
+  href: string;
+  icon: ReactNode;
+  label: string;
+  detail?: string;
+}) {
+  return (
+    <a href={href} className={linkRowClass}>
+      <RowInside icon={icon} label={label} detail={detail} />
+    </a>
   );
 }

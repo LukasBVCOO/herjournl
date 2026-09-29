@@ -21,7 +21,8 @@ export function PackIcon({ name, size = 24 }: {
     | "layout-dashboard"
     | "crown"
     | "calendar-week"
-    | "bug";
+    | "bug"
+    | "mail";
   size?: number;
 }) {
   return (

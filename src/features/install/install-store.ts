@@ -24,6 +24,14 @@ function isInstalled() {
   return iosStandalone || window.matchMedia("(display-mode: standalone)").matches;
 }
 
+// Whether this page IS the installed app, opened from the home screen — not
+// just "it has been installed", which a browser tab also becomes the moment
+// she installs from it. Some things belong only inside the app itself (the
+// notifications offer: founder, 2026-09-29).
+export function isRunningAsApp() {
+  return isInstalled();
+}
+
 let deferred: InstallPrompt | null = null;
 let state: InstallState = { installed: isInstalled(), canPrompt: false };
 const listeners = new Set<() => void>();

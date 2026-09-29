@@ -27,7 +27,7 @@ import {
   TodaysFocusCard,
   WaitingForReflectionCard,
 } from "@/features/daily-focus";
-import { InstallOfferCard, InstalledSync, UpdatePrompt } from "@/features/install";
+import { DesktopNotice, InstallOfferCard, InstalledSync, UpdatePrompt } from "@/features/install";
 import { PrivacyScreen, TermsScreen } from "@/features/legal";
 import { NotificationOfferPrompt, PushSyncOnOpen } from "@/features/notifications";
 import {
@@ -291,6 +291,9 @@ export default function App() {
       <PushSyncOnOpen />
       <AfterTrialWelcome>
         <NotificationOfferPrompt />
+        {/* A new person on a computer: a couple of seconds after she has
+            closed the Becomely+ sheet (and left the plans page). */}
+        <DesktopNotice />
       </AfterTrialWelcome>
       <TrialWelcomePrompt />
     </BrowserRouter>

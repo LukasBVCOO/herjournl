@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { getInstallState, subscribeToInstallState } from "@/features/install";
+import { useEffect, useRef, useState } from "react";
+import { isRunningAsApp } from "@/features/install";
 import { posthog } from "@/lib/posthog";
 import { hasOfferedNotifications, markNotificationsOffered } from "./notification-offer";
 import { notificationPermission, pushSupported, requestPushSubscription } from "./push";
@@ -9,9 +9,10 @@ import { saveSubscription } from "./push-api";
 // the instant she lands on the screen.
 const SHOW_DELAY_MS = 1500;
 
-// Offered once she has actually installed the app — notifications work best
-// (and on iPhone, only work at all) once it is on her home screen, so this
-// waits for that rather than asking too early. Shown once; if she has already
+// Offered only inside the installed app itself, opened from her home screen —
+// never in the browser tab she installed it from (founder, 2026-09-29).
+// Notifications work best (and on iPhone, only work at all) in the app, so
+// this waits for that rather than asking too early. Shown once; if she has already
 // answered (yes or no), the browser remembers that itself and this never asks
 // again either way.
 //
@@ -19,7 +20,6 @@ const SHOW_DELAY_MS = 1500;
 // Mounted once for the whole app (app.tsx), not tied to any one screen, since
 // "just installed" can be noticed no matter where she lands.
 export default function NotificationOfferPrompt() {
-  const { installed } = useSyncExternalStore(subscribeToInstallState, getInstallState, getInstallState);
   const [dismissed, setDismissed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [delayOver, setDelayOver] = useState(false);
@@ -27,7 +27,7 @@ export default function NotificationOfferPrompt() {
 
   const due =
     !dismissed &&
-    installed &&
+    isRunningAsApp() &&
     pushSupported() &&
     notificationPermission() === "default" &&
     !hasOfferedNotifications();

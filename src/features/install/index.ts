@@ -15,6 +15,7 @@
 //   install-offer-card.tsx  that card under the day's cards on the notes list
 //                          (can be put away with Not now / ×)
 //   profile-install-card.tsx  the same card, always on Profile (just Download)
+//   desktop-notice.tsx      "Becomely is made for your phone", once per computer
 //   installed-sync.tsx      tells her account the moment any install path
 //                          (the card, the header button, her browser's own
 //                          menu) succeeds
@@ -24,10 +25,11 @@ export { default as InstallButton } from "./install-button";
 export { default as UpdatePrompt } from "./update-prompt";
 export { default as InstallOfferCard } from "./install-offer-card";
 export { default as ProfileInstallCard } from "./profile-install-card";
+export { default as DesktopNotice } from "./desktop-notice";
 export { default as InstalledSync } from "./installed-sync";
 
 // For the notifications feature: whether the app is already on her home
 // screen, and which install instructions to show if not (iPhone needs Safari's
 // own steps; push notifications on iPhone only work once it is installed).
-export { getInstallState, subscribe as subscribeToInstallState, isIphone } from "./install-store";
+export { getInstallState, subscribe as subscribeToInstallState, isIphone, isRunningAsApp } from "./install-store";
 export { default as InstallSheet } from "./install-sheet";

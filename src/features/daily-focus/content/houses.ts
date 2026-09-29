@@ -44,11 +44,23 @@ export const HOUSE_CONTENT: Record<HouseNumber, HouseContent> = {
   1: {
     key: "self",
     label: "Self & Confidence",
-    titles: ["Your presence", "Who you're becoming", "Claim your space"],
+    titles: [
+      "Your presence",
+      "Who you're becoming",
+      "Claim your space",
+      "Take up space",
+      "Walk in as her",
+      "Back yourself",
+      "Your own permission",
+      "Show up fully",
+    ],
     statements: [
       "Today puts the spotlight on you, on how you see yourself and how you choose to show up.",
       "Your confidence deserves some attention today, and so does the woman you're becoming.",
       "Today is a good day to check in with how you're carrying yourself and what you're allowing yourself to want.",
+      "How you speak to yourself today shapes how you show up, so make it kind and make it bold.",
+      "Today is a good day to act like the woman you're becoming, even in one small moment.",
+      "Your sense of self deserves some care today, starting with what you let yourself believe you can do.",
     ],
     reflections: [
       "Confidence isn't something you either have or don't — it shows up in small choices: the outfit you almost didn't wear, the opinion you almost didn't share, the room you almost didn't walk into.",
@@ -80,11 +92,23 @@ export const HOUSE_CONTENT: Record<HouseNumber, HouseContent> = {
   2: {
     key: "money",
     label: "Money & Self-Worth",
-    titles: ["Your worth", "Your abundance", "What you value"],
+    titles: [
+      "Your worth",
+      "Your abundance",
+      "What you value",
+      "Know your worth",
+      "Open to receive",
+      "Money with intention",
+      "Price it right",
+      "Invest in you",
+    ],
     statements: [
       "Money and your sense of value deserve more attention today.",
       "Today is a good day to notice what you value, and how that shows up in what you earn, spend and allow yourself to receive.",
       "Your relationship with abundance is in focus today, including what you believe you're worth.",
+      "Today is a good day to look at your money with curiosity instead of fear.",
+      "What you ask for and what you accept deserve a closer look today.",
+      "Your sense of worth is in focus today, in your finances and beyond them.",
     ],
     reflections: [
       "Security might mean more savings, more control over your time, or feeling comfortable asking for what your work is worth — it looks different for everyone, and it's worth being specific about which one you actually mean.",
@@ -116,11 +140,23 @@ export const HOUSE_CONTENT: Record<HouseNumber, HouseContent> = {
   3: {
     key: "mind",
     label: "Mind & Communication",
-    titles: ["Your words", "Clear thinking", "Say what you mean"],
+    titles: [
+      "Your words",
+      "Clear thinking",
+      "Say what you mean",
+      "Speak it into being",
+      "Write it down",
+      "The story you tell",
+      "One honest conversation",
+      "Clear the noise",
+    ],
     statements: [
       "Today is a good day to get clear on what you think and to say it plainly.",
       "Your mind is busy today, so what you say and what you take in matter more than usual.",
       "Conversations, ideas and messages carry extra weight today, so choose them with intention.",
+      "Today is a good day to write, message or say the thing you've been rehearsing in your head.",
+      "Your inner voice and the words you choose are worth listening to closely today.",
+      "Your ideas deserve some space today, so give them words before they fade.",
     ],
     reflections: [
       "The thoughts you repeat become the story you live inside, and today is a good day to notice which ones are actually true and which ones just got loud.",
@@ -152,11 +188,23 @@ export const HOUSE_CONTENT: Record<HouseNumber, HouseContent> = {
   4: {
     key: "home",
     label: "Home & Security",
-    titles: ["Your foundation", "Your space", "Come home to yourself"],
+    titles: [
+      "Your foundation",
+      "Your space",
+      "Come home to yourself",
+      "Soft place to land",
+      "Build your nest",
+      "Rooted and steady",
+      "Home as a feeling",
+      "Tend your roots",
+    ],
     statements: [
       "Home, roots and the feeling of being settled are in focus today.",
       "Today invites you to look at what makes you feel safe and supported, and where you could build more of it.",
       "Your space and your sense of stability deserve some care today.",
+      "Today is a good day to make your space feel like the life you're calling in.",
+      "Your family, your home and your sense of belonging deserve some gentle attention today.",
+      "What makes you feel steady is in focus today, so give it a little time.",
     ],
     reflections: [
       "Feeling settled isn't only about where you live — it's also about who and what you let close, and what you've built that holds steady when things around you don't.",
@@ -188,11 +236,23 @@ export const HOUSE_CONTENT: Record<HouseNumber, HouseContent> = {
   5: {
     key: "creativity",
     label: "Creativity & Joy",
-    titles: ["Your spark", "Make something", "Let it be fun"],
+    titles: [
+      "Your spark",
+      "Make something",
+      "Let it be fun",
+      "Play first",
+      "Follow the joy",
+      "Create for you",
+      "Light yourself up",
+      "A little romance",
+    ],
     statements: [
       "Creativity, play and joy are in focus today.",
       "Today is a good day to do something simply because it lights you up.",
       "Your energy is drawn toward what feels fun and expressive today, so let it lead a little.",
+      "Today is a good day to make room for pleasure without needing to earn it.",
+      "Your creative energy wants an outlet today, however small.",
+      "What delights you is worth following today, even for an hour.",
     ],
     reflections: [
       "Joy doesn't need a reason or a result — sometimes the point of making something is simply that you wanted to.",
@@ -224,11 +284,23 @@ export const HOUSE_CONTENT: Record<HouseNumber, HouseContent> = {
   6: {
     key: "routine",
     label: "Routine & Wellbeing",
-    titles: ["Your rhythm", "Daily habits", "Look after yourself"],
+    titles: [
+      "Your rhythm",
+      "Daily habits",
+      "Look after yourself",
+      "Small rituals",
+      "Your body first",
+      "Make it easy",
+      "The everyday you",
+      "Steady and well",
+    ],
     statements: [
       "Your daily habits and how you look after yourself are in focus today.",
       "Today is a good day to notice what your routine is doing for you, and what it's costing you.",
       "The small things you repeat shape who you become, and today they deserve some attention.",
+      "Today is a good day to make one routine feel a little lighter and a little more yours.",
+      "How you care for your body and your time is in focus today.",
+      "The ordinary parts of your day deserve your intention today.",
     ],
     reflections: [
       "The small things you repeat every day quietly decide who you become — not the big leaps, the ordinary Tuesdays.",
@@ -260,11 +332,23 @@ export const HOUSE_CONTENT: Record<HouseNumber, HouseContent> = {
   7: {
     key: "relationships",
     label: "Relationships",
-    titles: ["Your people", "Real connection", "Who you let in"],
+    titles: [
+      "Your people",
+      "Real connection",
+      "Who you let in",
+      "Open up",
+      "Meet them halfway",
+      "Love out loud",
+      "Ask for what you need",
+      "Side by side",
+    ],
     statements: [
       "Today puts more attention on the people closest to you and what you need from them.",
       "Your relationships are in focus today, including how you show up in them.",
       "Today is a good day to notice who you feel most like yourself around.",
+      "Today is a good day to reach out, open up or say what you've been holding back.",
+      "Your closest connections deserve your full presence today.",
+      "What you give and what you receive in your relationships is worth noticing today.",
     ],
     reflections: [
       "The people closest to you shape more of your days than almost anything else, so it's worth noticing who actually leaves you feeling like yourself.",
@@ -296,11 +380,23 @@ export const HOUSE_CONTENT: Record<HouseNumber, HouseContent> = {
   8: {
     key: "transformation",
     label: "Transformation",
-    titles: ["Let go", "What's changing", "Your next chapter"],
+    titles: [
+      "Let go",
+      "What's changing",
+      "Your next chapter",
+      "Release it",
+      "Shed the old skin",
+      "Go deeper",
+      "Make room",
+      "Brave honesty",
+    ],
     statements: [
       "Change and letting go are in focus today, including what you're ready to leave behind.",
       "Today is a good day to be honest about what no longer fits the life you're building.",
       "Depth and honesty are in focus today, so look at what you've been avoiding.",
+      "Today is a good day to release something that's been quietly weighing on you.",
+      "What you share, what you hold onto and what you're ready to release are in focus today.",
+      "Transformation often starts with one honest look, and today is a good day for it.",
     ],
     reflections: [
       "Letting go rarely happens all at once — it's usually a hundred small decisions to stop reaching for the same thing.",
@@ -332,11 +428,23 @@ export const HOUSE_CONTENT: Record<HouseNumber, HouseContent> = {
   9: {
     key: "growth",
     label: "Growth & Expansion",
-    titles: ["Think bigger", "Your bigger picture", "Room to grow"],
+    titles: [
+      "Think bigger",
+      "Your bigger picture",
+      "Room to grow",
+      "Widen your world",
+      "Learn something new",
+      "Say yes to more",
+      "Beyond the familiar",
+      "Dream further",
+    ],
     statements: [
       "Today is a good day to think bigger about what's possible for you.",
       "Growth, learning and new perspectives are in focus today.",
       "Your attention is drawn toward what's next and who you could become.",
+      "Today is a good day to learn, explore or plan something that stretches you.",
+      "New ideas and bigger horizons deserve your attention today.",
+      "Your curiosity is a good guide today, so follow it a little further.",
     ],
     reflections: [
       "The size of your world right now is mostly a matter of what you've let yourself believe is possible, not what's actually available to you.",
@@ -368,11 +476,23 @@ export const HOUSE_CONTENT: Record<HouseNumber, HouseContent> = {
   10: {
     key: "career",
     label: "Career & Direction",
-    titles: ["Your direction", "Where you're going", "Your next move"],
+    titles: [
+      "Your direction",
+      "Where you're going",
+      "Your next move",
+      "Build your legacy",
+      "Lead with intention",
+      "Your ambition",
+      "Step into the role",
+      "Show your work",
+    ],
     statements: [
       "Today puts more attention on where you're going and what progress means to you.",
       "Your ambitions deserve a little more attention today.",
       "Today is a useful moment to look beyond the urgent and toward what you're building.",
+      "Today is a good day to take one visible step toward the work you want to be known for.",
+      "Your goals and how you're seen in your work deserve some attention today.",
+      "Ambition is in focus today, so give your energy to what actually moves you forward.",
     ],
     reflections: [
       "Progress rarely looks as dramatic as the goal itself — most days it's one unremarkable, deliberate move in the right direction.",
@@ -404,11 +524,23 @@ export const HOUSE_CONTENT: Record<HouseNumber, HouseContent> = {
   11: {
     key: "future",
     label: "Future & Community",
-    titles: ["Your vision", "The future you're building", "Your circle"],
+    titles: [
+      "Your vision",
+      "The future you're building",
+      "Your circle",
+      "Call in your people",
+      "Dream it forward",
+      "Find your circle",
+      "Your future self",
+      "Bigger together",
+    ],
     statements: [
       "Your goals and the people who support them are in focus today.",
       "Today is a good day to reconnect with the future you're building and who you want beside you.",
       "Your bigger vision deserves attention today, along with the community that helps you reach it.",
+      "Today is a good day to connect with people who share the future you're working toward.",
+      "Your hopes for the year ahead deserve some space today.",
+      "The friends and communities around you are worth investing in today.",
     ],
     reflections: [
       "The people around you are quietly shaping where you end up, whether or not you've thought about it that way before.",
@@ -440,11 +572,23 @@ export const HOUSE_CONTENT: Record<HouseNumber, HouseContent> = {
   12: {
     key: "inner_world",
     label: "Inner World & Rest",
-    titles: ["Your inner world", "Rest and reset", "Slow down"],
+    titles: [
+      "Your inner world",
+      "Rest and reset",
+      "Slow down",
+      "Quiet the noise",
+      "Listen inward",
+      "Soft and still",
+      "Trust your intuition",
+      "Let it settle",
+    ],
     statements: [
       "Today is a good day to slow down and listen to what's going on inside.",
       "Rest, quiet and reflection are in focus today, and they are part of the work, not a break from it.",
       "You don't have to push today, so let yourself reset and notice what you actually need.",
+      "Today is a good day to protect your quiet and listen to your intuition.",
+      "What's been going unsaid inside you deserves some gentle attention today.",
+      "Rest is productive today, so give yourself real space to recharge.",
     ],
     reflections: [
       "What's quiet in you usually has something to say — it just needs enough stillness for you to actually hear it.",

@@ -1,7 +1,7 @@
 // What she's already seen recently for a given area of life (or reduced-mode
-// theme), so a new card's reflection and three prompts can avoid repeating
-// them — see deterministic-seed.ts's pickIndexAvoiding, which is what
-// actually uses this. Read-only, and never lets a database hiccup block a
+// theme), so a new card's title, statement, reflection and three prompts can
+// avoid repeating them — see deterministic-seed.ts's pickIndexAvoiding,
+// which is what actually uses this. Read-only, and never lets a database hiccup block a
 // card from being made: any problem here just means nothing is avoided,
 // which reads exactly the same as "no history yet" (empty sets).
 //
@@ -12,9 +12,9 @@ import { supabase } from "@/lib/supabase/client";
 import { NO_RECENT_VARIANTS, type RecentVariants } from "./assemble-card";
 
 // How many of her most recent cards for this exact area to look back over.
-// Comfortably covers the pool sizes in content/houses.ts and
-// content/moon-sign-themes.ts (3-5 each), so a genuine repeat only happens
-// once every variant in the pool has already been shown recently.
+// Covers the pool sizes in content/houses.ts and content/moon-sign-themes.ts
+// (up to 8 each), so a genuine repeat only happens once every variant in the
+// pool has already been shown recently.
 const LOOKBACK = 8;
 
 // Keeps the query's own most-recent-first order (see the `.order` below) —
@@ -33,11 +33,15 @@ export async function recentVariants(area: { house: number } | { category: strin
   try {
     const base = supabase
       .from("daily_focus_cards")
-      .select("reflection_variant, prompt_variant, belief_prompt_variant, next_step_prompt_variant");
+      .select(
+        "title_variant, statement_variant, reflection_variant, prompt_variant, belief_prompt_variant, next_step_prompt_variant",
+      );
     const filtered = "house" in area ? base.eq("active_house", area.house) : base.eq("focus_category", area.category);
     const { data, error } = await filtered.order("local_date", { ascending: false }).limit(LOOKBACK);
     if (error || !data) return NO_RECENT_VARIANTS;
     return {
+      title: toOrderedList(data.map((row) => row.title_variant)),
+      statement: toOrderedList(data.map((row) => row.statement_variant)),
       reflection: toOrderedList(data.map((row) => row.reflection_variant)),
       intentionPrompt: toOrderedList(data.map((row) => row.prompt_variant)),
       beliefPrompt: toOrderedList(data.map((row) => row.belief_prompt_variant)),

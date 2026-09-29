@@ -47,10 +47,19 @@ export const MOON_SIGN_THEMES: Record<Sign, MoonSignTheme> = {
   Aries: {
     key: "action",
     label: "Action & Initiation",
-    titles: ["Move first", "Start it now"],
+    titles: [
+      "Move first",
+      "Start it now",
+      "Take the first step",
+      "Begin before you're ready",
+      "Act on it",
+      "Just start",
+    ],
     statements: [
       "Today favours action over waiting, so the fastest way through is to simply begin.",
       "Your energy is best spent starting something today, not perfecting it.",
+      "The energy for a fresh start is on your side today, so use it on something that matters.",
+      "Today is a good day to act on the idea you keep circling.",
     ],
     reflections: [
       "Starting rarely feels as risky in hindsight as it does right before you do it — most momentum comes from the first unremarkable move, not the perfect one.",
@@ -78,10 +87,19 @@ export const MOON_SIGN_THEMES: Record<Sign, MoonSignTheme> = {
   Taurus: {
     key: "stability",
     label: "Stability & Grounding",
-    titles: ["Create some stability", "Slow it down"],
+    titles: [
+      "Create some stability",
+      "Slow it down",
+      "Stay steady",
+      "Build on what works",
+      "Ground yourself",
+      "Keep it simple",
+    ],
     statements: [
       "Today is better suited to slowing things down and strengthening what already supports you.",
       "Consistency matters more than intensity today, so build on what's already working.",
+      "Today is a good day to tend to what's already yours and let it grow.",
+      "Comfort and routine will support you well today.",
     ],
     reflections: [
       "Consistency rarely feels exciting in the moment, but it's usually what's actually building the life you want.",
@@ -109,10 +127,19 @@ export const MOON_SIGN_THEMES: Record<Sign, MoonSignTheme> = {
   Gemini: {
     key: "curiosity",
     label: "Curiosity & Conversation",
-    titles: ["Follow the thread", "Say it out loud"],
+    titles: [
+      "Follow the thread",
+      "Say it out loud",
+      "Ask the question",
+      "Stay curious",
+      "Share the idea",
+      "Talk it through",
+    ],
     statements: [
       "Today rewards curiosity, so follow the question you keep coming back to.",
       "Talking or writing something through will get you further today than sitting with it alone.",
+      "Today is a good day to reach out, ask questions and learn something new.",
+      "Your ideas move faster when you share them today.",
     ],
     reflections: [
       "A question you keep circling back to usually isn't random — it's worth actually following instead of setting aside again.",
@@ -140,10 +167,19 @@ export const MOON_SIGN_THEMES: Record<Sign, MoonSignTheme> = {
   Cancer: {
     key: "care",
     label: "Care & Connection",
-    titles: ["Come back to what feels safe", "Check in with yourself"],
+    titles: [
+      "Come back to what feels safe",
+      "Check in with yourself",
+      "Be gentle with you",
+      "Nurture yourself",
+      "Come home",
+      "Soft and safe",
+    ],
     statements: [
       "Today asks for a little more gentleness, starting with how you treat yourself.",
       "Feeling secure matters more than usual today, so protect what helps you feel that way.",
+      "Today is a good day to look after your feelings as carefully as your to-do list.",
+      "Your emotional needs deserve a little extra care today.",
     ],
     reflections: [
       "Feeling secure isn't only about circumstances — it's also about how gently you're willing to treat yourself when things feel uncertain.",
@@ -171,10 +207,19 @@ export const MOON_SIGN_THEMES: Record<Sign, MoonSignTheme> = {
   Leo: {
     key: "expression",
     label: "Expression & Confidence",
-    titles: ["Let yourself be seen", "Lead with warmth"],
+    titles: [
+      "Let yourself be seen",
+      "Lead with warmth",
+      "Shine a little",
+      "Take the stage",
+      "Express yourself",
+      "Be bold",
+    ],
     statements: [
       "Today rewards being visible, so let yourself take up the space you've been holding back from.",
       "Your confidence is worth trusting today, even in something small.",
+      "Today is a good day to share something you're proud of.",
+      "Your warmth and creativity are worth showing today.",
     ],
     reflections: [
       "Being visible feels riskier in the moment than it does once you've actually done it — most of the resistance lives in the anticipation.",
@@ -202,10 +247,19 @@ export const MOON_SIGN_THEMES: Record<Sign, MoonSignTheme> = {
   Virgo: {
     key: "improvement",
     label: "Organisation & Improvement",
-    titles: ["Tend to the details", "Make it a little better"],
+    titles: [
+      "Tend to the details",
+      "Make it a little better",
+      "Refine it",
+      "Small upgrades",
+      "Get organised",
+      "One thing well",
+    ],
     statements: [
       "Today favours the practical over the abstract, so pick one thing and make it better.",
       "Small, useful improvements will feel better today than big, vague plans.",
+      "Today is a good day to tidy one area of your life that's been nagging at you.",
+      "Doing one thing well will feel better today than doing many things halfway.",
     ],
     reflections: [
       "One small, practical improvement usually gets you further than a big plan that never quite starts.",
@@ -233,10 +287,19 @@ export const MOON_SIGN_THEMES: Record<Sign, MoonSignTheme> = {
   Libra: {
     key: "balance",
     label: "Balance & Harmony",
-    titles: ["Find the balance", "Choose what feels fair"],
+    titles: [
+      "Find the balance",
+      "Choose what feels fair",
+      "Meet in the middle",
+      "Restore harmony",
+      "Give and receive",
+      "Even it out",
+    ],
     statements: [
       "Today asks you to notice where things feel out of balance, and take one step toward evening them out.",
       "Harmony matters today, but not at the cost of what you actually need.",
+      "Today is a good day to notice where you give too much and where you hold back.",
+      "Your relationships and your own needs both deserve room today.",
     ],
     reflections: [
       "Keeping the peace and actually feeling at peace aren't always the same thing, and it's worth noticing which one you're choosing.",
@@ -264,10 +327,19 @@ export const MOON_SIGN_THEMES: Record<Sign, MoonSignTheme> = {
   Scorpio: {
     key: "honesty",
     label: "Depth & Honesty",
-    titles: ["Get honest", "Go beneath the surface"],
+    titles: [
+      "Get honest",
+      "Go beneath the surface",
+      "Face it",
+      "Look deeper",
+      "The real reason",
+      "Let it transform",
+    ],
     statements: [
       "Today favours honesty over comfort, especially with yourself.",
       "Something deserves a closer, more honest look today.",
+      "Today is a good day to name what you really feel, even if only to yourself.",
+      "What's underneath is more useful than what's on the surface today.",
     ],
     reflections: [
       "The honest version of what's going on is usually quieter and less dramatic than the story you've been telling yourself about it.",
@@ -295,10 +367,19 @@ export const MOON_SIGN_THEMES: Record<Sign, MoonSignTheme> = {
   Sagittarius: {
     key: "perspective",
     label: "Possibility & Perspective",
-    titles: ["Widen the view", "Make room for possibility"],
+    titles: [
+      "Widen the view",
+      "Make room for possibility",
+      "Aim higher",
+      "See the bigger picture",
+      "Stay open",
+      "Go exploring",
+    ],
     statements: [
       "Today is a good day to zoom out and remember how much is actually possible.",
       "Your perspective could use some fresh air today, so look beyond what's right in front of you.",
+      "Today is a good day to believe a little bigger about what's available to you.",
+      "New ideas and fresh experiences will serve you well today.",
     ],
     reflections: [
       "How big your world feels right now is mostly a matter of what you've let yourself believe is possible.",
@@ -326,10 +407,19 @@ export const MOON_SIGN_THEMES: Record<Sign, MoonSignTheme> = {
   Capricorn: {
     key: "structure",
     label: "Responsibility & Structure",
-    titles: ["Build it steadily", "Take the next step"],
+    titles: [
+      "Build it steadily",
+      "Take the next step",
+      "Commit to it",
+      "Lay the foundation",
+      "Plan your climb",
+      "Own your goals",
+    ],
     statements: [
       "Today favours steady effort over big leaps, so focus on the next honest step.",
       "Structure will help more than motivation today, so give yourself something concrete to do.",
+      "Today is a good day to commit to one goal and give it real structure.",
+      "Discipline is a form of self-respect today, so choose one thing and follow through.",
     ],
     reflections: [
       "What you're building rarely announces its progress loudly — most days it just needs the next honest step, not a big leap.",
@@ -357,10 +447,19 @@ export const MOON_SIGN_THEMES: Record<Sign, MoonSignTheme> = {
   Aquarius: {
     key: "independence",
     label: "Independence & Ideas",
-    titles: ["Think differently", "Trust your own read"],
+    titles: [
+      "Think differently",
+      "Trust your own read",
+      "Break the pattern",
+      "Your own way",
+      "Fresh ideas",
+      "Step outside the box",
+    ],
     statements: [
       "Today rewards thinking for yourself, even if it means going against the usual approach.",
       "Some distance will help you see things more clearly today.",
+      "Today is a good day to try the unconventional idea you've been sitting on.",
+      "Your independence deserves some room today.",
     ],
     reflections: [
       "Thinking for yourself sometimes means going against the expected way, and that's not the same as being wrong.",
@@ -388,10 +487,19 @@ export const MOON_SIGN_THEMES: Record<Sign, MoonSignTheme> = {
   Pisces: {
     key: "intuition",
     label: "Intuition & Rest",
-    titles: ["Soften the pace", "Trust what you notice"],
+    titles: [
+      "Soften the pace",
+      "Trust what you notice",
+      "Listen within",
+      "Let it flow",
+      "Rest and dream",
+      "Follow your gut",
+    ],
     statements: [
       "Today favours intuition over force, so notice what you sense before you decide.",
       "Rest and a slower pace will serve you better today than pushing through.",
+      "Today is a good day to dream, rest and let your intuition speak.",
+      "Quiet moments will tell you more than busy ones today.",
     ],
     reflections: [
       "What you sense before you can explain it is still information, even without a fully logical case behind it yet.",

@@ -20,16 +20,18 @@ import { moonAspectLine } from "./content/moon-aspects";
 import { MOON_SIGN_THEMES, type MoonSignTheme } from "./content/moon-sign-themes";
 import { EVENING_REFLECTION_PROMPTS } from "./content/evening-reflection";
 import { closestMoonAspect, closestReliableMoonAspect } from "./moon-aspect";
-import { pickIndex, pickIndexAvoiding, seedFor } from "./deterministic-seed";
+import { pickIndexAvoiding, seedFor } from "./deterministic-seed";
 import type { DailyFocusCard } from "./types";
 
 // Which indices she's already seen for this same area of life (or Moon
-// sign), most-recent-first, so the reflection and the three prompts don't
-// repeat while the area stays the same for a few days running — see
+// sign), most-recent-first, so the title, statement, reflection and the three
+// prompts don't repeat while the area stays the same for a few days running — see
 // variant-history.ts for where this comes from and deterministic-seed.ts's
 // pickIndexAvoiding for how it's used. Empty arrays when there's no history
 // yet, which reads exactly the same as "nothing to avoid".
 export type RecentVariants = {
+  title: readonly number[];
+  statement: readonly number[];
   reflection: readonly number[];
   intentionPrompt: readonly number[];
   beliefPrompt: readonly number[];
@@ -37,6 +39,8 @@ export type RecentVariants = {
 };
 
 export const NO_RECENT_VARIANTS: RecentVariants = {
+  title: [],
+  statement: [],
   reflection: [],
   intentionPrompt: [],
   beliefPrompt: [],
@@ -83,8 +87,13 @@ function pickHouseWording(
 
   const seed = seedFor(userId, localDate, house);
 
-  const titleVariant = pickIndex(seed, "title", Math.max(area.titles.length, 1));
-  const statementVariant = pickIndex(seed, "statement", Math.max(area.statements.length, 1));
+  const titleVariant = pickIndexAvoiding(seed, "title", Math.max(area.titles.length, 1), recent.title);
+  const statementVariant = pickIndexAvoiding(
+    seed,
+    "statement",
+    Math.max(area.statements.length, 1),
+    recent.statement,
+  );
   const reflectionVariant = pickIndexAvoiding(
     seed,
     "reflection",
@@ -284,8 +293,13 @@ export function assembleReducedDailyFocusCard(
   // wording it picks from.
   const seed = seedFor(userId, moon.localDate, moon.moonSign);
 
-  const titleVariant = pickIndex(seed, "title", Math.max(theme.titles.length, 1));
-  const statementVariant = pickIndex(seed, "statement", Math.max(theme.statements.length, 1));
+  const titleVariant = pickIndexAvoiding(seed, "title", Math.max(theme.titles.length, 1), recent.title);
+  const statementVariant = pickIndexAvoiding(
+    seed,
+    "statement",
+    Math.max(theme.statements.length, 1),
+    recent.statement,
+  );
   const reflectionVariant = pickIndexAvoiding(
     seed,
     "reflection",

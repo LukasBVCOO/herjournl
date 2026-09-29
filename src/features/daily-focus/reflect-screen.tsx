@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, Navigate, useNavigate } from "react-router";
 import { BackIcon } from "@/components/icons";
 import { appendToNote, findTodaysFocusNoteId } from "@/features/notes";
 import { posthog } from "@/lib/posthog";
@@ -110,6 +110,8 @@ export default function ReflectScreen() {
   useEffect(() => {
     if (ready && state.status === "ready") recordReflectionOpened(state.card);
   }, [ready, state]);
+
+  if (state.status === "not-onboarded") return <Navigate to="/onboarding" replace />;
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6 pb-12">

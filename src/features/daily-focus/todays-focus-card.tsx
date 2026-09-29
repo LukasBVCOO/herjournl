@@ -27,6 +27,12 @@ const label = "text-xs font-medium tracking-wider text-muted uppercase";
 //                card arrives tomorrow.
 export default function TodaysFocusCard() {
   const { state } = useTodaysFocus();
+  // She left onboarding before the end: the main card takes her back to it.
+  if (state.status === "not-onboarded") return <FinishSetupCard />;
+  return <FocusSlotCard state={state} />;
+}
+
+function FocusSlotCard({ state }: { state: ReturnType<typeof useTodaysFocus>["state"] }) {
   const local = readFocusState(currentCardDay());
 
   // What is known about today's card: the card itself once it has been found,
@@ -136,6 +142,45 @@ export default function TodaysFocusCard() {
       {/* A warm diagonal sweep of light, over everything else, that passes
           once and then waits before doing it again — see --animate-card-shine
           in styles.css for the timing. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+      >
+        <div className="absolute inset-y-0 left-0 w-2/3 -skew-x-12 animate-card-shine bg-[linear-gradient(115deg,transparent_30%,rgba(255,250,240,0.5)_50%,transparent_70%)] motion-reduce:hidden" />
+      </div>
+    </Link>
+  );
+}
+
+// In place of today's card while onboarding isn't finished: the same card, the
+// same picture, but the way in is finishing setup (a few birth details), after
+// which her first real card is waiting.
+function FinishSetupCard() {
+  return (
+    <Link
+      to="/onboarding"
+      className="relative block overflow-hidden rounded-card bg-[#f2e0d8] px-5 py-6 shadow-soft transition-opacity duration-200 active:opacity-80"
+    >
+      <img
+        src="/daily-cards/unrevealed-hand-envelope.png"
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 right-0 h-full w-auto max-w-none translate-x-[14%]"
+      />
+      <div className="relative max-w-[58%]">
+        <p className={label}>Today&rsquo;s focus</p>
+        <h2 className="mt-2 font-serif text-[25px] leading-[1.15] font-medium">
+          Finish setting up <span className="text-accent">✦</span>
+        </h2>
+        <p className="mt-2 text-[14px] leading-snug text-ink-soft">
+          A few birth details, and your first focus is ready.
+        </p>
+        <span className="mt-4 inline-flex h-10 items-center gap-1.5 rounded-full bg-ink px-4 text-[14px] font-medium text-paper">
+          Continue setup
+          <span aria-hidden="true">→</span>
+        </span>
+      </div>
+
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 overflow-hidden"

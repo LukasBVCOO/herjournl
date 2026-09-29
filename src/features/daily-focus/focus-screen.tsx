@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from "react";
-import { Link } from "react-router";
+import { Link, Navigate } from "react-router";
 import { BackIcon } from "@/components/icons";
 import { posthog } from "@/lib/posthog";
 import FocusCardView from "./focus-card-view";
@@ -36,6 +36,10 @@ export default function FocusScreen() {
   useEffect(() => {
     if (ready) posthog?.capture("daily_card_opened");
   }, [ready]);
+
+  // Onboarding not finished (e.g. she left it halfway): that's where she
+  // belongs, not a "we couldn't find your chart" message.
+  if (state.status === "not-onboarded") return <Navigate to="/onboarding" replace />;
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 animate-fade-in flex-col px-6 pb-12">

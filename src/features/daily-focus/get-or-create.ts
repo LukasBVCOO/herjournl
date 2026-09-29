@@ -52,9 +52,9 @@ async function run(ports: Ports, userId: string, localDate: string, timeZone: st
   // 2. Does she have what a card needs?
   const saved = await ports.findChart(userId);
   if (!saved.ok) return failed(saved.reason);
-  if (!saved.value) return { status: "no-chart" } as const;
-  // Cards are only made once onboarding is finished.
-  if (!saved.value.onboarded) return { status: "no-chart" } as const;
+  // Cards are only made once onboarding is finished (no profile at all means
+  // she never started it).
+  if (!saved.value || !saved.value.onboarded) return { status: "not-onboarded" } as const;
   const chart = saved.value.chart;
   if (!chart) return { status: "no-chart" } as const;
   // A full chart needs 12 usable houses. A reduced one (no birth time) was

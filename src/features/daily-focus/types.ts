@@ -10,6 +10,9 @@ import type { AspectName, AspectPlanet } from "./content/moon-aspects";
 export type DailyFocusResult =
   // created is true when this call made and saved it (false: it already existed).
   | { status: "ready"; card: DailyFocusCard; created: boolean }
+  // She hasn't finished onboarding yet (or never started it): the card waits
+  // until she has, and her notes list shows "finish setting up" instead.
+  | { status: "not-onboarded" }
   // Her saved chart is missing or damaged: she should review her birth details.
   | { status: "no-chart" }
   // No internet. Nothing is wrong; the card is made when she is back online.

@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
 import { BackIcon } from "@/components/icons";
 import { appendToNote, findTodaysFocusNoteId } from "@/features/notes";
@@ -26,27 +26,9 @@ function Notice({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-// See ReflectScreen's own affirmationSlot.
-type AffirmationSlot = (onComplete: () => void) => ReactNode;
-
-function ReflectWriting({
-  card,
-  affirmationSlot,
-}: {
-  card: DailyFocusCard;
-  affirmationSlot?: AffirmationSlot;
-}) {
+function ReflectWriting({ card }: { card: DailyFocusCard }) {
   const navigate = useNavigate();
-  const recapId = useId();
-  const writingId = useId();
   const [text, setText] = useState("");
-
-  // After the ninth repetition, straight on to the recap: bring her question
-  // into view and put the cursor in the writing box.
-  function toRecap() {
-    document.getElementById(recapId)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    document.getElementById(writingId)?.focus({ preventScroll: true });
-  }
   const [finished, setFinished] = useState(false);
   // Only expected if today's note has since been deleted — the list slot
   // already guarantees the morning card (and so the note) exists before this
@@ -70,10 +52,6 @@ function ReflectWriting({
 
   return (
     <section className="mt-2">
-      {/* The evening 9x of the day's affirmation comes first, before her
-          journal — never required, the writing below works either way. */}
-      {affirmationSlot && <div className="mb-6">{affirmationSlot(toRecap)}</div>}
-      <div id={recapId} className="scroll-mt-4" />
       {/* A square card of its own: "Time to reflect" and her question centred,
           the sunset over the hills running the full width along the bottom.
           The picture is square too and see-through across its top
@@ -94,7 +72,6 @@ function ReflectWriting({
         </div>
       </div>
       <textarea
-        id={writingId}
         value={text}
         onChange={(event) => setText(event.target.value)}
         placeholder="Start writing…"
@@ -124,11 +101,7 @@ function ReflectWriting({
 // it's actually evening (see reflect-slot.ts) — so the "not quite yet"
 // branch below shouldn't really be reachable, but the screen never assumes
 // that rather than checking (a stale link, say).
-//
-// `affirmationSlot` is the evening 9x of the day's affirmation, handed in by
-// the app (so this feature knows nothing about it) and called with what to
-// do once the ninth is done: move on to the recap.
-export default function ReflectScreen({ affirmationSlot }: { affirmationSlot?: AffirmationSlot }) {
+export default function ReflectScreen() {
   const { state, retry } = useTodaysFocus();
   const isEvening = localHourIn(new Date(), deviceTimeZone()) >= REFLECT_HOUR;
   const ready =
@@ -172,7 +145,7 @@ export default function ReflectScreen({ affirmationSlot }: { affirmationSlot?: A
             </Link>
           </section>
         ) : (
-          <ReflectWriting card={state.card} affirmationSlot={affirmationSlot} />
+          <ReflectWriting card={state.card} />
         )
       ) : state.status === "ready" && !state.card.done ? (
         <Notice title="Not quite yet.">

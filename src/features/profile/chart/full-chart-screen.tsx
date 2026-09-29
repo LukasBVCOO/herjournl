@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { BackIcon } from "@/components/icons";
 import BottomNav from "@/components/bottom-nav";
 import { posthog } from "@/lib/posthog";
+import { markSeen } from "@/lib/seen";
 import { useGoBack } from "@/lib/use-go-back";
 import { HOUSE_VISUAL, houseBorderColor, type HouseNumber } from "@/features/daily-focus";
 import {
@@ -566,56 +567,141 @@ function FullChartBody({ chart }: { chart: FullBirthChart }) {
   );
 }
 
-// Only what's genuinely known without a birth time: her Sun and (if reliable)
-// Moon by sign alone — never a guessed Rising, never a house. See
-// content/houses.ts's ReducedChart: an unreliable placement simply isn't here.
-function ReducedChartBody({ chart }: { chart: ReducedChart }) {
-  const known = (["sun", "moon"] as const).filter((kind) => chart[kind].reliable);
-  return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <SectionHeading>What we know without your exact birth time</SectionHeading>
-        {known.length > 0 ? (
-          <div className="mt-3 flex flex-col gap-2.5">
-            {known.map((kind, i) => {
-              const sign = chart[kind].sign;
-              return (
-                <AccordionRow
-                  key={kind}
-                  title={placementTitle(kind, sign)}
-                  subtitle={placementLabel[kind]}
-                  defaultOpen={i === 0}
-                >
-                  <p className="text-[15px] leading-snug text-ink-soft">
-                    {placementDescription(kind, sign)}
-                  </p>
-                </AccordionRow>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="mt-2 text-[15px] text-ink-soft">
-            Your Sun and Moon each landed too close to changing sign for us to say which without your
-            exact time.
-          </p>
-        )}
-      </div>
+// Where every "Add birth time" prompt leads: Profile, with her birth details
+// already open and ready for her time (birth-details-section.tsx's addTime).
+const ADD_BIRTH_TIME = { to: "/profile", state: { addBirthTime: true } } as const;
 
+// Something in her chart that needs her birth time to map honestly. Dashed
+// rather than solid, so it reads as "not filled in yet", and the whole row
+// leads to where she can add it.
+function NeedsBirthTimeRow({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <Link
+      {...ADD_BIRTH_TIME}
+      className="flex items-center justify-between gap-3 rounded-card border border-dashed border-line px-4 py-3.5 transition-colors duration-200 hover:bg-paper active:opacity-80"
+    >
+      <span className="min-w-0">
+        <span className="block font-serif text-[19px] leading-tight font-medium text-ink-soft">
+          {title}
+        </span>
+        <span className="mt-0.5 block text-[13px] text-muted">{subtitle}</span>
+      </span>
+      <span className="shrink-0 rounded-full bg-card px-2.5 py-1 text-[11px] font-medium text-ink-soft">
+        Add birth time
+      </span>
+    </Link>
+  );
+}
+
+// Changed sign during the day she was born, so only her birth time can say
+// which one it was.
+const CHANGED_SIGN = "Changed sign on the day you were born — your birth time decides which";
+
+// Everything that's genuinely known without a birth time, in full: her Sun,
+// Moon and the planets out to Saturn, each by sign (these barely move in a
+// day). Whatever can't be known without it — her Rising sign, her houses, the
+// exact angles between her planets, the deeper points, or a planet that
+// changed sign that very day — is shown as a dashed "Add birth time" row
+// instead. Nothing is ever guessed.
+function ReducedChartBody({ chart }: { chart: ReducedChart }) {
+  function signedPlanet(name: "mercury" | "venus" | "mars" | "jupiter" | "saturn", open: boolean) {
+    const p = chart[name];
+    if (!p.reliable) {
+      return <NeedsBirthTimeRow key={name} title={`Your ${PLANET_LABEL[name]}`} subtitle={CHANGED_SIGN} />;
+    }
+    return (
+      <AccordionRow
+        key={name}
+        title={`${PLANET_LABEL[name]} in ${p.sign}`}
+        subtitle={PLANET_THEME[name]}
+        defaultOpen={open}
+      >
+        <p className="text-[15px] leading-snug text-ink-soft">{PLANET_IN_SIGN[name][p.sign]}</p>
+      </AccordionRow>
+    );
+  }
+
+  return (
+    // relative z-10 and a little space: the hero's illustration (and its
+    // fade) hangs below its own box by design, so this sits on its own layer
+    // above it — the same fix the full chart's tab bar uses — and clear of it.
+    <div className="relative z-10 mt-4 flex flex-col gap-6">
       <section className={cardClass}>
-        <p className="font-serif text-[20px] leading-tight font-medium">
-          Add your birth time to see the rest
-        </p>
+        <p className="font-serif text-[20px] leading-tight font-medium">Your chart, so far</p>
         <p className="mt-2 text-[15px] leading-snug text-ink-soft">
-          Your Rising sign, every planet&rsquo;s house, and the angles between them all need an exact
-          birth time to work out honestly — we never guess at these.
+          Here&rsquo;s everything your birth date can tell us. Your Rising sign, your houses and the
+          angles between your planets need your birth time — add it whenever you find it and
+          we&rsquo;ll map the rest.
         </p>
         <Link
-          to="/profile"
+          {...ADD_BIRTH_TIME}
           className="mt-4 inline-flex h-11 items-center rounded-full bg-ink px-6 text-[15px] font-medium text-paper transition-opacity duration-200 hover:opacity-90"
         >
           Add my birth time
         </Link>
       </section>
+
+      <div>
+        <SectionHeading>The big three</SectionHeading>
+        <div className="mt-3 flex flex-col gap-2.5">
+          {(["sun", "moon"] as const).map((kind) =>
+            chart[kind].reliable ? (
+              <AccordionRow
+                key={kind}
+                title={placementTitle(kind, chart[kind].sign)}
+                subtitle={placementLabel[kind]}
+                defaultOpen={kind === "sun"}
+              >
+                <p className="text-[15px] leading-snug text-ink-soft">
+                  {placementDescription(kind, chart[kind].sign)}
+                </p>
+              </AccordionRow>
+            ) : (
+              <NeedsBirthTimeRow
+                key={kind}
+                title={`Your ${kind === "sun" ? "Sun" : "Moon"} sign`}
+                subtitle={CHANGED_SIGN}
+              />
+            ),
+          )}
+          <NeedsBirthTimeRow
+            title="Your Rising sign"
+            subtitle="How you meet the world, and where your houses begin"
+          />
+        </div>
+      </div>
+
+      <div>
+        <SectionHeading>The personal planets</SectionHeading>
+        <div className="mt-3 flex flex-col gap-2.5">
+          {(["mercury", "venus", "mars"] as const).map((name, i) => signedPlanet(name, i === 0))}
+        </div>
+      </div>
+
+      <div>
+        <SectionHeading>The outer planets</SectionHeading>
+        <div className="mt-3 flex flex-col gap-2.5">
+          {(["jupiter", "saturn"] as const).map((name, i) => signedPlanet(name, i === 0))}
+        </div>
+      </div>
+
+      <div>
+        <SectionHeading>Still to map</SectionHeading>
+        <div className="mt-3 flex flex-col gap-2.5">
+          <NeedsBirthTimeRow
+            title="Your 12 houses"
+            subtitle="Where each planet plays out in your life"
+          />
+          <NeedsBirthTimeRow
+            title="Your aspects"
+            subtitle="Where parts of you pull together, and against each other"
+          />
+          <NeedsBirthTimeRow
+            title="Nodes, Chiron & Lilith"
+            subtitle="The deeper layer of your chart"
+          />
+        </div>
+      </div>
     </div>
   );
 }
@@ -715,6 +801,8 @@ export default function FullChartScreen() {
 
   useEffect(() => {
     posthog?.capture("birth_chart_viewed");
+    // Takes the gold dot off "View your birth chart" in Explore more.
+    markSeen("birth-chart");
   }, []);
 
   // Her profile hasn't come back yet, so there's nothing here to show a

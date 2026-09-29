@@ -50,28 +50,21 @@ export default function DoneForTodayCard() {
           already used for house 11 (content/house-visuals.ts), reused here
           rather than inventing a new colour for the palette. */}
       <div className="relative animate-fade-in overflow-hidden rounded-card bg-[#E6EDF0] px-5 py-6 shadow-soft">
-        {/* Bleeds off the right edge, behind the text (it comes first in the
-            markup, so the text below paints over it), its left edge faded
-            into the card's own background — same treatment as
-            daily-plan-card.tsx's own image. No shine sweep here though:
+        {/* The whole picture, never trimmed: sized by the card's height and
+            slid off the right edge, where the card itself clips it
+            (overflow-hidden) — the same way the unrevealed focus card shows
+            its envelope. Trimming it to a narrower box used to cut straight
+            through the left cloud and leave a hard line; the picture's own
+            left side is see-through, so no fade is needed. It comes first in
+            the markup, so the text paints over it. No shine sweep here:
             that signals "still waiting on her", and this card is the
             opposite of that. */}
-        <div
+        <img
+          src="/daily-cards/done-for-today-moon-clouds.png"
+          alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 w-1/2 translate-x-[14%] overflow-hidden"
-        >
-          <img
-            src="/daily-cards/done-for-today-moon-clouds.png"
-            alt=""
-            className="h-full w-full object-cover object-right"
-          />
-          <div
-            className="absolute inset-y-0 left-0 w-1/4"
-            style={{
-              background: "linear-gradient(to right, rgba(230,237,240,1), rgba(230,237,240,0))",
-            }}
-          />
-        </div>
+          className="pointer-events-none absolute inset-y-0 right-0 h-full w-auto max-w-none translate-x-[16%]"
+        />
 
         <div className="relative max-w-[65%]">
           <p className={label}>Today</p>

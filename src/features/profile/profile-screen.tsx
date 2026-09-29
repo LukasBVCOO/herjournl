@@ -1,7 +1,8 @@
 import { useSyncExternalStore } from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { BackIcon } from "@/components/icons";
 import BottomNav from "@/components/bottom-nav";
+import { SubscriptionSection } from "@/features/billing";
 import { getSession, subscribe } from "@/lib/session";
 import { useGoBack } from "@/lib/use-go-back";
 import BirthDetailsSection from "./birth-details-section";
@@ -22,6 +23,10 @@ export default function ProfileScreen() {
   const goBack = useGoBack();
   const session = useSyncExternalStore(subscribe, getSession, getSession);
   const { state, reload, retry } = useProfile();
+  // Sent here by an "Add birth time" prompt (the birth chart page): the birth
+  // details open ready for her time.
+  const addBirthTime =
+    (useLocation().state as { addBirthTime?: boolean } | null)?.addBirthTime === true;
 
   const profile = state.status === "ready" ? state.profile : null;
   // Everything the sections need has to be saved. If not, she hasn't finished
@@ -99,6 +104,7 @@ export default function ProfileScreen() {
                 birthPlace={details.birthPlace}
                 place={details.place}
                 onSaved={reload}
+                addTime={addBirthTime}
               />
             </>
           ) : (
@@ -118,6 +124,14 @@ export default function ProfileScreen() {
             </section>
           )}
 
+        </div>
+      )}
+
+      {/* Her plan: founding member, trial, free or subscribed, and what she
+          can do about it (billing feature). */}
+      {state.status !== "loading" && (
+        <div className="mt-4">
+          <SubscriptionSection />
         </div>
       )}
 

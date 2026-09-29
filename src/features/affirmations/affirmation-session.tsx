@@ -26,17 +26,13 @@ function saveWriteMode(on: boolean) {
 }
 
 // One session of the day's 369 (3, 6 or 9 repetitions of the day's line).
-// Used on its own screen, as the last part of the morning entry, and before
-// the evening journal. If she hasn't picked today's line yet, the picker comes
-// first. `onComplete` runs when the last repetition of this session is done
-// (the evening one moves her straight on to her recap).
+// Used on today's practice screen. If she hasn't picked today's line yet, the
+// picker comes first.
 export default function AffirmationSession({
   session,
-  onComplete,
   plain = false,
 }: {
   session: Session;
-  onComplete?: () => void;
   // On today's practice screen: no card, heading or line of its own — that
   // screen shows the line once above all three sessions, and the session
   // tabs already say which one this is.
@@ -88,8 +84,7 @@ export default function AffirmationSession({
   const late = doneAt ? isLate(session, localHourIn(new Date(doneAt), deviceTimeZone())) : false;
 
   function rep() {
-    const finished = repeat(session);
-    if (finished) onComplete?.();
+    repeat(session);
   }
 
   const lateTag = late && (

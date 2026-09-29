@@ -83,6 +83,36 @@
     }
   }
 
+  /* The thank-you page after paying (billing/thank-you-screen.tsx): the
+     sparkles settle into place out of a soft blur, then the words rise in
+     just after. Plays once. */
+  --animate-settle-in: settle-in 1100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-rise-in: rise-in 800ms cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes settle-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.92);
+      filter: blur(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      filter: blur(0);
+    }
+  }
+
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   /* A warm band of light that sweeps once across a card, then waits, then
      does it again — the "once in a while" is the long hold at each end, not
      the sweep itself, which stays quick. */

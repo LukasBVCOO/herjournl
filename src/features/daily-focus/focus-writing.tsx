@@ -12,13 +12,7 @@ import type { DailyFocusCard } from "./types";
 // turns them into a note and opens it. A card that has been answered (it
 // says so in the database) offers no writing box: the day has one answer,
 // and it is a note now.
-export default function FocusResponse({
-  card,
-  affirmationSlot,
-}: {
-  card: DailyFocusCard;
-  affirmationSlot?: ReactNode;
-}) {
+export default function FocusResponse({ card }: { card: DailyFocusCard }) {
   return card.done ? (
     <section className="mt-6 animate-fade-in text-center">
       <p className="font-serif text-[24px] leading-tight text-ink-soft">
@@ -35,7 +29,7 @@ export default function FocusResponse({
       </Link>
     </section>
   ) : (
-    <FocusWriting card={card} affirmationSlot={affirmationSlot} />
+    <FocusWriting card={card} />
   );
 }
 
@@ -86,13 +80,7 @@ function FocusField({
   );
 }
 
-function FocusWriting({
-  card,
-  affirmationSlot,
-}: {
-  card: DailyFocusCard;
-  affirmationSlot?: ReactNode;
-}) {
+function FocusWriting({ card }: { card: DailyFocusCard }) {
   const navigate = useNavigate();
   // A card saved before the belief/next-step prompts existed only has "My
   // intention" — the same single-question flow it's always had, rather than
@@ -119,7 +107,7 @@ function FocusWriting({
         statement: card.statement,
         prompt: card.prompt,
         label: card.label,
-        // Only a full-personalisation card has a real house (see
+        // A full card's real house, or a Sun-sign card's counted one (see
         // types.ts's DailyFocusCard) — never stood in for on a reduced one.
         ...(card.activeHouse ? { house: card.activeHouse } : {}),
         ...(card.reflection ? { reflection: card.reflection } : {}),
@@ -168,9 +156,6 @@ function FocusWriting({
           />
         </>
       )}
-      {/* The morning 3x of the day's affirmation, as the last part of the
-          entry. Never required: Done works whether she's said it or not. */}
-      {affirmationSlot}
       <button
         type="button"
         onClick={done}

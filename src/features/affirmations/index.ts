@@ -17,9 +17,10 @@
 //                            today's practice, at /affirmations/today (and
 //                            where the 2pm afternoon nudge opens)
 //
-// Uses the daily-focus feature for today's house and her card day. It is
-// placed into the morning entry and the evening reflection by app.tsx, so
-// daily-focus itself knows nothing about it.
+// Uses the daily-focus feature for today's house and her card day. A feature
+// of its own, under the crown: kept out of the morning entry and the evening
+// reflection on purpose (founder, 2026-09-27), so the daily card stays simple.
 export { default as AffirmationsScreen } from "./affirmations-screen";
 export { default as AffirmationPracticeScreen } from "./affirmation-practice-screen";
-export { default as AffirmationSession } from "./affirmation-session";
+// The gold dot on the crown in the bottom bar.
+export { useAffirmationNudge } from "./use-affirmation-nudge";

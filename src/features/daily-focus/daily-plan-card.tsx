@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router";
 import { hasDailyPlanNote, startDailyPlanNote, useNotes } from "@/features/notes";
+import { posthog } from "@/lib/posthog";
+import { skipDailyPlan, useDailyPlanSkipped } from "./daily-plan-skip";
 import { mergeFlags, readFocusState } from "./focus-state";
 import { deviceTimeZone, localHourIn } from "./local-day";
 import { REFLECT_HOUR } from "./reflect-slot";
@@ -19,7 +21,8 @@ const SHOW_DELAY_MS = 3000;
 // reflection: once the morning card is answered, this offers a simple
 // checklist for the rest of her day. It disappears the moment she has
 // today's Daily Plan note (see hasDailyPlanNote in notes) — tapping "Add a
-// task" is what makes one (see startDailyPlanNote) — or, failing that, once
+// task" is what makes one (see startDailyPlanNote) — or she taps "Skip" beside
+// its button (daily-plan-skip.ts, just for today), or, failing that, once
 // it's evening (reflect-slot.ts's own REFLECT_HOUR): if she never made one,
 // the reflect card takes over instead of the two sitting on the list
 // together. Same reasoning as waiting-for-reflection-card.tsx's own gate.
@@ -31,11 +34,13 @@ export default function DailyPlanCard() {
 
   // Subscribed so this re-renders the instant today's note is created.
   useNotes();
+  const skipped = useDailyPlanSkipped(cardDay);
   const isEvening = localHourIn(new Date(), deviceTimeZone()) >= REFLECT_HOUR;
   const due =
     Boolean(flags?.done) &&
     !flags?.eveningReflectionDone &&
     !isEvening &&
+    !skipped &&
     !hasDailyPlanNote(cardDay);
 
   const visible = useSettleDelay(due, `daily-plan:${cardDay}`, SHOW_DELAY_MS);
@@ -48,12 +53,21 @@ export default function DailyPlanCard() {
     navigate(`/notes/${id}`);
   }
 
+  function skip() {
+    skipDailyPlan(cardDay);
+    posthog?.capture("daily_plan_skipped");
+  }
+
   return (
-    <button
-      type="button"
-      onClick={addTask}
-      className="relative block w-full animate-fade-in overflow-hidden rounded-card bg-[#f2e0d8] px-5 py-6 text-left shadow-soft transition-opacity duration-200 active:opacity-80"
-    >
+    <div className="relative animate-fade-in overflow-hidden rounded-card bg-[#f2e0d8] px-5 py-6 shadow-soft transition-opacity duration-200 active:opacity-80">
+      {/* The whole card opens the plan: this button covers all of it, and
+          "Skip" sits above it (a button can't hold another button). */}
+      <button
+        type="button"
+        onClick={addTask}
+        aria-label="Plan your day: add a task"
+        className="absolute inset-0 z-[1]"
+      />
       {/* Bleeds off the right edge like the morning and reflection cards'
           own illustrations, just narrower (about 20% smaller), and behind
           the text (it comes first in the markup, so the text below paints
@@ -86,10 +100,19 @@ export default function DailyPlanCard() {
         <p className="mt-2 text-[14px] leading-snug text-ink-soft">
           A little structure for the day you want.
         </p>
-        <span className="mt-4 inline-flex h-10 items-center gap-1.5 rounded-full bg-ink px-4 text-[14px] font-medium text-paper">
-          Add a task
-          <span aria-hidden="true">→</span>
-        </span>
+        <div className="mt-4 flex items-center gap-4">
+          <span className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-ink px-4 text-[14px] font-medium text-paper">
+            Add a task
+            <span aria-hidden="true">→</span>
+          </span>
+          <button
+            type="button"
+            onClick={skip}
+            className="relative z-[2] h-10 text-[14px] font-medium text-ink-soft underline decoration-line underline-offset-4 transition-colors duration-200 hover:text-ink"
+          >
+            Skip
+          </button>
+        </div>
       </div>
 
       {/* Same warm sweep as the morning and reflection cards — still
@@ -97,6 +120,6 @@ export default function DailyPlanCard() {
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute inset-y-0 left-0 w-2/3 -skew-x-12 animate-card-shine bg-[linear-gradient(115deg,transparent_30%,rgba(255,250,240,0.5)_50%,transparent_70%)] motion-reduce:hidden" />
       </div>
-    </button>
+    </div>
   );
 }

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { NodeViewWrapper, type ReactNodeViewProps } from "@tiptap/react";
+import { Link } from "react-router";
 import { PlusIcon } from "@/components/icons";
+import { useVisionBoardLimit } from "@/features/billing";
 import { posthog } from "@/lib/posthog";
 import AddSheet from "./add-sheet";
 import PhotoSheet from "./photo-sheet";
@@ -46,7 +48,10 @@ export default function BoardView({ node, updateAttributes, editor, getPos }: Re
   const [sheet, setSheet] = useState<Sheet>(null);
   const [pending, setPending] = useState<Pending[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
+  const [limitReached, setLimitReached] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+  // Until she pays, a board holds up to 10 photos (words are unlimited).
+  const limit = useVisionBoardLimit();
 
   // The phone copies of photos still waiting to go up. Let go of them when the
   // board goes away; each finished upload tidies up its own.
@@ -92,8 +97,17 @@ export default function BoardView({ node, updateAttributes, editor, getPos }: Re
     if (tile) track("vision_board_tile_removed", tile.kind);
   }
 
+  // Photos on the board, counting ones still going up.
+  const photoCount = tiles.filter((tile) => tile.kind === "photo").length + pending.length;
+  const atPhotoLimit = limit !== null && photoCount >= limit.photos;
+
   function choosePhoto() {
     setSheet(null);
+    if (atPhotoLimit) {
+      setLimitReached(true);
+      posthog?.capture("vision_board_photo_limit_reached");
+      return;
+    }
     fileInput.current?.click();
   }
 
@@ -224,9 +238,27 @@ export default function BoardView({ node, updateAttributes, editor, getPos }: Re
         </div>
       )}
 
+      {/* Until she pays: how many of her 10 photos are on the board. */}
+      {limit && !isEmpty && (
+        <p
+          className={`mt-2 text-right text-xs tabular-nums ${atPhotoLimit ? "font-medium text-accent-ink" : "text-muted"}`}
+        >
+          {Math.min(photoCount, limit.photos)}/{limit.photos} photos
+        </p>
+      )}
+
       {notice && (
         <p role="status" className="mt-1 text-sm text-alert">
           {notice}
+        </p>
+      )}
+
+      {limitReached && atPhotoLimit && limit && (
+        <p role="status" className="mt-2 animate-fade-in text-sm text-ink-soft">
+          Your board holds up to {limit.photos} photos on your current plan. Words are unlimited.{" "}
+          <Link to="/premium" className="font-medium text-ink underline underline-offset-4">
+            Make room with Becomely+
+          </Link>
         </p>
       )}
 

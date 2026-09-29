@@ -25,7 +25,7 @@ function toOrderedList(values: (number | null)[]): readonly number[] {
   return values.filter((v): v is number => typeof v === "number");
 }
 
-// `area` is a house number (1-12) on a full card, or the reduced-mode
+// `area` is a house number (1-12) on a full or Sun-sign card, or the reduced-mode
 // category ("moon_<key>", see content/moon-sign-themes.ts's themeCategory)
 // on a reduced one — whichever one the card being made will itself be filed
 // under, so only genuinely-repeatable history is read back.

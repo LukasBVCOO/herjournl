@@ -102,7 +102,10 @@ async function load(cardDay: string) {
   const previous = await fetchLatestBefore(cardDay);
   if (!previous.ok) return set({ status: "error", offline: previous.offline });
   const last = previous.value;
-  if (last && (last.pinned || last.affirmation.house === house)) {
+  // Same house as yesterday: same line. House 0 (no house at all) never
+  // counts as "the same focus" — otherwise its line would never change —
+  // so it carries on only when she has kept (pinned) it.
+  if (last && (last.pinned || (house !== 0 && last.affirmation.house === house))) {
     const started = await startDay(cardDay, last.affirmation.id, last.pinned);
     if (!started.ok) return set({ status: "error", offline: started.offline });
     const fresh = await fetchDay(cardDay);

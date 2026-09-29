@@ -2,7 +2,8 @@
 // daily focus card (why-card-pill.tsx). Built only from what the card itself
 // already stores, so it always tells the truth about how the card was chosen:
 //
-//   where today's Moon is (its sign, and for a full chart her house)  -> WHY this area
+//   where today's Moon is (its sign, and her house — a real one, or one
+//   counted from her Sun sign when she has no birth time)            -> WHY this area
 //   the Moon's closest angle to one of her birth planets              -> WHY this approach
 //
 // Real astrology words are used once each, with their meaning right beside
@@ -10,6 +11,7 @@
 
 import { SIGNS } from "@/features/onboarding";
 import type { AspectName, AspectPlanet } from "./moon-aspects";
+import { sunSignFromHouse } from "../sun-sign-house";
 import type { DailyFocusCard } from "../types";
 
 const PLANET_NAME: Record<AspectPlanet, string> = {
@@ -63,7 +65,14 @@ export function whyThisCard(card: DailyFocusCard): WhyThisCard {
   const lines: string[] = [];
   let pill: string;
 
-  if (card.activeHouse) {
+  if (card.activeHouse && card.personalisationLevel === "sun_sign") {
+    // No birth time: houses counted from her Sun sign (sun-sign-house.ts).
+    const sunSign = sunSignFromHouse(sign, card.activeHouse);
+    pill = `Moon · ${ordinal(card.activeHouse)} house`;
+    lines.push(
+      `Today the Moon is in ${sign}. Without your birth time, we count your houses from your Sun sign, ${sunSign}, so the Moon is passing through your ${ordinal(card.activeHouse)} house, the part of your life about ${card.label.toLowerCase()}. That's why today's focus is here.`,
+    );
+  } else if (card.activeHouse) {
     pill = `Moon · ${ordinal(card.activeHouse)} house`;
     lines.push(
       `Today the Moon is in ${sign}, passing through your ${ordinal(card.activeHouse)} house, the part of your chart about ${card.label.toLowerCase()}. That's why today's focus is here.`,

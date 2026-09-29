@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-import { docFromChecklist, docFromVisionBoard } from "@/features/notes";
+import { useAffirmationNudge } from "@/features/affirmations";
+import { isLocked, useAccess, useVisionBoardLimit } from "@/features/billing";
+import { docFromChecklist, docFromVisionBoard, visionBoardCount } from "@/features/notes";
 import {
   CrownIcon,
   HomeIcon,
@@ -40,6 +42,11 @@ export default function BottomNav() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const onAffirmations = pathname.startsWith("/affirmations");
+  const access = useAccess();
+  const boardLimit = useVisionBoardLimit();
+  // Not while it's still unknown whether she's on the free plan.
+  const nudge = useAffirmationNudge(onAffirmations, access.status !== "loading" && !isLocked(access));
 
   function newNote() {
     navigate(`/notes/${crypto.randomUUID()}`, { state: { isNew: true } });
@@ -57,8 +64,13 @@ export default function BottomNav() {
     });
   }
 
-  // Same again for a Vision board note: its title and an empty board.
+  // Same again for a Vision board note: its title and an empty board. Until
+  // she pays she has room for one; a second leads to Premium instead.
   function newVisionBoard() {
+    if (boardLimit && visionBoardCount() >= boardLimit.boards) {
+      navigate("/premium", { state: { reason: "vision-board" } });
+      return;
+    }
     navigate(`/notes/${crypto.randomUUID()}`, {
       state: { isNew: true, preset: docFromVisionBoard() },
     });
@@ -116,10 +128,19 @@ export default function BottomNav() {
           <div className="flex flex-1 items-center justify-evenly">
             <Link
               to="/affirmations"
-              aria-label="Daily Affirmations"
-              className={navIconClass(pathname.startsWith("/affirmations"))}
+              aria-label={nudge ? "Daily Affirmations — waiting for you" : "Daily Affirmations"}
+              className={`relative ${navIconClass(onAffirmations)}`}
             >
               <CrownIcon size={28} />
+              {/* A small gold dot while today's affirmation is waiting on
+                  her; gone once she's opened the page. The paper-coloured
+                  ring keeps it from touching the icon's own lines. */}
+              {nudge && (
+                <span
+                  aria-hidden="true"
+                  className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-gold ring-2 ring-paper"
+                />
+              )}
             </Link>
             <Link to="/profile" aria-label="Profile" className={navIconClass(pathname === "/profile")}>
               <ProfileIcon size={28} />

@@ -63,23 +63,25 @@ const DEFAULT_CONTENT: CardContent = { houses: HOUSE_CONTENT };
 // Used only if a list of wording were ever empty, so a card is never blank.
 const FALLBACK_PROMPT = "What deserves your attention today?";
 
-export function assembleDailyFocusCard(
-  input: CardInput,
-  content: CardContent = DEFAULT_CONTENT,
-): DailyFocusCard {
-  const { userId, moon, chart, recent = NO_RECENT_VARIANTS, recentEveningReflection = [] } = input;
-  if (typeof userId !== "string" || userId.length === 0) throw new Error("A card needs a person");
-  const house = moon.activeHouse;
+// A house's wording for one person on one day: which title, statement,
+// reflection and prompts, avoiding what she's seen recently. Shared by a full
+// card (her real houses) and a Sun-sign card (houses counted from her Sun
+// sign), so both read from exactly the same wording.
+function pickHouseWording(
+  userId: string,
+  localDate: string,
+  house: number,
+  content: CardContent,
+  recent: RecentVariants,
+  recentEveningReflection: readonly number[],
+) {
   if (!Number.isInteger(house) || house < 1 || house > 12) throw new Error("Not a house from 1 to 12");
-  const natalMoonSign: Sign = chart.moon.sign;
-  if (!(SIGNS as readonly string[]).includes(natalMoonSign)) throw new Error("Not a Moon sign");
-
   // A missing area would leave nothing honest to say, so this is an error, not a
   // made-up card.
   const area = content.houses[house as HouseNumber];
   if (!area) throw new Error("There is no wording for this area of life");
 
-  const seed = seedFor(userId, moon.localDate, house);
+  const seed = seedFor(userId, localDate, house);
 
   const titleVariant = pickIndex(seed, "title", Math.max(area.titles.length, 1));
   const statementVariant = pickIndex(seed, "statement", Math.max(area.statements.length, 1));
@@ -125,6 +127,47 @@ export function assembleDailyFocusCard(
   const nextStepPrompt = area.nextStepPrompts[nextStepPromptVariant] ?? null;
   const eveningReflectionPrompt = EVENING_REFLECTION_PROMPTS[eveningReflectionPromptVariant] ?? null;
 
+  return {
+    baseStatement,
+    wording: {
+      activeHouse: house,
+      category: area.key,
+      label: area.label,
+      title,
+      reflection,
+      prompt,
+      beliefPrompt,
+      nextStepPrompt,
+      eveningReflectionPrompt,
+      titleVariant,
+      statementVariant,
+      reflectionVariant,
+      promptVariant,
+      beliefPromptVariant,
+      nextStepPromptVariant,
+      eveningReflectionPromptVariant,
+    },
+  };
+}
+
+export function assembleDailyFocusCard(
+  input: CardInput,
+  content: CardContent = DEFAULT_CONTENT,
+): DailyFocusCard {
+  const { userId, moon, chart, recent = NO_RECENT_VARIANTS, recentEveningReflection = [] } = input;
+  if (typeof userId !== "string" || userId.length === 0) throw new Error("A card needs a person");
+  const natalMoonSign: Sign = chart.moon.sign;
+  if (!(SIGNS as readonly string[]).includes(natalMoonSign)) throw new Error("Not a Moon sign");
+
+  const { baseStatement, wording } = pickHouseWording(
+    userId,
+    moon.localDate,
+    moon.activeHouse,
+    content,
+    recent,
+    recentEveningReflection,
+  );
+
   // How to approach it today: not a pick from a list, but always worked out
   // fresh from where the Moon actually is against her chart, so it changes even
   // on a day the house does not.
@@ -137,28 +180,69 @@ export function assembleDailyFocusCard(
     referenceInstant: moon.referenceInstant,
     moonLongitude: moon.moonLongitude,
     personalisationLevel: "full",
-    activeHouse: house,
     natalMoonSign,
-    category: area.key,
-    label: area.label,
-    title,
+    ...wording,
     statement: `${baseStatement} ${approachLine}`,
-    reflection,
-    prompt,
-    beliefPrompt,
-    nextStepPrompt,
-    eveningReflectionPrompt,
-    titleVariant,
-    statementVariant,
-    reflectionVariant,
-    promptVariant,
-    beliefPromptVariant,
-    nextStepPromptVariant,
-    eveningReflectionPromptVariant,
     moonAspectPlanet: moonAspect.planet,
     moonAspectName: moonAspect.aspect,
     moonAspectOrb: moonAspect.orb,
     // A new card has not been seen yet.
+    opened: false,
+    done: false,
+    eveningReflectionOpened: false,
+    eveningReflectionDone: false,
+  };
+}
+
+// No birth time, but a certain Sun sign: houses counted from her Sun sign
+// (sun-sign-house.ts), so today's Moon sign gives her a real house and the
+// same house wording, artwork and affirmation lines as a full card. The
+// approach line only appears when a reliable natal angle is close enough,
+// exactly as on a reduced card below.
+export type SunSignCardInput = {
+  userId: string;
+  moon: MoonSignReading;
+  chart: ReducedChart;
+  // Her Sun-sign house for today's Moon sign, 1 to 12.
+  house: number;
+  recent?: RecentVariants;
+  recentEveningReflection?: readonly number[];
+};
+
+export function assembleSunSignDailyFocusCard(
+  input: SunSignCardInput,
+  content: CardContent = DEFAULT_CONTENT,
+): DailyFocusCard {
+  const { userId, moon, chart, house, recent = NO_RECENT_VARIANTS, recentEveningReflection = [] } = input;
+  if (typeof userId !== "string" || userId.length === 0) throw new Error("A card needs a person");
+  if (!chart.sun.reliable) throw new Error("Sun-sign houses need a certain Sun sign");
+
+  const { baseStatement, wording } = pickHouseWording(
+    userId,
+    moon.localDate,
+    house,
+    content,
+    recent,
+    recentEveningReflection,
+  );
+
+  const aspect = closestReliableMoonAspect(moon.moonLongitude, chart);
+  const statement = aspect
+    ? `${baseStatement} ${moonAspectLine(aspect.planet, aspect.aspect)}`
+    : baseStatement;
+
+  return {
+    localDate: moon.localDate,
+    timeZone: moon.timeZone,
+    referenceInstant: moon.referenceInstant,
+    moonLongitude: moon.moonLongitude,
+    personalisationLevel: "sun_sign",
+    natalMoonSign: chart.moon.reliable ? chart.moon.sign : null,
+    ...wording,
+    statement,
+    moonAspectPlanet: aspect?.planet ?? null,
+    moonAspectName: aspect?.aspect ?? null,
+    moonAspectOrb: aspect?.orb ?? null,
     opened: false,
     done: false,
     eveningReflectionOpened: false,

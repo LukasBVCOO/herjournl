@@ -260,24 +260,17 @@ export default function AffirmationsScreen() {
           <h1 className="text-center font-serif text-[20px] font-medium">Daily Affirmations</h1>
         </header>
 
-        {/* Same opening as the birth chart page: a warm headline with the
-            illustration bleeding off the right edge behind it. */}
+        {/* Same opening as the birth chart page: a warm headline with its
+            own illustration (a love note with a sparkle) to the right. The
+            picture's background is transparent, so it needs no fade. */}
         <div className="relative mb-6">
-          <div
+          <img
+            src="/daily-affirmations/c7ed9a40-fe17-4bad-8d1d-63ee1058a1e5.png"
+            alt=""
             aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 -right-10 h-[115px] w-[173px] -translate-y-1/2"
-          >
-            <img
-              src="/birth-chart/header-decorator-birth-chart.png"
-              alt=""
-              className="h-full w-full object-contain"
-            />
-            <div
-              className="absolute inset-y-0 left-0 w-3/5"
-              style={{ background: "linear-gradient(to right, var(--color-paper), transparent)" }}
-            />
-          </div>
-          <div className="relative z-10 max-w-[70%]">
+            className="pointer-events-none absolute top-1/2 right-3 h-[124px] w-[124px] -translate-y-1/2 object-contain"
+          />
+          <div className="relative z-10 max-w-[62%]">
             <h2 className="font-serif text-[26px] leading-tight font-medium">Speak it into being</h2>
             <p className="mt-1 text-[14px] text-ink-soft">
               One line, said 3 times this morning, 6 this afternoon, 9 tonight.

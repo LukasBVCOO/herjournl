@@ -11,10 +11,12 @@ import { readMoonSign } from "./moon-sign";
 import {
   assembleDailyFocusCard,
   assembleReducedDailyFocusCard,
+  assembleSunSignDailyFocusCard,
   NO_RECENT_VARIANTS,
   type RecentVariants,
 } from "./assemble-card";
 import { themeCategory } from "./content/moon-sign-themes";
+import { sunSignHouse } from "./sun-sign-house";
 import type { DailyFocusCard } from "./types";
 
 // What she's already seen recently for today's area of life (or theme), so
@@ -38,6 +40,21 @@ export async function generateDailyFocus(
   const recentEveningReflection = await findRecentEveningReflection();
   if (chart.kind === "reduced") {
     const moon = await readMoonSign(localDate, timeZone, calculate);
+    // No birth time: her houses are counted from her Sun sign
+    // (sun-sign-house.ts), as long as her Sun sign is certain — it almost
+    // always is, unless she was born on the day it changed.
+    if (chart.sun.reliable) {
+      const house = sunSignHouse(moon.moonSign, chart.sun.sign);
+      const recent = await findRecent({ house });
+      return assembleSunSignDailyFocusCard({
+        userId,
+        moon,
+        chart,
+        house,
+        recent,
+        recentEveningReflection,
+      });
+    }
     const recent = await findRecent({ category: themeCategory(moon.moonSign) });
     return assembleReducedDailyFocusCard({ userId, moon, chart, recent, recentEveningReflection });
   }

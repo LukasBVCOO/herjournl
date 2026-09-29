@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BirthDateFields,
   BirthTimeField,
@@ -49,6 +49,7 @@ export default function BirthDetailsSection({
   birthPlace,
   place: savedPlace,
   onSaved,
+  addTime = false,
 }: {
   dateOfBirth: string;
   // "" when birthTimeKnown is false.
@@ -59,14 +60,25 @@ export default function BirthDetailsSection({
   // The same place rebuilt from what was saved, for working the chart out again.
   place: Place;
   onSaved: () => Promise<void>;
+  // She arrived from an "Add birth time" prompt (the birth chart page): open
+  // straight onto the form, ready for her time, and bring it into view.
+  addTime?: boolean;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [day, setDay] = useState("");
-  const [month, setMonth] = useState("");
-  const [year, setYear] = useState("");
+  const openForTime = addTime && !birthTimeKnown;
+  const [editing, setEditing] = useState(openForTime);
+  const [day, setDay] = useState(() => (openForTime ? splitDate(dateOfBirth).day : ""));
+  const [month, setMonth] = useState(() => (openForTime ? splitDate(dateOfBirth).month : ""));
+  const [year, setYear] = useState(() => (openForTime ? splitDate(dateOfBirth).year : ""));
   const [time, setTime] = useState("");
   const [timeUnknown, setTimeUnknown] = useState(false);
-  const [place, setPlace] = useState<Place | null>(null);
+  const [place, setPlace] = useState<Place | null>(() => (openForTime ? savedPlace : null));
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Only on arrival: the form she came for, in view.
+  useEffect(() => {
+    if (openForTime) sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [problem, setProblem] = useState<BirthDateProblem | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -231,7 +243,7 @@ export default function BirthDetailsSection({
   }
 
   return (
-    <section className={cardClass}>
+    <section ref={sectionRef} className={`${cardClass} scroll-mt-4`}>
       <h2 className="text-xs font-medium tracking-wider text-muted uppercase">
         Birth details
       </h2>

@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router";
+import { markTrialWelcomeDue } from "@/features/billing";
 import { posthog } from "@/lib/posthog";
 import { posthogLogger } from "@/lib/posthog-logger";
 import { getAnswers } from "../data/answers-store";
+import { markOnboardingFinished } from "../data/finished";
 import PlacementCard from "./placement-card";
 import { saveOnboarding } from "../data/save-profile";
 import StepFrame from "../layout/step-frame";
@@ -37,8 +39,15 @@ export default function RevealScreen() {
       posthog?.capture("onboarding_completed");
       posthogLogger.info("Onboarding profile saved.");
       // Onboarding is complete. It ends on her first real daily focus card (the
-      // daily focus feature makes it, now that her chart is saved).
-      navigate("/focus", { replace: true });
+      // daily focus feature makes it, now that her chart is saved). Home goes
+      // in underneath it, so going back from the focus card, or from the note
+      // it becomes, lands on her notes list rather than an onboarding question.
+      markOnboardingFinished();
+      // Her 7-day trial starts now; she's told so the first time she reaches
+      // her home screen (billing's welcome sheet).
+      markTrialWelcomeDue();
+      navigate("/", { replace: true });
+      navigate("/focus");
       return;
     }
     // Her answers are still here, so she can simply try again.

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { getSession } from "@/lib/session";
 import { hasDailyPlanNote, useNotes } from "@/features/notes";
 import { WAITING_FOR_REFLECTION_MESSAGES } from "./content/waiting-for-reflection";
+import { useDailyPlanSkipped } from "./daily-plan-skip";
 import { pickIndex, seedFor } from "./deterministic-seed";
 import ExploreSheet from "./explore-sheet";
 import { mergeFlags, readFocusState } from "./focus-state";
@@ -35,12 +36,13 @@ export default function WaitingForReflectionCard() {
 
   // Subscribed so this re-renders the instant today's Daily Plan note exists.
   useNotes();
+  const skipped = useDailyPlanSkipped(cardDay);
   const isEvening = localHourIn(new Date(), deviceTimeZone()) >= REFLECT_HOUR;
   const due =
     Boolean(flags?.done) &&
     !flags?.eveningReflectionDone &&
     !isEvening &&
-    hasDailyPlanNote(cardDay);
+    (hasDailyPlanNote(cardDay) || skipped);
 
   const visible = useSettleDelay(due, `waiting-for-reflection:${cardDay}`, SHOW_DELAY_MS);
 

@@ -29,8 +29,9 @@ const REDUCED_LABEL_BY_CATEGORY: Record<string, string> = Object.fromEntries(
 // was replaced by the daily Moon-to-planet angle below, which changes even on a
 // day the house does not.
 //
-// active_house, natal_moon_sign and the three moon_aspect_* columns are only
-// ever null on a reduced card (personalisation_level "reduced") — see types.ts.
+// active_house is only ever null on a reduced card; natal_moon_sign and the
+// three moon_aspect_* columns may also be null on a sun_sign card (no birth
+// time) — see types.ts.
 export const CARD_COLUMNS =
   "local_date, timezone, reference_instant, moon_longitude, personalisation_level, active_house, natal_moon_sign, focus_category, focus_title, focus_statement, reflection, journal_prompt, belief_prompt, next_step_prompt, evening_reflection_prompt, title_variant, statement_variant, reflection_variant, prompt_variant, belief_prompt_variant, next_step_prompt_variant, evening_reflection_prompt_variant, moon_aspect_planet, moon_aspect_name, moon_aspect_orb, opened, done, evening_reflection_opened, evening_reflection_done";
 
@@ -39,7 +40,7 @@ export type CardRow = {
   timezone: string;
   reference_instant: string;
   moon_longitude: number;
-  personalisation_level: "full" | "reduced";
+  personalisation_level: "full" | "sun_sign" | "reduced";
   active_house: number | null;
   natal_moon_sign: Sign | null;
   focus_category: string;
@@ -120,7 +121,7 @@ export function cardFromRow(row: unknown): DailyFocusCard | null {
   if (typeof row !== "object" || row === null) return null;
   const r = row as Record<string, unknown>;
 
-  const personalisationLevel = oneOf(r.personalisation_level, ["full", "reduced"] as const);
+  const personalisationLevel = oneOf(r.personalisation_level, ["full", "sun_sign", "reduced"] as const);
   const localDate = text(r.local_date);
   const timeZone = text(r.timezone);
   const category = text(r.focus_category);
@@ -175,9 +176,11 @@ export function cardFromRow(row: unknown): DailyFocusCard | null {
         ? r.moon_aspect_orb
         : undefined;
 
-  // A full card needs a real house and natal Moon sign; a reduced card needs
-  // both to be genuinely absent (not just invalid).
+  // A full card needs a real house and natal Moon sign; a sun_sign card needs
+  // a house (her natal Moon sign may be honestly unknown); a reduced card
+  // needs both to be genuinely absent (not just invalid).
   if (personalisationLevel === "full" && (activeHouse === null || !natalMoonSign)) return null;
+  if (personalisationLevel === "sun_sign" && activeHouse === null) return null;
   if (personalisationLevel === "reduced" && (activeHouse !== null || natalMoonSign !== null)) return null;
   if (activeHouse === undefined || natalMoonSign === undefined) return null;
 

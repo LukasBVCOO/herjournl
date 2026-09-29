@@ -45,6 +45,8 @@ export { docFromChecklist } from "./content";
 // For the "+" menu (components/bottom-nav.tsx): the preset content of a new
 // Vision board note. The board itself lives in vision-board/.
 export { docFromVisionBoard } from "./content";
+// How many she has — for the one-board limit until she pays (billing).
+export { visionBoardCount } from "./notes-store";
 
 // For the install feature: whether she has written any daily-focus note yet
 // (the moment that makes the first install offer due).

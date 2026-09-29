@@ -134,6 +134,17 @@ Everything about one feature lives in one folder under `src/features/<name>/`: i
 - Inside a feature, one job per file (content helpers, database reads, saving, each screen). Features don't import from each other's inner files.
 - Only things used by several features go in shared places: `src/components/` (shared UI such as base icons) and `src/lib/` (Supabase connection and other cross-feature tools).
 
+### Images: name them, then compress them
+
+Whenever a new image (png, jpg, jpeg, webp — not svg) is added to `public/`, before using it in code:
+
+1. **Rename it to the naming convention:**
+   - All lowercase, words joined by hyphens, no spaces, brackets, capitals, or random IDs (e.g. `house-4-home.png`, not `[ONBOARDING] SUN.png` or `c7ed9a40-….png`).
+   - Pattern: `<where-it's-used>-<what-it-shows>.png`, e.g. `daily-plan-notebook-pen.png`, `done-for-today-moon-clouds.png`.
+   - It lives in a lowercase, hyphenated folder named after the screen or feature that uses it (e.g. `public/daily-cards/`, `public/vision-board/`).
+   - If renaming an existing image, update every place in the code that refers to it.
+2. **Compress it:** run `python scripts/compress-images.py` from the project root. It uses TinyPNG, replaces images in place, and skips anything already listed in `scripts/compressed-images.txt`, so it only spends the free quota (500/month) on new images. The API key lives in `.env.local` as `TINIFY_KEY` — never write the key into any committed file.
+
 ---
 
 ## Open decisions — ask the founder before choosing

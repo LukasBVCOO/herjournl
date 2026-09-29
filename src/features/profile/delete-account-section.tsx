@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
+import { useAccess } from "@/features/billing";
 import { posthog } from "@/lib/posthog";
 import { forgetThisDevice } from "@/lib/session";
 import { supabase } from "@/lib/supabase/client";
@@ -8,8 +9,9 @@ const CONFIRM_WORD = "DELETE";
 
 // "Delete account", on her profile under Notifications. Deletes her account and
 // everything in it for good — notes, vision boards and their photos, daily
-// cards, her chart and profile, notifications — through the delete-account
-// Edge Function (supabase/functions/delete-account), then clears the phone.
+// cards, her chart and profile, notifications, and cancels any Becomely+
+// subscription — through the delete-account Edge Function
+// (supabase/functions/delete-account), then clears the phone.
 // Nothing can be undone, so it asks her to type DELETE before it will go.
 export default function DeleteAccountSection() {
   const [open, setOpen] = useState(false);
@@ -36,6 +38,8 @@ function DeleteSheet({ onCancel }: { onCancel: () => void }) {
   const [problem, setProblem] = useState<string | null>(null);
   const cancelButton = useRef<HTMLButtonElement>(null);
   const confirmed = typed.trim().toUpperCase() === CONFIRM_WORD;
+  const access = useAccess();
+  const paying = access.status === "known" && access.access.reason === "subscription";
 
   // The safe answer, Cancel, has focus when the sheet opens.
   useEffect(() => {
@@ -94,6 +98,12 @@ function DeleteSheet({ onCancel }: { onCancel: () => void }) {
           This permanently deletes your notes, vision boards and photos, daily cards, your chart and
           profile. It can&rsquo;t be undone.
         </p>
+        {paying && (
+          <p className="mt-3 text-[17px] leading-snug text-ink-soft">
+            Your Becomely+ subscription is cancelled straight away, and you won&rsquo;t be charged
+            again.
+          </p>
+        )}
 
         <label className="mt-5 block text-[15px] text-ink-soft" htmlFor="delete-account-confirm">
           Type <span className="font-medium text-ink">{CONFIRM_WORD}</span> to confirm

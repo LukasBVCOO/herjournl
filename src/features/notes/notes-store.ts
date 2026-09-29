@@ -161,6 +161,11 @@ export function getSnapshot(): NotesSnapshot {
   return snapshot;
 }
 
+// How many vision boards she has (not counting ones in Recently deleted).
+export function visionBoardCount(): number {
+  return getSnapshot().notes.filter((note) => note.isVisionBoard).length;
+}
+
 export function isReady() {
   return ready;
 }

@@ -25,18 +25,19 @@ export type DailyFocusCard = {
   timeZone: string;
   referenceInstant: string;
   moonLongitude: number;
-  // "full" once she has a real birth time (houses, a fixed area of life over a
-  // few days); "reduced" when she doesn't (today's Moon sign is the theme
-  // instead — see content/moon-sign-themes.ts). Never shown to her; kept so a
-  // card can always be explained, and for basic debugging.
-  personalisationLevel: "full" | "reduced";
-  // Null on a reduced card: there is no real house without a birth time, and
-  // one is never invented to stand in for it.
+  // "full" once she has a real birth time (her own houses, a fixed area of
+  // life over a few days); "sun_sign" when she doesn't, but her Sun sign is
+  // certain (houses counted from her Sun sign — see sun-sign-house.ts);
+  // "reduced" in the rare case even that isn't certain (today's Moon sign is
+  // the theme instead — see content/moon-sign-themes.ts). Never shown to her;
+  // kept so a card can always be explained, and for basic debugging.
+  personalisationLevel: "full" | "sun_sign" | "reduced";
+  // Her house for the day: a real one on a full card, counted from her Sun
+  // sign on a sun_sign card. Null on a reduced card — one is never invented.
   activeHouse: number | null;
-  // Null on a reduced card when even her natal Moon sign wasn't reliably
+  // Null without a birth time when even her natal Moon sign wasn't reliably
   // knowable (see the reduced chart's own moon.reliable flag). Kept for
-  // explainability only — it never decides what a reduced card says; today's
-  // transiting Moon sign does that instead.
+  // explainability only — it never decides what such a card says.
   natalMoonSign: Sign | null;
 
   // What she sees.

@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
-import { AffirmationPracticeScreen, AffirmationSession, AffirmationsScreen } from "@/features/affirmations";
+import { AffirmationPracticeScreen, AffirmationsScreen } from "@/features/affirmations";
 import {
   AuthCallbackScreen,
   AuthScreen,
@@ -9,6 +9,14 @@ import {
   RequireSession,
   ResetPasswordScreen,
 } from "@/features/auth";
+import {
+  AfterTrialWelcome,
+  PaywallScreen,
+  PremiumOnly,
+  PremiumTeaserCard,
+  ThankYouScreen,
+  TrialWelcomePrompt,
+} from "@/features/billing";
 import {
   DailyPlanCard,
   DoneForTodayCard,
@@ -46,15 +54,24 @@ export default function App() {
                   both shown — see reflect-slot.ts), then a quiet closing
                   note once the reflection is done, then the install nudge
                   if one is due, all between the search bar and her notes. */}
+              {/* Once her trial is over (free plan), the day's cards give
+                  way to one Premium card instead — and today's focus card
+                  isn't made for her at all. */}
               <NotesListScreen
                 focusSlot={
                   <>
-                    <TodaysFocusCard />
-                    <DailyPlanCard />
-                    <WaitingForReflectionCard />
-                    <ReflectCard />
-                    <DoneForTodayCard />
-                    <InstallOfferPrompt />
+                    <PremiumOnly fallback={<PremiumTeaserCard />}>
+                      <TodaysFocusCard />
+                      <DailyPlanCard />
+                      <WaitingForReflectionCard />
+                      <ReflectCard />
+                      <DoneForTodayCard />
+                    </PremiumOnly>
+                    {/* Waits until the "your 7 days have started" sheet
+                        has been closed, so the two never overlap. */}
+                    <AfterTrialWelcome>
+                      <InstallOfferPrompt />
+                    </AfterTrialWelcome>
                   </>
                 }
               />
@@ -65,8 +82,9 @@ export default function App() {
           path="/focus"
           element={
             <RequireSession>
-              {/* The morning 3x of the day's affirmation closes her entry. */}
-              <FocusScreen affirmationSlot={<AffirmationSession session="morning" />} />
+              <PremiumOnly>
+                <FocusScreen />
+              </PremiumOnly>
             </RequireSession>
           }
         />
@@ -74,13 +92,9 @@ export default function App() {
           path="/reflect"
           element={
             <RequireSession>
-              {/* The evening 9x comes before her journal; the ninth moves
-                  her straight on to the recap. */}
-              <ReflectScreen
-                affirmationSlot={(onComplete) => (
-                  <AffirmationSession session="evening" onComplete={onComplete} />
-                )}
-              />
+              <PremiumOnly>
+                <ReflectScreen />
+              </PremiumOnly>
             </RequireSession>
           }
         />
@@ -88,7 +102,9 @@ export default function App() {
           path="/affirmations"
           element={
             <RequireSession>
-              <AffirmationsScreen />
+              <PremiumOnly>
+                <AffirmationsScreen />
+              </PremiumOnly>
             </RequireSession>
           }
         />
@@ -96,7 +112,25 @@ export default function App() {
           path="/affirmations/today"
           element={
             <RequireSession>
-              <AffirmationPracticeScreen />
+              <PremiumOnly>
+                <AffirmationPracticeScreen />
+              </PremiumOnly>
+            </RequireSession>
+          }
+        />
+        <Route
+          path="/premium"
+          element={
+            <RequireSession>
+              <PaywallScreen />
+            </RequireSession>
+          }
+        />
+        <Route
+          path="/thank-you"
+          element={
+            <RequireSession>
+              <ThankYouScreen />
             </RequireSession>
           }
         />
@@ -199,7 +233,10 @@ export default function App() {
       </Routes>
       <UpdatePrompt />
       <InstalledSync />
-      <NotificationOfferPrompt />
+      <AfterTrialWelcome>
+        <NotificationOfferPrompt />
+      </AfterTrialWelcome>
+      <TrialWelcomePrompt />
     </BrowserRouter>
   );
 }

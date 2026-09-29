@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { currentPushSubscription, notificationPermission, pushSupported } from "./push";
+import { notificationPermission, pushSupported } from "./push";
+import { syncPushSubscription } from "./push-sync";
 
 export type PushState =
   | { status: "checking" }
@@ -33,8 +34,12 @@ export function usePushState(isIphone: boolean, installed: boolean) {
         if (current) setState({ status: "denied" });
         return;
       }
-      const subscription = await currentPushSubscription();
-      if (current) setState({ status: subscription ? "on" : "off" });
+      // "On" means the server can reach her here, not just that the browser
+      // has an address: re-save it for her account first, since it may still
+      // be saved under someone who used this phone before. "failed" is
+      // usually no internet, where the browser's word is the best we have.
+      const result = await syncPushSubscription();
+      if (current) setState({ status: result === "none" ? "off" : "on" });
     }
     void check();
     return () => {

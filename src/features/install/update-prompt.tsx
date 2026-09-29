@@ -31,10 +31,19 @@ export default function UpdatePrompt() {
     // whatever the reason — this makes sure "Refresh" still finishes with an
     // ordinary reload rather than sitting on "One moment..." forever.
     const giveUp = new Promise<void>((resolve) => setTimeout(resolve, 10000));
+    // updateServiceWorker only *asks* the new version to take over and returns
+    // straight away — it doesn't wait for the switch. Reloading right then
+    // reloaded into the OLD version, which still saw the new one waiting and
+    // showed this prompt again, forever. "controllerchange" is the browser
+    // saying the new version is now actually in charge, so reload after that.
+    const switched = new Promise<void>((resolve) =>
+      navigator.serviceWorker?.addEventListener("controllerchange", () => resolve(), { once: true }),
+    );
     await Promise.race([
       (async () => {
         await runBeforeReload();
         await updateServiceWorker(true);
+        await switched;
       })(),
       giveUp,
     ]);

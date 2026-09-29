@@ -71,7 +71,8 @@ export default function AffirmationSession({
         <LinePicker
           house={state.house}
           options={state.options}
-          currentId={state.current?.affirmation.id ?? null}
+          current={state.current}
+          yesterday={state.yesterday}
         />
       </section>
     );

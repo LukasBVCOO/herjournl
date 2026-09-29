@@ -45,3 +45,4 @@ f09746b48d7ac867e6b75aa3b511b72366efb62980a76c7c135a540cb3709cf2  public/daily-c
 126f19158284cb940b6ead83958bf50aa9aca4379569a334cbc30ab696518b98  public/onboarding-images/[ONBOARDING] [REVEAL] SUN.png
 04f0f860e9e96d78f1f2af0cfe45ee4ca5b2da02bdceabe4aa18b92473097602  public/onboarding-images/chart-star.png
 0d15a7fd9dab309fcf80b96eec8edeb954f37916bb38545e42154e5a99544dfc  public/vision-board/empty-board.png
+2f2687eebd606f1fc57a468f4b49b55b347ed7aa5292679679125647e5d41818  public\weekly-recap\weekly-recap-journal-moon-lavender.png

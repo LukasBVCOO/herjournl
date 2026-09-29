@@ -2,6 +2,7 @@ import { Extension } from "@tiptap/react";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import type { Node as PmNode } from "@tiptap/pm/model";
+import { focusQuestionLabels } from "../content";
 import type { FocusCardCopy } from "../types";
 
 // In a note written from a daily focus card, each of the card's questions
@@ -14,15 +15,8 @@ import type { FocusCardCopy } from "../types";
 // out of the note's title, preview and search, and notes written before this
 // existed get their labels too. A question is recognised by its words
 // matching the card's own copy of it; if she rewrites a question, it simply
-// loses its label.
-function labelsFor(card: FocusCardCopy) {
-  const labels = new Map<string, string>();
-  labels.set(card.prompt.trim(), "My intention");
-  if (card.beliefPrompt) labels.set(card.beliefPrompt.trim(), "A belief to explore");
-  if (card.nextStepPrompt) labels.set(card.nextStepPrompt.trim(), "My next step");
-  if (card.eveningPrompt) labels.set(card.eveningPrompt.trim(), "Evening reflection");
-  return labels;
-}
+// loses its label. (The labels themselves: content.ts's focusQuestionLabels,
+// shared with the weekly recap.)
 
 function decorate(doc: PmNode, labels: Map<string, string>) {
   const decorations: Decoration[] = [];
@@ -46,7 +40,7 @@ export const PromptLabels = Extension.create<{ card: FocusCardCopy | null }>({
   addProseMirrorPlugins() {
     const card = this.options.card;
     if (!card) return [];
-    const labels = labelsFor(card);
+    const labels = focusQuestionLabels(card);
 
     return [
       new Plugin({

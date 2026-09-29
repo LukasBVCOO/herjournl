@@ -16,8 +16,10 @@ import { registerBeforeReload } from "@/lib/before-reload";
 import { posthog } from "@/lib/posthog";
 import { getSession, registerSignOutHandler, subscribe as subscribeToSession } from "@/lib/session";
 import {
+  answersFromDoc,
   appendNodes,
   dailyPlanTitle,
+  docFromAnswers,
   docFromCardAnswers,
   docFromDailyPlan,
   isEmptyDoc,
@@ -47,7 +49,7 @@ import {
   resumeNote,
 } from "./save-queue";
 import { saveNoteContent } from "./save";
-import type { DeletedNoteSummary, FocusCardCopy, ListedNote } from "./types";
+import type { DeletedNoteSummary, FocusCardCopy, FocusEntry, ListedNote } from "./types";
 
 export type NotesSnapshot = {
   // False for the brief moment the phone's copy is being read.
@@ -292,6 +294,26 @@ function findNoteByTitle(title: string): string | null {
   return null;
 }
 
+// The id of her note titled `title`, or null — for a note that is one of a
+// kind, like a week's reflection (weekly recap).
+export function findNoteIdByTitle(title: string): string | null {
+  return findNoteByTitle(title);
+}
+
+// Starts a note of questions and her answers under `title` (content.ts's
+// docFromAnswers). Shows in her list at once and goes to the database in the
+// background, like any other. Returns its id, or null when nothing was written.
+export function startNoteFromAnswers(
+  title: string,
+  pairs: { question: string; answer: string }[],
+): string | null {
+  if (pairs.every((pair) => pair.answer.trim() === "")) return null;
+  const id = crypto.randomUUID();
+  queueSave(id, docFromAnswers(title, pairs));
+  void flushNote(id);
+  return id;
+}
+
 // Starts today's Daily Plan note — its title, and a checklist of blank tasks
 // ready for her to fill in — or hands back the one she already started today,
 // for `cardDay` ("YYYY-MM-DD", daily-focus's currentCardDay). The note shows
@@ -324,6 +346,20 @@ export function findTodaysFocusNoteId(date: string): string | null {
     if (!note.deletedAt && note.focusCard?.date === date) return note.id;
   }
   return null;
+}
+
+// Every day from `from` to `to` (card days, "YYYY-MM-DD", both included) that
+// has a note written from its focus card: the card and her answers, oldest
+// first, one per day (the first found, like findTodaysFocusNoteId). Reads
+// what's already on this phone, so it works offline — for the weekly recap.
+export function focusEntriesBetween(from: string, to: string): FocusEntry[] {
+  const byDate = new Map<string, FocusEntry>();
+  for (const note of notes.values()) {
+    const card = note.focusCard;
+    if (note.deletedAt || !card || card.date < from || card.date > to || byDate.has(card.date)) continue;
+    byDate.set(card.date, { noteId: note.id, card, answers: answersFromDoc(note.content, card) });
+  }
+  return [...byDate.values()].sort((a, b) => a.card.date.localeCompare(b.card.date));
 }
 
 // Adds the evening reflection's question and her answer to the end of an

@@ -1,8 +1,10 @@
-// Talking to the database about affirmations. Runs on her phone. The
-// database only ever returns her own 369 days, so nothing here filters by
-// owner. Nothing here logs what came back.
+// Talking to the database about her 369 days. Runs on her phone. The
+// database only ever returns her own days, so nothing here filters by owner.
+// Nothing here logs what came back. The lines themselves live in the app
+// (content/lines.ts); a saved day only holds its line's id.
 
 import { supabase } from "@/lib/supabase/client";
+import { lineById } from "./content/lines";
 import { SESSIONS, type Counts, type DoneAt, type Session } from "./sessions";
 
 export type AffirmationType = "theme" | "goal" | "belief";
@@ -20,30 +22,20 @@ export type Day369 = {
   affirmation: Affirmation;
   counts: Counts;
   doneAt: DoneAt;
-  pinned: boolean;
 };
 
 export type Found<T> = { ok: true; value: T } | { ok: false; offline: boolean };
 
-const TYPE_ORDER: Record<AffirmationType, number> = { theme: 0, goal: 1, belief: 2 };
-
 const DAY_COLUMNS =
-  "date, pinned, morning_count, afternoon_count, evening_count, morning_at, afternoon_at, evening_at, affirmation:affirmations(id, house, text, type)";
+  "date, affirmation_id, morning_count, afternoon_count, evening_count, morning_at, afternoon_at, evening_at";
 
 const failed = <T>(): Found<T> => ({
   ok: false,
   offline: typeof navigator !== "undefined" && navigator.onLine === false,
 });
 
-function affirmationFrom(value: unknown): Affirmation | null {
-  const v = value as Record<string, unknown> | null;
-  if (!v || typeof v.id !== "number" || typeof v.text !== "string") return null;
-  if (v.type !== "theme" && v.type !== "goal" && v.type !== "belief") return null;
-  return { id: v.id, house: Number(v.house), text: v.text, type: v.type };
-}
-
 function dayFrom(row: Record<string, unknown>): Day369 | null {
-  const affirmation = affirmationFrom(row.affirmation);
+  const affirmation = typeof row.affirmation_id === "number" ? lineById(row.affirmation_id) : null;
   if (!affirmation || typeof row.date !== "string") return null;
   const counts = {} as Counts;
   const doneAt = {} as DoneAt;
@@ -52,23 +44,7 @@ function dayFrom(row: Record<string, unknown>): Day369 | null {
     const at = row[`${session}_at`];
     doneAt[session] = typeof at === "string" ? at : null;
   }
-  return { date: row.date, affirmation, counts, doneAt, pinned: row.pinned === true };
-}
-
-// The three lines for a house, in the order theme, goal, belief.
-export async function fetchLines(house: number): Promise<Found<Affirmation[]>> {
-  try {
-    const { data, error } = await supabase
-      .from("affirmations")
-      .select("id, house, text, type")
-      .eq("house", house);
-    if (error || !data) return failed();
-    const lines = data.map(affirmationFrom).filter((line): line is Affirmation => line !== null);
-    lines.sort((a, b) => TYPE_ORDER[a.type] - TYPE_ORDER[b.type]);
-    return { ok: true, value: lines };
-  } catch {
-    return failed();
-  }
+  return { date: row.date, affirmation, counts, doneAt };
 }
 
 // Her 369 day for a card day, or null when she hasn't started one.
@@ -124,16 +100,34 @@ export async function fetchHistory(): Promise<Found<Day369[]>> {
   }
 }
 
-// Starts a day on a line. "exists" when another phone started it first.
-export async function startDay(
-  date: string,
-  affirmationId: number,
-  pinned: boolean,
-): Promise<Found<"saved" | "exists">> {
+// Her days from `from` to `to` (card days, both included), oldest first —
+// for the weekly recap.
+export async function fetchDaysBetween(from: string, to: string): Promise<Found<Day369[]>> {
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("daily_369")
-      .insert({ date, affirmation_id: affirmationId, pinned });
+      .select(DAY_COLUMNS)
+      .gte("date", from)
+      .lte("date", to)
+      .order("date", { ascending: true });
+    if (error || !data) return failed();
+    return {
+      ok: true,
+      value: (data as Record<string, unknown>[])
+        .map(dayFrom)
+        .filter((day): day is Day369 => day !== null),
+    };
+  } catch {
+    return failed();
+  }
+}
+
+// Starts a day on a line. "exists" when another phone started it first.
+// (The table's old "pinned" column is no longer used: nothing carries over
+// by itself any more — she chooses each day, yesterday's line included.)
+export async function startDay(date: string, affirmationId: number): Promise<Found<"saved" | "exists">> {
+  try {
+    const { error } = await supabase.from("daily_369").insert({ date, affirmation_id: affirmationId });
     if (!error) return { ok: true, value: "saved" };
     if (error.code === "23505") return { ok: true, value: "exists" };
     return failed();
@@ -143,14 +137,15 @@ export async function startDay(
 }
 
 // Saves where the day stands. Counts are sent whole (not "+1"), and the
-// database only ever lets them go up, so resending after a failed save is
-// always safe.
+// database only ever lets them go up for the same line, so resending after a
+// failed save is always safe. A line change (`changeLine`) sends the new line
+// with counts of 0 and no finished times: the database takes that as a fresh
+// start on the new line (see the daily_369_change_line migration).
 export async function saveDay(day: Day369, changeLine = false): Promise<boolean> {
-  const fields: Record<string, unknown> = { pinned: day.pinned };
-  if (changeLine) fields.affirmation_id = day.affirmation.id;
+  const fields: Record<string, unknown> = { affirmation_id: day.affirmation.id };
   for (const session of SESSIONS as readonly Session[]) {
     fields[`${session}_count`] = day.counts[session];
-    if (day.doneAt[session]) fields[`${session}_at`] = day.doneAt[session];
+    if (changeLine || day.doneAt[session]) fields[`${session}_at`] = day.doneAt[session];
   }
   try {
     const { error } = await supabase.from("daily_369").update(fields).eq("date", day.date);

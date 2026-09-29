@@ -50,6 +50,19 @@ export type FocusCardCopy = {
   eveningPrompt?: string;
 };
 
+// One question from a note written from a card, and what she wrote under it.
+// `label` is the card's name for the question ("My intention", …), or null
+// for a heading she added herself.
+export type FocusAnswer = { label: string | null; question: string; answer: string };
+
+// One day's note written from its focus card, read back for the weekly
+// recap: the card, and each question with what she wrote under it.
+export type FocusEntry = {
+  noteId: string;
+  card: FocusCardCopy;
+  answers: FocusAnswer[];
+};
+
 // A note in the list, with all of its writing so the search box at the top can
 // filter the list on her phone as she types.
 export type ListedNote = NoteSummary & {

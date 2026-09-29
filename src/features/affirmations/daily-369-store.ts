@@ -1,35 +1,45 @@
-// Today's 369, kept outside React so the affirmations screen, the morning
-// entry and the evening reflection all show the same line and the same dots
-// (a tap in one is already there in the others). Screens read it with
-// useSyncExternalStore (see use-daily-369.ts).
+// Today's 369, kept outside React so the overview and today's practice show
+// the same line and the same dots. Screens read it with useSyncExternalStore
+// (see use-daily-369.ts).
 //
-// Which line today:
+// Which line today (founder, 2026-09-29):
 //   1. She already started today: that line.
-//   2. Her last day was pinned: the same line, still pinned.
-//   3. Her last line belongs to the house today's card is in (the Moon stays
-//      in a house for 2 to 3 days): the same line again.
-//   4. Otherwise she picks one of the house's three lines (theme first, as
-//      the suggested default).
+//   2. Otherwise she picks, every day: a theme, a goal and a belief for the
+//      house today's card is in — a different three each day
+//      (daily-lines.ts) — plus a fourth, yesterday's line, if she had one,
+//      so keeping it is her choice. Nothing carries over by itself.
+// She can change the line at any time; after she has started, that begins
+// the day's 3·6·9 again for the new line.
 
 import { cardDayIn, deviceTimeZone, getTodaysFocus } from "@/features/daily-focus";
 import { posthog } from "@/lib/posthog";
-import { registerSignOutHandler } from "@/lib/session";
+import { getSession, registerSignOutHandler } from "@/lib/session";
 import {
   fetchDay,
   fetchLatestBefore,
-  fetchLines,
   saveDay,
   startDay,
   type Affirmation,
   type Day369,
 } from "./affirmations-api";
+import { linesForHouse } from "./content/lines";
+import { dailyLines } from "./daily-lines";
 import { TARGET, type Session } from "./sessions";
 
 export type Daily369State =
   | { status: "loading" }
   | { status: "error"; offline: boolean }
-  // No line yet today. `current` is set when she's changing a line she already had.
-  | { status: "choose"; cardDay: string; house: number; options: Affirmation[]; current: Day369 | null }
+  // No line yet today. `options` are today's three (daily-lines.ts).
+  // `current` is set when she's changing a line she already had;
+  // `yesterday` is her last line, offered as a fourth choice.
+  | {
+      status: "choose";
+      cardDay: string;
+      house: number;
+      options: Affirmation[];
+      current: Day369 | null;
+      yesterday: Affirmation | null;
+    }
   | { status: "ready"; cardDay: string; house: number; options: Affirmation[]; day: Day369; unsaved: boolean };
 
 let state: Daily369State = { status: "loading" };
@@ -89,10 +99,9 @@ async function load(cardDay: string) {
     // Falls back to the general lines.
   }
 
-  const [lines, existing] = await Promise.all([fetchLines(house), fetchDay(cardDay)]);
-  if (!lines.ok) return set({ status: "error", offline: lines.offline });
+  const existing = await fetchDay(cardDay);
   if (!existing.ok) return set({ status: "error", offline: existing.offline });
-  const options = lines.value;
+  const options = dailyLines(linesForHouse(house), cardDay, getSession().userId ?? "");
   loadedFor = cardDay;
 
   if (existing.value) {
@@ -101,35 +110,37 @@ async function load(cardDay: string) {
 
   const previous = await fetchLatestBefore(cardDay);
   if (!previous.ok) return set({ status: "error", offline: previous.offline });
-  const last = previous.value;
-  // Same house as yesterday: same line. House 0 (no house at all) never
-  // counts as "the same focus" — otherwise its line would never change —
-  // so it carries on only when she has kept (pinned) it.
-  if (last && (last.pinned || (house !== 0 && last.affirmation.house === house))) {
-    const started = await startDay(cardDay, last.affirmation.id, last.pinned);
-    if (!started.ok) return set({ status: "error", offline: started.offline });
-    const fresh = await fetchDay(cardDay);
-    if (fresh.ok && fresh.value) {
-      return set({ status: "ready", cardDay, house, options, day: fresh.value, unsaved: false });
-    }
-    return set({ status: "error", offline: false });
-  }
-
-  set({ status: "choose", cardDay, house, options, current: null });
+  set({
+    status: "choose",
+    cardDay,
+    house,
+    options,
+    current: null,
+    yesterday: previous.value?.affirmation ?? null,
+  });
 }
 
-// She picked a line for today (or changed it before starting).
+const NO_COUNTS = { morning: 0, afternoon: 0, evening: 0 };
+const NO_TIMES = { morning: null, afternoon: null, evening: null };
+
+// She picked a line for today, or a different one in place of today's.
 export async function chooseLine(line: Affirmation) {
   if (state.status !== "choose") return;
   const { cardDay, house, options, current } = state;
 
   if (current) {
-    const day: Day369 = { ...current, affirmation: line };
+    // The same line again: nothing changes, her count carries on.
+    if (current.affirmation.id === line.id) {
+      set({ status: "ready", cardDay, house, options, day: current, unsaved: false });
+      return;
+    }
+    // A different line starts the day's 3·6·9 again.
+    const day: Day369 = { ...current, affirmation: line, counts: NO_COUNTS, doneAt: NO_TIMES };
     set({ status: "ready", cardDay, house, options, day, unsaved: false });
     const saved = await saveDay(day, true);
     if (!saved) markUnsaved();
   } else {
-    const started = await startDay(cardDay, line.id, false);
+    const started = await startDay(cardDay, line.id);
     if (!started.ok) return set({ status: "error", offline: started.offline });
     const fresh = await fetchDay(cardDay);
     if (!fresh.ok || !fresh.value) return set({ status: "error", offline: !fresh.ok && fresh.offline });
@@ -138,14 +149,19 @@ export async function chooseLine(line: Affirmation) {
   posthog?.capture("affirmation_line_chosen", { type: line.type });
 }
 
-// Back to the picker. Only before any repetition: once she's started, the
-// day's line is fixed (the database holds to that too).
+// Back to the picker, at any time. If she has already started, picking a
+// different line there begins the day again (the screen asks first).
 export function changeLine() {
   if (state.status !== "ready") return;
-  const { counts } = state.day;
-  if (counts.morning + counts.afternoon + counts.evening > 0) return;
   const { cardDay, house, options, day } = state;
-  set({ status: "choose", cardDay, house, options, current: day });
+  set({ status: "choose", cardDay, house, options, current: day, yesterday: null });
+}
+
+// Out of the picker without changing anything.
+export function keepCurrentLine() {
+  if (state.status !== "choose" || !state.current) return;
+  const { cardDay, house, options, current } = state;
+  set({ status: "ready", cardDay, house, options, day: current, unsaved: false });
 }
 
 function markUnsaved() {
@@ -176,14 +192,6 @@ export function repeat(session: Session): boolean {
   void persist(updated);
   if (finished) posthog?.capture("affirmation_session_completed", { session });
   return finished;
-}
-
-// Keep this line for the next days, even once the house moves on.
-export function togglePin() {
-  if (state.status !== "ready") return;
-  const updated: Day369 = { ...state.day, pinned: !state.day.pinned };
-  set({ ...state, day: updated });
-  void persist(updated);
 }
 
 registerSignOutHandler({

@@ -19,7 +19,8 @@ export function PackIcon({ name, size = 24 }: {
     | "moon-stars"
     | "photo"
     | "layout-dashboard"
-    | "crown";
+    | "crown"
+    | "calendar-week";
   size?: number;
 }) {
   return (

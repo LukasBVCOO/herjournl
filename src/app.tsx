@@ -27,7 +27,7 @@ import {
   WaitingForReflectionCard,
 } from "@/features/daily-focus";
 import { InstalledSync, InstallOfferPrompt, UpdatePrompt } from "@/features/install";
-import { NotificationOfferPrompt } from "@/features/notifications";
+import { NotificationOfferPrompt, PushSyncOnOpen } from "@/features/notifications";
 import {
   EditNoteScreen,
   NewNoteRedirect,
@@ -36,6 +36,13 @@ import {
 } from "@/features/notes";
 import { OnboardingFlow } from "@/features/onboarding";
 import { FullChartScreen, ProfileScreen } from "@/features/profile";
+import {
+  HiddenDuringWeeklyRecap,
+  WeeklyRecapButton,
+  WeeklyRecapCard,
+  WeeklyRecapScreen,
+  WeekReflectScreen,
+} from "@/features/weekly-recap";
 
 // Every screen in the app and the web address that opens it. Moving between
 // them never asks the server for a new page, which is what makes it quick.
@@ -63,9 +70,14 @@ export default function App() {
                     <PremiumOnly fallback={<PremiumTeaserCard />}>
                       <TodaysFocusCard />
                       <DailyPlanCard />
-                      <WaitingForReflectionCard />
-                      <ReflectCard />
-                      <DoneForTodayCard />
+                      {/* On Sunday from 18:00 to Monday 08:00 the week's
+                          card replaces the evening reflection. */}
+                      <HiddenDuringWeeklyRecap>
+                        <WaitingForReflectionCard />
+                        <ReflectCard />
+                        <DoneForTodayCard />
+                      </HiddenDuringWeeklyRecap>
+                      <WeeklyRecapCard />
                     </PremiumOnly>
                     {/* Waits until the "your 7 days have started" sheet
                         has been closed, so the two never overlap. */}
@@ -74,6 +86,7 @@ export default function App() {
                     </AfterTrialWelcome>
                   </>
                 }
+                headerAction={<WeeklyRecapButton />}
               />
             </RequireSession>
           }
@@ -118,6 +131,34 @@ export default function App() {
             </RequireSession>
           }
         />
+        {/* Her week in review: this week at /week, an earlier one at
+            /week/<its Monday>, and reflecting on it at …/reflect. */}
+        {["/week", "/week/:start"].map((path) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <RequireSession>
+                <PremiumOnly>
+                  <WeeklyRecapScreen />
+                </PremiumOnly>
+              </RequireSession>
+            }
+          />
+        ))}
+        {["/week/reflect", "/week/:start/reflect"].map((path) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <RequireSession>
+                <PremiumOnly>
+                  <WeekReflectScreen />
+                </PremiumOnly>
+              </RequireSession>
+            }
+          />
+        ))}
         <Route
           path="/premium"
           element={
@@ -233,6 +274,7 @@ export default function App() {
       </Routes>
       <UpdatePrompt />
       <InstalledSync />
+      <PushSyncOnOpen />
       <AfterTrialWelcome>
         <NotificationOfferPrompt />
       </AfterTrialWelcome>

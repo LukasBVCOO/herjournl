@@ -3,7 +3,7 @@
 // A note's content is stored as JSON in the shape the editor (Tiptap) uses, so
 // every note written earlier can still be opened when the editor grows.
 
-import type { FocusCardCopy } from "./types";
+import type { FocusAnswer, FocusCardCopy } from "./types";
 import { readTiles } from "./vision-board/tiles";
 
 const VISION_BOARD_TITLE = "Vision board";
@@ -166,6 +166,63 @@ export function docFromCardAnswers(
   if (card.nextStepPrompt && answers.nextStep.trim() !== "") {
     content.push({ type: "heading", content: [{ type: "text", text: card.nextStepPrompt }] });
     content.push(...paragraphsFor(answers.nextStep.trim()));
+  }
+  return { type: "doc", content };
+}
+
+// The same labels the editor draws above each question (editor/prompt-labels.ts).
+export function focusQuestionLabels(card: FocusCardCopy): Map<string, string> {
+  const labels = new Map<string, string>();
+  labels.set(card.prompt.trim(), "My intention");
+  if (card.beliefPrompt) labels.set(card.beliefPrompt.trim(), "A belief to explore");
+  if (card.nextStepPrompt) labels.set(card.nextStepPrompt.trim(), "My next step");
+  if (card.eveningPrompt) labels.set(card.eveningPrompt.trim(), "Evening reflection");
+  return labels;
+}
+
+// Her answers read back out of a note written from a card, in order: each
+// heading is a question, and everything under it until the next heading is
+// her answer (the shape docFromCardAnswers and appendToNote write). Anything
+// above the first heading (the card's title) isn't an answer. A question she
+// has since emptied is left out; she may have edited the note freely, so this
+// reads whatever is there now.
+export function answersFromDoc(doc: unknown, card: FocusCardCopy): FocusAnswer[] {
+  const blocks = (doc as NoteNode | null)?.content;
+  if (!Array.isArray(blocks)) return [];
+  const labels = focusQuestionLabels(card);
+  const answers: FocusAnswer[] = [];
+  let current: { question: string; lines: string[] } | null = null;
+
+  const finish = () => {
+    if (!current) return;
+    const answer = current.lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+    if (answer !== "") {
+      answers.push({ label: labels.get(current.question) ?? null, question: current.question, answer });
+    }
+  };
+
+  for (const block of blocks) {
+    if (block?.type === "heading") {
+      finish();
+      current = { question: noteToLines(block).join(" ").trim(), lines: [] };
+    } else if (current) {
+      current.lines.push(...noteToLines(block));
+    }
+  }
+  finish();
+  return answers;
+}
+
+// A note of questions and answers: `title` leads (it becomes the note's
+// title, like any first line), then each question as a heading with her
+// answer under it. Questions she left empty are left out. Used by the weekly
+// reflection.
+export function docFromAnswers(title: string, pairs: { question: string; answer: string }[]): NoteNode {
+  const content: NoteNode[] = [{ type: "paragraph", content: [{ type: "text", text: title }] }];
+  for (const { question, answer } of pairs) {
+    if (answer.trim() === "") continue;
+    content.push({ type: "heading", content: [{ type: "text", text: question }] });
+    content.push(...paragraphsFor(answer.trim()));
   }
   return { type: "doc", content };
 }

@@ -5,23 +5,19 @@
 import { supabase } from "@/lib/supabase/client";
 import type { SubscriptionKeys } from "./push";
 
-// True once it is saved. If this device already has a row (same endpoint —
-// re-subscribing while already on, say after travelling, or if turning
-// notifications off didn't fully clear the old one first), that row is
-// refreshed rather than rejected.
+// True once it is saved for whoever is signed in now. If this device already
+// has a row (hers, refreshed after travelling; or another account's, from
+// someone else who used this phone before), it becomes hers. A plain upsert
+// can't do that: the other account's row is invisible to her, so the save
+// used to fail silently (see the claim_push_subscription migration).
 export async function saveSubscription(keys: SubscriptionKeys): Promise<boolean> {
   try {
-    const { error } = await supabase
-      .from("push_subscriptions")
-      .upsert(
-        {
-          endpoint: keys.endpoint,
-          p256dh: keys.p256dh,
-          auth_key: keys.auth,
-          timezone: keys.timezone,
-        },
-        { onConflict: "endpoint" },
-      );
+    const { error } = await supabase.rpc("claim_push_subscription", {
+      p_endpoint: keys.endpoint,
+      p_p256dh: keys.p256dh,
+      p_auth_key: keys.auth,
+      p_timezone: keys.timezone,
+    });
     return !error;
   } catch {
     return false;

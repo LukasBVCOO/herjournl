@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { BackIcon, PackIcon } from "@/components/icons";
+import { BackIcon } from "@/components/icons";
 import BottomNav from "@/components/bottom-nav";
 import { deviceTimeZone, HouseIcon, houseBorderColor, localHourIn } from "@/features/daily-focus";
 import { useGoBack } from "@/lib/use-go-back";
 import AffirmationSession from "./affirmation-session";
-import { changeLine, togglePin } from "./daily-369-store";
+import { changeLine } from "./daily-369-store";
 import { houseLabel } from "./house-label";
 import { houseVisual } from "./house-visual";
 import {
@@ -97,8 +97,8 @@ export default function AffirmationPracticeScreen() {
 }
 
 // Today's line, large, on the colours of today's house (the same card family
-// as the Daily Affirmations screen and the focus card), with the choice to
-// keep it past today.
+// as the Daily Affirmations screen and the focus card), and the way to change
+// it. Tomorrow she chooses again, with this line offered as one of the four.
 function LineCard() {
   const state = useDaily369();
   if (state.status !== "ready") return null;
@@ -106,33 +106,17 @@ function LineCard() {
   const { day } = state;
   const visual = houseVisual(state.house);
   const area = houseLabel(state.house);
-  const started = day.counts.morning + day.counts.afternoon + day.counts.evening > 0;
 
   return (
     <section
       className="rounded-card border px-5 pt-5 pb-6 shadow-soft"
       style={{ backgroundColor: visual.background, borderColor: houseBorderColor(visual) }}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <HouseIcon visual={visual} className="-ml-1.5 h-8 w-8 shrink-0" />
-          <p className="truncate text-xs font-medium tracking-wider text-muted uppercase">
-            {area ?? "Today's line"}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={togglePin}
-          aria-pressed={day.pinned}
-          className={`flex h-8 shrink-0 items-center gap-1 rounded-full pr-3 pl-1.5 text-[12px] font-medium transition-colors duration-200 ${
-            day.pinned ? "bg-ink text-paper" : "bg-surface/70 text-ink-soft"
-          }`}
-        >
-          <span className="scale-[0.6]">
-            <PackIcon name="pin" />
-          </span>
-          {day.pinned ? "Kept" : "Keep this line"}
-        </button>
+      <div className="flex min-w-0 items-center gap-2.5">
+        <HouseIcon visual={visual} className="-ml-1.5 h-8 w-8 shrink-0" />
+        <p className="truncate text-xs font-medium tracking-wider text-muted uppercase">
+          {area ?? "Today's line"}
+        </p>
       </div>
 
       <p className="mt-7 text-center font-serif text-[30px] leading-[1.18] font-medium text-ink">
@@ -141,19 +125,17 @@ function LineCard() {
 
       <div className="mx-auto mt-6 h-px w-10" style={{ backgroundColor: houseBorderColor(visual, 0.6) }} />
       <p className="mt-3 text-center text-[12px] leading-snug text-muted">
-        {day.pinned
-          ? "Kept — it stays with you until you let it go."
-          : "A new line comes when your focus moves on."}
+        Tomorrow you&rsquo;ll choose again — this line will be one of the options.
       </p>
-      {!started && (
-        <button
-          type="button"
-          onClick={changeLine}
-          className="mx-auto mt-2 block text-[13px] text-ink-soft underline underline-offset-4"
-        >
-          Choose a different line
-        </button>
-      )}
+      {/* Always there: she can change her line at any time. After she has
+          started, the picker says her count starts again before she confirms. */}
+      <button
+        type="button"
+        onClick={changeLine}
+        className="mx-auto mt-2 block py-1 text-[13px] text-ink-soft underline underline-offset-4"
+      >
+        Change line
+      </button>
     </section>
   );
 }

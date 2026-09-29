@@ -9,5 +9,9 @@
 //                            on this device
 //   notification-offer-prompt.tsx  offers turning them on, once she has
 //                            actually installed the app
+//   push-sync.ts              re-saves this phone's address for whoever is
+//                            signed in; unlinks it on log out
+//   push-sync-on-open.tsx     runs that sync when the app opens
 export { default as NotificationsSection } from "./notifications-section";
 export { default as NotificationOfferPrompt } from "./notification-offer-prompt";
+export { default as PushSyncOnOpen } from "./push-sync-on-open";

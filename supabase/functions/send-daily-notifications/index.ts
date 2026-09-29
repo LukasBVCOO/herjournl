@@ -43,7 +43,7 @@ type DueRow = {
   endpoint: string;
   p256dh: string;
   auth_key: string;
-  kind: "morning" | "afternoon" | "evening";
+  kind: "morning" | "afternoon" | "evening" | "weekly";
   title: string;
   body: string;
   local_date: string;
@@ -78,8 +78,15 @@ Deno.serve(async (req: Request) => {
       title: row.title,
       body: row.body,
       // The afternoon one opens today's affirmation practice, on its six
-      // repetitions.
-      url: row.kind === "morning" ? "/focus" : row.kind === "afternoon" ? "/affirmations/today" : "/",
+      // repetitions; Sunday's weekly one opens her week in review.
+      url:
+        row.kind === "morning"
+          ? "/focus"
+          : row.kind === "afternoon"
+            ? "/affirmations/today"
+            : row.kind === "weekly"
+              ? "/week"
+              : "/",
     });
 
     try {

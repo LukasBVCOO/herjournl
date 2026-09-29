@@ -48,6 +48,13 @@ export { docFromVisionBoard } from "./content";
 // How many she has — for the one-board limit until she pays (billing).
 export { visionBoardCount } from "./notes-store";
 
+// For the weekly recap: each day's card and her answers to it, read from the
+// notes on this phone.
+// And the week's own reflection: a note of her answers, found again by its
+// title.
+export { findNoteIdByTitle, focusEntriesBetween, startNoteFromAnswers } from "./notes-store";
+export type { FocusAnswer, FocusEntry } from "./types";
+
 // For the install feature: whether she has written any daily-focus note yet
 // (the moment that makes the first install offer due).
 export { useNotes } from "./use-notes";

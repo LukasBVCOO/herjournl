@@ -5,7 +5,8 @@
 //   sessions.ts              the rules: targets, time of day, late, streak (pure)
 //   affirmations-api.ts      the database: the lines and her 369 days
 //   daily-369-store.ts       today's line and counts, shared by every screen;
-//                            which line today (same house or pinned = same line)
+//                            which line today (she picks daily; yesterday's is option 4)
+//   daily-lines.ts           today's three new lines (theme, goal, belief), rotating
 //   use-daily-369.ts         the store, for a screen
 //   line-picker.tsx          choosing today's line (theme / goal / belief)
 //   ring-counter.tsx         tap mode: a ring and a dot per repetition
@@ -22,5 +23,9 @@
 // reflection on purpose (founder, 2026-09-27), so the daily card stays simple.
 export { default as AffirmationsScreen } from "./affirmations-screen";
 export { default as AffirmationPracticeScreen } from "./affirmation-practice-screen";
+// For the weekly recap: her lines for a run of days, and how many of the
+// day's three sessions she finished.
+export { fetchDaysBetween, type Day369 } from "./affirmations-api";
+export { sessionsDone } from "./sessions";
 // The gold dot on the crown in the bottom bar.
 export { useAffirmationNudge } from "./use-affirmation-nudge";

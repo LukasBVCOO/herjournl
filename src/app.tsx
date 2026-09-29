@@ -17,6 +17,7 @@ import {
   ThankYouScreen,
   TrialWelcomePrompt,
 } from "@/features/billing";
+import { BugReportScreen } from "@/features/bug-report";
 import {
   DailyPlanCard,
   DoneForTodayCard,
@@ -27,6 +28,7 @@ import {
   WaitingForReflectionCard,
 } from "@/features/daily-focus";
 import { InstalledSync, InstallOfferPrompt, UpdatePrompt } from "@/features/install";
+import { PrivacyScreen, TermsScreen } from "@/features/legal";
 import { NotificationOfferPrompt, PushSyncOnOpen } from "@/features/notifications";
 import {
   EditNoteScreen,
@@ -216,6 +218,14 @@ export default function App() {
           }
         />
         <Route
+          path="/report-bug"
+          element={
+            <RequireSession>
+              <BugReportScreen />
+            </RequireSession>
+          }
+        />
+        <Route
           path="/settings"
           // Settings now lives at the bottom of Profile; the old address
           // (bookmarks, older links) still lands somewhere sensible.
@@ -240,6 +250,10 @@ export default function App() {
         />
         {/* Shown right after sign-up. Not behind RequireNoSession: it moves
             her on by itself once the link has been opened. */}
+        {/* Open to anyone, logged in or not: Google sign-in, Stripe and the
+            website link straight here. */}
+        <Route path="/privacy" element={<PrivacyScreen />} />
+        <Route path="/terms" element={<TermsScreen />} />
         <Route path="/check-email" element={<CheckEmailScreen />} />
         <Route path="/auth/callback" element={<AuthCallbackScreen />} />
         {/* The link in the confirmation email comes back here. */}

@@ -19,10 +19,15 @@ import ChartLoading, { MIN_LOADING_MS } from "./chart-loading";
 import ConfirmSheet from "./confirm-sheet";
 import { formatBirthDate, formatBirthTime } from "./format";
 import { updateProfile } from "./profile-api";
+import {
+  cancelButtonClass,
+  editButtonClass,
+  primaryButtonClass,
+  rowClass,
+  rowLabelClass,
+  rowValueClass,
+} from "./settings-ui";
 
-const cardClass = "rounded-card bg-card px-5 py-4 shadow-soft";
-const editButtonClass =
-  "-mr-2 flex h-11 items-center px-2 text-sm font-medium text-ink underline underline-offset-4";
 
 const problemText: Record<BirthDateProblem, string> = {
   invalid: "Please enter a valid date.",
@@ -207,24 +212,20 @@ export default function BirthDetailsSection({
 
   if (!editing) {
     return (
-      <section className={cardClass}>
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-medium tracking-wider text-muted uppercase">
-            Birth details
-          </h2>
+      <section className={rowClass}>
+        <div className="flex items-start justify-between gap-3">
+          <dl className="flex min-w-0 flex-col gap-3.5">
+            <Row label="Date of birth" value={formatBirthDate(dateOfBirth)} />
+            <Row
+              label="Time of birth"
+              value={birthTimeKnown ? formatBirthTime(birthTime) : "Not known yet"}
+            />
+            <Row label="Birthplace" value={birthPlace} />
+          </dl>
           <button type="button" onClick={startEditing} className={editButtonClass}>
             Edit
           </button>
         </div>
-
-        <dl className="mt-1 flex flex-col gap-3">
-          <Row label="Date of birth" value={formatBirthDate(dateOfBirth)} />
-          <Row
-            label="Time of birth"
-            value={birthTimeKnown ? formatBirthTime(birthTime) : "Not known yet"}
-          />
-          <Row label="Birthplace" value={birthPlace} />
-        </dl>
 
         {updated && (
           <p role="status" className="mt-3 animate-fade-in text-sm text-ink-soft">
@@ -243,12 +244,8 @@ export default function BirthDetailsSection({
   }
 
   return (
-    <section ref={sectionRef} className={`${cardClass} scroll-mt-4`}>
-      <h2 className="text-xs font-medium tracking-wider text-muted uppercase">
-        Birth details
-      </h2>
-
-      <form onSubmit={submit} className="mt-4 flex flex-col gap-8">
+    <section ref={sectionRef} className={`${rowClass} scroll-mt-4`}>
+      <form onSubmit={submit} className="mt-1 flex flex-col gap-8">
         <BirthDateFields
           day={day}
           month={month}
@@ -315,14 +312,14 @@ export default function BirthDetailsSection({
           <button
             type="submit"
             disabled={!canSave}
-            className="h-11 rounded-full bg-ink px-6 text-[15px] font-medium text-paper transition-opacity duration-200 hover:opacity-90 disabled:opacity-40"
+            className={primaryButtonClass}
           >
             Save changes
           </button>
           <button
             type="button"
             onClick={() => setEditing(false)}
-            className="h-11 px-3 text-[15px] font-medium text-ink-soft transition-colors duration-200 hover:text-ink"
+            className={cancelButtonClass}
           >
             Cancel
           </button>
@@ -368,8 +365,8 @@ export default function BirthDetailsSection({
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs text-muted">{label}</dt>
-      <dd className="mt-0.5 text-[17px] break-words">{value}</dd>
+      <dt className={rowLabelClass}>{label}</dt>
+      <dd className={rowValueClass}>{value}</dd>
     </div>
   );
 }

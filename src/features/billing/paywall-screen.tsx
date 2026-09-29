@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 import { posthog } from "@/lib/posthog";
 import { useGoBack } from "@/lib/use-go-back";
 import { BECOMELY_PLUS_DECORATOR } from "./decorator";
@@ -221,8 +221,11 @@ export default function PaywallScreen() {
                 {message}
               </p>
             ) : (
-              <p className="mt-2.5 text-center text-[12px] text-ink-soft">
-                Cancel anytime · Billed in US dollars
+              <p className="mt-2.5 text-center text-[12px] leading-snug text-ink-soft">
+                Renews automatically until you cancel · Cancel anytime in Profile ·{" "}
+                <Link to="/terms" className="underline decoration-line underline-offset-2 hover:text-ink">
+                  Terms
+                </Link>
               </p>
             )}
           </>

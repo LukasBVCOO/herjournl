@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { PackIcon } from "@/components/icons";
+import { DataCredit, LegalLinks } from "@/features/legal";
 import { NotificationsSection } from "@/features/notifications";
 import { signOut } from "@/lib/session";
 import DeleteAccountSection from "./delete-account-section";
+import { Group, LinkRow } from "./settings-ui";
 
 // What used to be the separate Settings screen, now the bottom of her
-// profile: Recently deleted, notifications, deleting her account, logging
-// out, and the app's version. Shown whether or not her profile itself loaded, so she can always
-// log out.
+// profile: the "App" group (notifications, Recently deleted, reporting a bug),
+// then logging out, deleting her account and the app's version. Shown whether
+// or not her profile itself loaded, so she can always log out.
 export default function SettingsSection() {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
@@ -29,42 +31,39 @@ export default function SettingsSection() {
   }
 
   return (
-    <div className="mt-4 flex flex-col">
-      <Link
-        to="/recently-deleted"
-        className="flex items-center gap-3 rounded-card bg-card px-5 py-4 text-[17px] text-ink shadow-soft transition-opacity duration-200 active:opacity-80"
-      >
-        <span className="text-ink-soft">
-          <PackIcon name="trash" />
-        </span>
-        <span className="flex-1">Recently deleted</span>
-        <span aria-hidden="true" className="text-ink-soft">
-          →
-        </span>
-      </Link>
-
-      <div className="mt-4">
+    <>
+      <Group title="App">
         <NotificationsSection />
+        <LinkRow to="/recently-deleted" icon={<PackIcon name="trash" size={22} />} label="Recently deleted" />
+        <LinkRow to="/report-bug" icon={<PackIcon name="bug" size={22} />} label="Report a bug" />
+      </Group>
+
+      <div className="mt-4 flex flex-col">
+        {problem && (
+          <p role="alert" className="mb-3 animate-fade-in text-sm text-alert">
+            {problem}
+          </p>
+        )}
+
+        <button
+          type="button"
+          onClick={logOut}
+          disabled={busy}
+          className="h-[52px] w-full rounded-full border border-line bg-surface font-medium text-ink transition-colors duration-200 hover:bg-paper disabled:opacity-60"
+        >
+          {busy ? "Logging out…" : "Log out"}
+        </button>
+
+        <div className="mt-3">
+          <DeleteAccountSection />
+        </div>
+
+        <div className="mt-6 flex flex-col items-center gap-2 border-t border-line pt-4">
+          <LegalLinks />
+          <DataCredit />
+          <p className="text-center text-xs text-ink-soft">Version {import.meta.env.VITE_APP_VERSION}</p>
+        </div>
       </div>
-
-      <DeleteAccountSection />
-
-      {problem && (
-        <p role="alert" className="mt-6 animate-fade-in text-sm text-alert">
-          {problem}
-        </p>
-      )}
-
-      <button
-        type="button"
-        onClick={logOut}
-        disabled={busy}
-        className={`${problem ? "mt-3" : "mt-6"} h-[52px] w-full rounded-full border border-line bg-surface font-medium text-ink transition-colors duration-200 hover:bg-paper disabled:opacity-60`}
-      >
-        Log out
-      </button>
-
-      <p className="mt-4 text-center text-xs text-muted">Version {import.meta.env.VITE_APP_VERSION}</p>
-    </div>
+    </>
   );
 }

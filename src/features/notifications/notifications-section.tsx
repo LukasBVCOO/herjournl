@@ -5,7 +5,9 @@ import { cancelPushSubscription, currentPushSubscription, requestPushSubscriptio
 import { removeSubscription, saveSubscription } from "./push-api";
 import { usePushState } from "./use-push";
 
-const cardClass = "rounded-card bg-card px-5 py-4 shadow-soft";
+// A row inside a card the page around it draws (Profile's "App" group), so
+// no card of its own here.
+const rowClass = "px-5 py-4";
 const buttonClass =
   "mt-3 flex h-11 w-full items-center justify-center rounded-full bg-ink text-[15px] font-medium text-paper transition-opacity duration-200 hover:opacity-90 disabled:opacity-60";
 
@@ -58,20 +60,20 @@ export default function NotificationsSection() {
   }
 
   return (
-    <section className={cardClass}>
-      <p className="font-medium text-[17px]">Notifications</p>
-      <p className="mt-1 text-[15px] text-ink-soft">
+    <section className={rowClass}>
+      <p className="text-[17px] text-ink">Notifications</p>
+      <p className="mt-0.5 text-[15px] leading-snug text-ink-soft">
         A nudge in the morning for today&rsquo;s focus, in the afternoon for
         your affirmation, and in the evening to reflect on your day.
       </p>
 
       {state.status === "checking" ? null : state.status === "unsupported" ? (
-        <p className="mt-3 text-[14px] text-muted">
+        <p className="mt-3 text-[14px] text-ink-soft">
           Not available on this browser.
         </p>
       ) : state.status === "needs-install" ? (
         <>
-          <p className="mt-3 text-[14px] text-muted">
+          <p className="mt-3 text-[14px] text-ink-soft">
             On iPhone, add Becomely to your home screen first.
           </p>
           <button type="button" onClick={() => setHelpOpen(true)} className={buttonClass}>
@@ -80,14 +82,25 @@ export default function NotificationsSection() {
           {helpOpen && <InstallSheet onClose={() => setHelpOpen(false)} />}
         </>
       ) : state.status === "denied" ? (
-        <p className="mt-3 text-[14px] text-muted">
+        <p className="mt-3 text-[14px] text-ink-soft">
           Notifications are blocked for this app. Allow them again in your
           browser&rsquo;s settings to turn this on.
         </p>
       ) : state.status === "on" ? (
-        <button type="button" onClick={turnOff} disabled={busy} className={buttonClass}>
-          {busy ? "One moment…" : "Turn off"}
-        </button>
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <p className="flex items-center gap-2 text-[15px] text-ink">
+            <span aria-hidden="true" className="h-2 w-2 rounded-full bg-gold" />
+            On for this phone
+          </p>
+          <button
+            type="button"
+            onClick={turnOff}
+            disabled={busy}
+            className="-mr-2 flex h-11 items-center px-2 text-[15px] font-medium text-ink-soft underline decoration-line underline-offset-4 transition-colors duration-200 hover:text-ink disabled:opacity-40"
+          >
+            {busy ? "One moment…" : "Turn off"}
+          </button>
+        </div>
       ) : (
         <button type="button" onClick={turnOn} disabled={busy} className={buttonClass}>
           {busy ? "One moment…" : "Allow notifications"}

@@ -1,9 +1,14 @@
 import { useState } from "react";
+import {
+  cancelButtonClass,
+  editButtonClass,
+  primaryButtonClass,
+  rowClass,
+  rowLabelClass,
+  rowValueClass,
+} from "./settings-ui";
 import { NAME_MAX_LENGTH, tidyName, updateProfile } from "./profile-api";
 
-const cardClass = "rounded-card bg-card px-5 py-4 shadow-soft";
-const editButtonClass =
-  "-mr-2 flex h-11 items-center px-2 text-sm font-medium text-ink underline underline-offset-4";
 
 // Her name, with a way to change it. It doesn't affect her chart, so there is
 // nothing to confirm.
@@ -49,11 +54,11 @@ export default function NameSection({
 
   if (!editing) {
     return (
-      <section className={cardClass}>
+      <section className={rowClass}>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs text-muted">Name</p>
-            <p className="mt-1 text-[17px] break-words">{name}</p>
+            <p className={rowLabelClass}>Name</p>
+            <p className={rowValueClass}>{name}</p>
           </div>
           <button type="button" onClick={startEditing} className={editButtonClass}>
             Edit
@@ -69,9 +74,9 @@ export default function NameSection({
   }
 
   return (
-    <section className={cardClass}>
+    <section className={rowClass}>
       <form onSubmit={save}>
-        <label htmlFor="profile-name" className="text-xs text-muted">
+        <label htmlFor="profile-name" className={rowLabelClass}>
           Name
         </label>
         <input
@@ -98,7 +103,7 @@ export default function NameSection({
           <button
             type="submit"
             disabled={!canSave || busy}
-            className="h-11 rounded-full bg-ink px-6 text-[15px] font-medium text-paper transition-opacity duration-200 hover:opacity-90 disabled:opacity-40"
+            className={primaryButtonClass}
           >
             {busy ? "Saving…" : "Save"}
           </button>
@@ -106,7 +111,7 @@ export default function NameSection({
             type="button"
             onClick={() => setEditing(false)}
             disabled={busy}
-            className="h-11 px-3 text-[15px] font-medium text-ink-soft transition-colors duration-200 hover:text-ink disabled:opacity-40"
+            className={cancelButtonClass}
           >
             Cancel
           </button>

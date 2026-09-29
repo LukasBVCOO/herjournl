@@ -1,9 +1,14 @@
 import { useState } from "react";
+import {
+  cancelButtonClass,
+  editButtonClass,
+  primaryButtonClass,
+  rowClass,
+  rowLabelClass,
+  rowValueClass,
+} from "./settings-ui";
 import { changeEmail } from "./account-api";
 
-const cardClass = "rounded-card bg-card px-5 py-4 shadow-soft";
-const editButtonClass =
-  "-mr-2 flex h-11 items-center px-2 text-sm font-medium text-ink underline underline-offset-4";
 
 // Her email, with a way to change it. Unlike her name, this isn't saved the
 // moment she taps save — Supabase sends a confirmation link first, and the
@@ -45,11 +50,11 @@ export default function ChangeEmailSection({ email }: { email: string }) {
 
   if (!editing) {
     return (
-      <section className={cardClass}>
+      <section className={rowClass}>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs text-muted">Email</p>
-            <p className="mt-1 text-[17px] break-all">{email}</p>
+            <p className={rowLabelClass}>Email</p>
+            <p className={`${rowValueClass} break-all`}>{email}</p>
           </div>
           <button type="button" onClick={startEditing} className={editButtonClass}>
             Change
@@ -65,9 +70,9 @@ export default function ChangeEmailSection({ email }: { email: string }) {
   }
 
   return (
-    <section className={cardClass}>
+    <section className={rowClass}>
       <form onSubmit={save}>
-        <label htmlFor="profile-email" className="text-xs text-muted">
+        <label htmlFor="profile-email" className={rowLabelClass}>
           New email
         </label>
         <input
@@ -96,7 +101,7 @@ export default function ChangeEmailSection({ email }: { email: string }) {
           <button
             type="submit"
             disabled={busy || draft.trim() === "" || draft.trim() === email}
-            className="h-11 rounded-full bg-ink px-6 text-[15px] font-medium text-paper transition-opacity duration-200 hover:opacity-90 disabled:opacity-40"
+            className={primaryButtonClass}
           >
             {busy ? "Sending…" : "Send confirmation"}
           </button>
@@ -104,7 +109,7 @@ export default function ChangeEmailSection({ email }: { email: string }) {
             type="button"
             onClick={() => setEditing(false)}
             disabled={busy}
-            className="h-11 px-3 text-[15px] font-medium text-ink-soft transition-colors duration-200 hover:text-ink disabled:opacity-40"
+            className={cancelButtonClass}
           >
             Cancel
           </button>

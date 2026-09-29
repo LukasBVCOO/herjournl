@@ -210,6 +210,23 @@ export default function AuthScreen({ mode }: Props) {
             >
               {pending ? "One moment…" : text.submit}
             </button>
+
+            {/* Right under the button that creates the account, so agreeing is
+                part of the same step: creating an account means accepting the
+                terms and the privacy policy (analytics included). */}
+            {isSignup && (
+              <p className="-mt-2 text-center text-[13px] leading-snug text-ink-soft">
+                By creating an account, you agree to our{" "}
+                <Link to="/terms" className="inline-block py-1 font-medium text-ink underline decoration-line underline-offset-4">
+                  Terms of service
+                </Link>{" "}
+                and{" "}
+                <Link to="/privacy" className="inline-block py-1 font-medium text-ink underline decoration-line underline-offset-4">
+                  Privacy policy
+                </Link>
+                .
+              </p>
+            )}
           </form>
 
           <p className="mt-4 text-center text-[15px] text-ink-soft">
@@ -221,6 +238,20 @@ export default function AuthScreen({ mode }: Props) {
               {text.switchLabel}
             </Link>
           </p>
+
+          {/* The legal pages, reachable before she has an account. (Signing
+              up shows its agreement line under the button instead.) */}
+          {!isSignup && (
+            <p className="mt-1 text-center text-[13px] text-ink-soft">
+              <Link to="/privacy" className="inline-block px-2 py-1 underline decoration-line underline-offset-4 hover:text-ink">
+                Privacy
+              </Link>
+              <span aria-hidden="true">·</span>
+              <Link to="/terms" className="inline-block px-2 py-1 underline decoration-line underline-offset-4 hover:text-ink">
+                Terms
+              </Link>
+            </p>
+          )}
         </section>
       </div>
     </main>

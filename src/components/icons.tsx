@@ -20,7 +20,8 @@ export function PackIcon({ name, size = 24 }: {
     | "photo"
     | "layout-dashboard"
     | "crown"
-    | "calendar-week";
+    | "calendar-week"
+    | "bug";
   size?: number;
 }) {
   return (

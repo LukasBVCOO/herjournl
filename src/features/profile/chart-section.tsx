@@ -9,8 +9,8 @@ import {
 } from "@/features/onboarding";
 import ChartLoading, { MIN_LOADING_MS } from "./chart-loading";
 import { updateProfile } from "./profile-api";
+import { primaryButtonClass, rowClass } from "./settings-ui";
 
-const cardClass = "rounded-card bg-card px-5 py-4 shadow-soft";
 
 // Creates her chart (a real birth time) or works out what a reduced one can
 // tell her (see readSavedNatalChart) when it doesn't exist yet — this is a
@@ -83,14 +83,11 @@ export default function ChartSection({
   }
 
   return (
-    <section className={cardClass}>
-      <h2 className="text-xs font-medium tracking-wider text-muted uppercase">
-        Your chart
-      </h2>
-
-      <div className="mt-2">
-        <p className="text-[15px] text-ink-soft">
-          Your chart hasn&rsquo;t been created yet.
+    <section className={rowClass}>
+      <div>
+        <p className="text-[17px] text-ink">Your chart</p>
+        <p className="mt-0.5 text-[15px] text-ink-soft">
+          It hasn&rsquo;t been created yet.
         </p>
         {error && (
           <p role="alert" className="mt-3 animate-fade-in text-sm text-alert">
@@ -101,7 +98,7 @@ export default function ChartSection({
           type="button"
           onClick={createChart}
           disabled={busy}
-          className="mt-4 h-11 rounded-full bg-ink px-6 text-[15px] font-medium text-paper transition-opacity duration-200 hover:opacity-90"
+          className={`mt-4 ${primaryButtonClass}`}
         >
           Create my chart
         </button>

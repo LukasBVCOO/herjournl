@@ -1,9 +1,14 @@
 import { useState } from "react";
+import {
+  cancelButtonClass,
+  editButtonClass,
+  primaryButtonClass,
+  rowClass,
+  rowLabelClass,
+  rowValueClass,
+} from "./settings-ui";
 import { changePassword, PASSWORD_MIN_LENGTH } from "./account-api";
 
-const cardClass = "rounded-card bg-card px-5 py-4 shadow-soft";
-const editButtonClass =
-  "-mr-2 flex h-11 items-center px-2 text-sm font-medium text-ink underline underline-offset-4";
 const fieldClass =
   "mt-1 h-12 w-full border-b border-line bg-transparent text-[17px] text-ink outline-none transition-colors duration-200 focus:border-ink";
 
@@ -52,11 +57,11 @@ export default function ChangePasswordSection() {
 
   if (!editing) {
     return (
-      <section className={cardClass}>
+      <section className={rowClass}>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs text-muted">Password</p>
-            <p className="mt-1 text-[17px] tracking-widest">••••••••</p>
+            <p className={rowLabelClass}>Password</p>
+            <p className={`${rowValueClass} tracking-widest`}>••••••••</p>
           </div>
           <button type="button" onClick={startEditing} className={editButtonClass}>
             Change
@@ -72,9 +77,9 @@ export default function ChangePasswordSection() {
   }
 
   return (
-    <section className={cardClass}>
+    <section className={rowClass}>
       <form onSubmit={save}>
-        <label htmlFor="profile-current-password" className="text-xs text-muted">
+        <label htmlFor="profile-current-password" className={rowLabelClass}>
           Current password
         </label>
         <input
@@ -87,7 +92,7 @@ export default function ChangePasswordSection() {
           className={fieldClass}
         />
 
-        <label htmlFor="profile-new-password" className="mt-4 block text-xs text-muted">
+        <label htmlFor="profile-new-password" className={`mt-4 block ${rowLabelClass}`}>
           New password
         </label>
         <input
@@ -100,7 +105,7 @@ export default function ChangePasswordSection() {
           className={fieldClass}
         />
 
-        <label htmlFor="profile-confirm-password" className="mt-4 block text-xs text-muted">
+        <label htmlFor="profile-confirm-password" className={`mt-4 block ${rowLabelClass}`}>
           Confirm new password
         </label>
         <input
@@ -122,7 +127,7 @@ export default function ChangePasswordSection() {
           <button
             type="submit"
             disabled={!canSave || busy}
-            className="h-11 rounded-full bg-ink px-6 text-[15px] font-medium text-paper transition-opacity duration-200 hover:opacity-90 disabled:opacity-40"
+            className={primaryButtonClass}
           >
             {busy ? "Saving…" : "Save"}
           </button>
@@ -130,7 +135,7 @@ export default function ChangePasswordSection() {
             type="button"
             onClick={() => setEditing(false)}
             disabled={busy}
-            className="h-11 px-3 text-[15px] font-medium text-ink-soft transition-colors duration-200 hover:text-ink disabled:opacity-40"
+            className={cancelButtonClass}
           >
             Cancel
           </button>

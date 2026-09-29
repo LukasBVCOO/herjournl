@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase/client";
 
 const CONFIRM_WORD = "DELETE";
 
-// "Delete account", on her profile under Notifications. Deletes her account and
+// "Delete account", a quiet link at the very bottom of her profile. Deletes her account and
 // everything in it for good — notes, vision boards and their photos, daily
 // cards, her chart and profile, notifications, and cancels any Becomely+
 // subscription — through the delete-account Edge Function
@@ -21,10 +21,9 @@ export default function DeleteAccountSection() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-4 flex w-full items-center gap-3 rounded-card bg-alert/85 px-5 py-4 text-left text-[17px] font-medium text-paper shadow-soft transition-opacity duration-200 outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 focus-visible:ring-offset-paper active:opacity-80"
+        className="mx-auto flex h-11 items-center px-3 text-[15px] font-medium text-alert underline decoration-alert/30 underline-offset-4 transition-opacity duration-200 hover:opacity-80 active:opacity-70"
       >
-        <span className="flex-1">Delete account</span>
-        <span aria-hidden="true">→</span>
+        Delete account
       </button>
       {open && <DeleteSheet onCancel={() => setOpen(false)} />}
     </>

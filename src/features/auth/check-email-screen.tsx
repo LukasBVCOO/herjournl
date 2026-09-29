@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation } from "react-router";
 import { Icon } from "@/components/icons";
 import { supabase } from "@/lib/supabase/client";
 import { confirmationRedirectUrl } from "./confirm-redirect";
+import { useConfirmedElsewhere } from "./use-confirmed-elsewhere";
 import { useSession } from "./use-session";
 
 // Supabase only sends one confirmation email per address about every minute, so
@@ -22,6 +23,9 @@ export default function CheckEmailScreen() {
   // through a refresh; on a direct visit there is simply no address to show.
   const email = (location.state as { email?: string } | null)?.email;
 
+  // Logs her in by itself once she confirms, on this device or another; the
+  // session change below then moves her on.
+  const watching = useConfirmedElsewhere(email);
   const [sending, setSending] = useState(false);
   const [waitLeft, setWaitLeft] = useState(0);
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
@@ -61,8 +65,9 @@ export default function CheckEmailScreen() {
     setWaitLeft(RESEND_WAIT_SECONDS);
   }
 
-  // If the link was opened in this same browser she is signed in by now, so this
-  // page has done its job and she moves on to the welcome.
+  // Signed in, either because the link was opened in this same browser or
+  // because she confirmed on another device and the check above logged her in:
+  // this page has done its job and she moves on to the welcome.
   if (session.status === "signed-in") return <Navigate to="/onboarding" replace />;
 
   return (
@@ -96,6 +101,11 @@ export default function CheckEmailScreen() {
           <p className="mt-3 text-sm text-muted">
             Can&rsquo;t see it? Check your spam folder.
           </p>
+          {watching && (
+            <p className="mt-3 text-sm text-ink-soft">
+              Tapped it on another device? This page moves on by itself.
+            </p>
+          )}
 
           {/* Without the address there is nothing to send to; "Start again"
               below covers that case. */}

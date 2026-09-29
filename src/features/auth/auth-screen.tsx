@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router";
 import { posthog } from "@/lib/posthog";
 import { supabase } from "@/lib/supabase/client";
 import { confirmationRedirectUrl } from "./confirm-redirect";
+import { rememberPendingSignup } from "./pending-signup";
 
 const copy = {
   login: {
@@ -98,6 +99,9 @@ export default function AuthScreen({ mode }: Props) {
       // she is shown that the link has been sent. With it off, she is signed in
       // already and carries on below.
       if (!data.session) {
+        // Held in memory only, so the next page can log her in by itself once
+        // she confirms, even from another device (pending-signup.ts).
+        rememberPendingSignup(enteredEmail, password);
         navigate("/check-email", { state: { email: enteredEmail } });
         return;
       }

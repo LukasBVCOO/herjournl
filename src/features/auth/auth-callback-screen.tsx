@@ -12,7 +12,10 @@ export default function AuthCallbackScreen({ next = "/" }: { next?: string }) {
 
   if (session.status === "signed-in") return <Navigate to={next} replace />;
   if (session.status === "signed-out") {
-    return <Navigate to="/login?error=callback" replace />;
+    // From the confirmation email: her email IS confirmed, this device just
+    // can't be logged in by the link (e.g. she opened it on another device),
+    // so she's thanked and asked to log in, not shown an error.
+    return <Navigate to={next === "/onboarding" ? "/login?confirmed=1" : "/login?error=callback"} replace />;
   }
 
   return (

@@ -47,6 +47,9 @@ export default function AuthScreen({ mode }: Props) {
   const [searchParams] = useSearchParams();
 
   const [email, setEmail] = useState("");
+  // Arrived from the confirmation email on a device that can't be logged in
+  // by the link: a thank-you, not an error. Goes once she starts logging in.
+  const [confirmedNotice, setConfirmedNotice] = useState(searchParams.get("confirmed") === "1");
   const [error, setError] = useState<string | undefined>(
     // Set when an email confirmation link was sent back here because it
     // didn't work. A confirmation link that is opened in a different browser
@@ -66,6 +69,7 @@ export default function AuthScreen({ mode }: Props) {
     const password = String(form.get("password") ?? "");
     setEmail(enteredEmail);
     setError(undefined);
+    setConfirmedNotice(false);
 
     if (isSignup) {
       if (!enteredEmail) return setError("Enter your email address.");
@@ -200,6 +204,12 @@ export default function AuthScreen({ mode }: Props) {
                 </button>
               </div>
             </div>
+
+            {confirmedNotice && !error && (
+              <p role="status" className="animate-fade-in text-[15px] text-ink">
+                Thank you for confirming your email <span className="text-gold">✦</span> You can now log in.
+              </p>
+            )}
 
             {error && (
               <p role="alert" className="animate-fade-in text-sm text-alert">

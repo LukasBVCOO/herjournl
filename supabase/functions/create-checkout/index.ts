@@ -38,12 +38,13 @@ type Plan = keyof typeof LOOKUP_KEYS;
 // Where she may be sent back to after paying: the app's own addresses only,
 // never an address the request makes up.
 const ALLOWED_ORIGINS = [
+  "https://app.becomely.co",
   "https://becomely.co",
   "https://www.becomely.co",
   "https://herjournl.netlify.app",
   "http://localhost:3000",
 ];
-const DEFAULT_ORIGIN = "https://herjournl.netlify.app";
+const DEFAULT_ORIGIN = "https://app.becomely.co";
 
 // The app calls this straight from the browser, so it must answer the
 // browser's "may I call you?" check first.

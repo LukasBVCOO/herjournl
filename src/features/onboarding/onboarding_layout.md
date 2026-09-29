@@ -175,10 +175,9 @@ kept only as history.
 
 ## Testing helpers
 
-- **The sparkle icon** in the notes list header (see `testing/`).
-- **`?fail`**: add it to the address of the mapping screen
-  (`/onboarding/mapping?fail`) to see the "couldn't create your chart" screen.
-  It lives in `chart/chart.ts` and is marked testing-only.
+The sparkle-icon shortcut and the `?fail` address trick were removed before
+launch, so the app has no testing shortcuts left in it.
+
 - **A known profile to check against:** Lukas, 18/07/2000, 16:00, Marijampolė.
   The chart should show **Cancer Sun, Aquarius Moon, Scorpio Rising**, in
   time zone `Europe/Vilnius` at UTC+2. Changing the time to 17:00 should change

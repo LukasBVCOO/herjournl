@@ -23,12 +23,13 @@ const stripe = new Stripe(STRIPE_SECRET_KEY || "sk_missing", { httpClient: Strip
 
 // Where she may be sent back to: the app's own addresses only.
 const ALLOWED_ORIGINS = [
+  "https://app.becomely.co",
   "https://becomely.co",
   "https://www.becomely.co",
   "https://herjournl.netlify.app",
   "http://localhost:3000",
 ];
-const DEFAULT_ORIGIN = "https://herjournl.netlify.app";
+const DEFAULT_ORIGIN = "https://app.becomely.co";
 
 // The app calls this straight from the browser, so it must answer the
 // browser's "may I call you?" check first.

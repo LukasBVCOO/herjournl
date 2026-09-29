@@ -6,12 +6,6 @@ import { parseBirthTime } from "../validation/birth-time";
 import { calculateChart, calculateReducedChart, type Chart, type ReducedChart } from "./natal-chart";
 
 export async function createChart(answers: Answers): Promise<Chart | ReducedChart> {
-  // TESTING ONLY: adding ?fail to the address of the "Mapping your chart"
-  // screen makes this fail, so the error screen can be seen.
-  if (new URLSearchParams(window.location.search).has("fail")) {
-    throw new Error("Test failure");
-  }
-
   const { place } = answers;
   if (!place) throw new Error("Missing birth details");
 

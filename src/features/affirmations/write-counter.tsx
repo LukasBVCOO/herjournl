@@ -58,9 +58,8 @@ export default function WriteCounter({
       <div className="mt-4">
         <Dots count={count} target={target} />
       </div>
-      <p className="mt-3 text-[13px] text-muted" aria-live="polite">
-        {done ? "Done for now" : "Type it exactly as it reads"}
-      </p>
+      {/* Once done, the session itself says so (affirmation-session.tsx). */}
+      {!done && <p className="mt-3 text-[13px] text-muted">Type it exactly as it reads</p>}
     </form>
   );
 }

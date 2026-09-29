@@ -1,24 +1,24 @@
-// Whether to offer her the "add to your home screen" nudge, and recording
-// that it was shown or that she has installed. This lives on her account (in
-// the database), not just this device: the first offer can happen on a
-// computer during onboarding, and only be acted on later on her phone — a
-// different browser entirely. Only account-level storage lets the phone's
-// "installed!" turn off the reminder that would otherwise keep showing on the
-// computer.
+// Whether to offer her the "add to your home screen" card, and recording
+// that she put it off or that she has installed. This lives on her account (in
+// the database), not just this device: the offer can happen on a computer and
+// only be acted on later on her phone — a different browser entirely. Only
+// account-level storage lets the phone's "installed!" turn off the card on
+// the computer too.
 //
-// Offered at most 3 times, at progressively longer gaps, then never again.
+// The card stays on her notes list until she taps "Not now"; nothing hides it
+// on its own. "Not now" puts it away for 3 days, and then it comes back —
+// every 3 days, for as long as she hasn't installed (founder, 2026-09-29).
+// Once she has installed, it never appears again.
 
 import { posthog } from "@/lib/posthog";
 import { getSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase/client";
 
-const MAX_OFFERS = 3;
-
-// How long to wait after offer N before offer N+1 is due.
-const GAP_AFTER_OFFER: Record<number, number> = {
-  1: 3 * 24 * 60 * 60 * 1000, // 3 days after the 1st
-  2: 7 * 24 * 60 * 60 * 1000, // 7 days after the 2nd
-};
+// How long "Not now" puts it away for.
+const NOT_NOW_GAP_MS = 3 * 24 * 60 * 60 * 1000;
+// The database keeps the "Not now" count between 0 and 3; past 3 it simply
+// stays at 3 (the count only matters for knowing she has said it at all).
+const MAX_COUNT = 3;
 
 export type InstallOfferState = {
   installed: boolean;
@@ -48,40 +48,39 @@ export async function readInstallOfferState(): Promise<InstallOfferState | null>
   }
 }
 
-// Whether the timing alone says an offer is due right now. The "has she
-// reached the moment worth interrupting for" question (her first daily note,
-// for the very first offer) is decided by the caller, not here — this only
-// knows about counts and gaps.
+// Whether the timing alone says the card is due right now. The "has she
+// reached the moment worth interrupting for" question (her first daily note)
+// is decided by the caller, not here. `count` is how many times she has
+// said "Not now" (0 to 3), and `lastShownAt` when she last did.
 export function isOfferDue(state: InstallOfferState, now: Date = new Date()): boolean {
-  if (state.installed || state.count >= MAX_OFFERS) return false;
-  if (state.count === 0) return true; // the first offer has no gap to wait out
-  const gap = GAP_AFTER_OFFER[state.count];
-  if (!gap) return false; // past the schedule; never offer again
-  if (!state.lastShownAt) return true; // no record of when — safe to offer
-  return now.getTime() - Date.parse(state.lastShownAt) >= gap;
+  if (state.installed) return false;
+  if (state.count === 0 || !state.lastShownAt) return true;
+  return now.getTime() - Date.parse(state.lastShownAt) >= NOT_NOW_GAP_MS;
 }
 
-// Records that the offer was just shown, whatever she does with it next.
-// `count` is the value it was read as just before showing, so this can only
-// ever move the count forward by one.
-export async function recordOfferShown(count: number): Promise<void> {
+// Records that she tapped "Not now" (or "Got it" on a computer), which starts
+// the 3 days before it comes back. `count` is the value it was read as.
+export async function recordNotNow(count: number): Promise<void> {
   const userId = getSession().userId;
   if (!userId) return;
   try {
     await supabase
       .from("profiles")
-      .update({ install_prompt_count: count + 1, install_prompt_last_shown_at: new Date().toISOString() })
+      .update({
+        install_prompt_count: Math.min(count + 1, MAX_COUNT),
+        install_prompt_last_shown_at: new Date().toISOString(),
+      })
       .eq("id", userId);
   } catch {
-    // Best effort: if this doesn't save, the worst case is being offered again
-    // a little sooner than intended, never more than the 3 times total.
+    // Best effort: if this doesn't save, the worst case is seeing the card
+    // again sooner than intended.
   }
 }
 
 // Records that she has installed. Safe to call more than once (setting true to
 // true is harmless) — called whenever the browser's own live signal says she
-// has, from whichever device noticed it, however she got there (this popup or
-// the header button).
+// has, from whichever device noticed it, however she got there (the card, the
+// header button or her browser's own menu).
 export async function recordInstalled(): Promise<void> {
   const userId = getSession().userId;
   if (!userId) return;

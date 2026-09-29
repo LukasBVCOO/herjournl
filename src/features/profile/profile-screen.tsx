@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router";
 import { BackIcon, PackIcon } from "@/components/icons";
 import BottomNav from "@/components/bottom-nav";
 import { SubscriptionSection, useAccess } from "@/features/billing";
+import { ProfileInstallCard } from "@/features/install";
 import type { Chart, ReducedChart } from "@/features/onboarding";
 import { getSession, subscribe } from "@/lib/session";
 import { useGoBack } from "@/lib/use-go-back";
@@ -91,6 +92,9 @@ export default function ProfileScreen() {
               Your birth chart
             </Link>
           )}
+          {/* Always here (until she's using the installed app), unlike the
+              notes list's card, which she can put away. */}
+          <ProfileInstallCard className="mt-5" />
         </div>
       </header>
 

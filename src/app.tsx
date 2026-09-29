@@ -27,7 +27,7 @@ import {
   TodaysFocusCard,
   WaitingForReflectionCard,
 } from "@/features/daily-focus";
-import { InstalledSync, InstallOfferPrompt, UpdatePrompt } from "@/features/install";
+import { InstallOfferCard, InstalledSync, UpdatePrompt } from "@/features/install";
 import { PrivacyScreen, TermsScreen } from "@/features/legal";
 import { NotificationOfferPrompt, PushSyncOnOpen } from "@/features/notifications";
 import {
@@ -61,8 +61,8 @@ export default function App() {
                   has today's Daily Plan note, then the evening reflection
                   once it's due (the morning and reflect cards are never
                   both shown — see reflect-slot.ts), then a quiet closing
-                  note once the reflection is done, then the install nudge
-                  if one is due, all between the search bar and her notes. */}
+                  note once the reflection is done, then the "add to home screen"
+                  card until she installs, all between the search bar and her notes. */}
               {/* Once her trial is over (free plan), the day's cards give
                   way to one Premium card instead — and today's focus card
                   isn't made for her at all. */}
@@ -84,7 +84,7 @@ export default function App() {
                     {/* Waits until the "your 7 days have started" sheet
                         has been closed, so the two never overlap. */}
                     <AfterTrialWelcome>
-                      <InstallOfferPrompt />
+                      <InstallOfferCard />
                     </AfterTrialWelcome>
                   </>
                 }

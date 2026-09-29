@@ -68,9 +68,8 @@ export default function RingCounter({
           )}
         </span>
       </button>
-      <p className="mt-4 text-[13px] text-muted" aria-live="polite">
-        {done ? "Done for now" : "Say it aloud, then tap"}
-      </p>
+      {/* Once done, the session itself says so (affirmation-session.tsx). */}
+      {!done && <p className="mt-4 text-[13px] text-muted">Say it aloud, then tap</p>}
     </div>
   );
 }

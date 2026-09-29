@@ -37,10 +37,22 @@ export function syncPushSubscription(): Promise<SyncResult> {
 // permission and address, so whoever signs in next picks it up with the sync
 // above. If this fails (offline), the next person to sign in here claims the
 // address anyway.
+// Never allowed to hold logging out up for long: on a slow connection it
+// gives up after a few seconds and lets her log out anyway.
+const SIGN_OUT_WAIT_MS = 5000;
+
 registerSignOutHandler({
   prepare: async () => null,
   clear: async () => {
-    const keys = await currentPushSubscription();
-    if (keys) await removeSubscription(keys.endpoint);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const gaveUp = new Promise<void>((resolve) => {
+      timer = setTimeout(resolve, SIGN_OUT_WAIT_MS);
+    });
+    const remove = (async () => {
+      const keys = await currentPushSubscription();
+      if (keys) await removeSubscription(keys.endpoint);
+    })().catch(() => undefined);
+    await Promise.race([remove, gaveUp]);
+    clearTimeout(timer);
   },
 });

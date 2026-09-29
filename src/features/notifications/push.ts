@@ -54,6 +54,33 @@ function toKeys(subscription: PushSubscription): SubscriptionKeys | null {
   };
 }
 
+// This app's background helper (the service worker), which is what holds a
+// push subscription. Never waits forever: the browser's own "wait until it's
+// ready" never finishes when there isn't one at all (localhost, where it is
+// only built into the real app, or if installing it ever failed), and that
+// used to freeze logging out.
+//   - To read or remove what's already there, the one already registered is
+//     enough: if there isn't one, there's no subscription either.
+//   - To subscribe, it may still be starting up, so wait for it, but only a
+//     few seconds.
+const READY_WAIT_MS = 8000;
+
+async function existingRegistration(): Promise<ServiceWorkerRegistration | null> {
+  return (await navigator.serviceWorker.getRegistration()) ?? null;
+}
+
+async function readyRegistration(): Promise<ServiceWorkerRegistration | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const gaveUp = new Promise<null>((resolve) => {
+    timer = setTimeout(() => resolve(null), READY_WAIT_MS);
+  });
+  try {
+    return await Promise.race([navigator.serviceWorker.ready, gaveUp]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // Asks her, then subscribes this browser. null means it didn't happen (not
 // supported, she said no, or something else went wrong) — never guessed at.
 export async function requestPushSubscription(): Promise<SubscriptionKeys | null> {
@@ -63,7 +90,8 @@ export async function requestPushSubscription(): Promise<SubscriptionKeys | null
     const permission = await Notification.requestPermission();
     if (permission !== "granted") return null;
 
-    const registration = await navigator.serviceWorker.ready;
+    const registration = await readyRegistration();
+    if (!registration) return null;
     const existing = await registration.pushManager.getSubscription();
     const subscription =
       existing ??
@@ -85,7 +113,8 @@ export async function requestPushSubscription(): Promise<SubscriptionKeys | null
 export async function currentPushSubscription(): Promise<SubscriptionKeys | null> {
   if (!pushSupported()) return null;
   try {
-    const registration = await navigator.serviceWorker.ready;
+    const registration = await existingRegistration();
+    if (!registration) return null;
     const subscription = await registration.pushManager.getSubscription();
     return subscription ? toKeys(subscription) : null;
   } catch {
@@ -97,7 +126,8 @@ export async function currentPushSubscription(): Promise<SubscriptionKeys | null
 export async function cancelPushSubscription(): Promise<boolean> {
   if (!pushSupported()) return false;
   try {
-    const registration = await navigator.serviceWorker.ready;
+    const registration = await existingRegistration();
+    if (!registration) return true;
     const subscription = await registration.pushManager.getSubscription();
     if (!subscription) return true;
     return await subscription.unsubscribe();

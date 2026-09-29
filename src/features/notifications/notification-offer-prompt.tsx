@@ -15,7 +15,7 @@ const SHOW_DELAY_MS = 1500;
 // answered (yes or no), the browser remembers that itself and this never asks
 // again either way.
 //
-// The same darkened, centered popup style as install-offer-prompt.tsx.
+// A darkened, centered popup (the same style as birth-time-upgrade-reveal.tsx).
 // Mounted once for the whole app (app.tsx), not tied to any one screen, since
 // "just installed" can be noticed no matter where she lands.
 export default function NotificationOfferPrompt() {

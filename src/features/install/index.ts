@@ -6,18 +6,24 @@
 //                          install dialog
 //   update-prompt.tsx       the "new version ready" pill
 //   download-icon.tsx       the icon
-//   install-offer.ts        whether to offer the first-time install nudge (her
+//   install-offer.ts        whether the "add to home screen" card is due (her
 //                          account, not just this device: it can start on a
-//                          computer and finish on her phone), at most 3 times
-//   install-offer-prompt.tsx  the nudge itself, shown on the notes list
+//                          computer and finish on her phone); "Not now" puts it
+//                          away for 3 days, installing ends it for good
+//   install-app-card.tsx    the "Get the Becomely App" card's look and Download
+//   install-display.ts      whether this is a phone-sized screen
+//   install-offer-card.tsx  that card under the day's cards on the notes list
+//                          (can be put away with Not now / ×)
+//   profile-install-card.tsx  the same card, always on Profile (just Download)
 //   installed-sync.tsx      tells her account the moment any install path
-//                          (this nudge, the header button, her browser's own
+//                          (the card, the header button, her browser's own
 //                          menu) succeeds
 //
 // The rest of the app only uses what is exported here.
 export { default as InstallButton } from "./install-button";
 export { default as UpdatePrompt } from "./update-prompt";
-export { default as InstallOfferPrompt } from "./install-offer-prompt";
+export { default as InstallOfferCard } from "./install-offer-card";
+export { default as ProfileInstallCard } from "./profile-install-card";
 export { default as InstalledSync } from "./installed-sync";
 
 // For the notifications feature: whether the app is already on her home

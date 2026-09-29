@@ -20,7 +20,11 @@ import { useDaily369 } from "./use-daily-369";
 
 // The session to open on: the one the time of day suggests, unless it's
 // already done — then the first one still open (a missed morning can still be
-// done in the afternoon, and is shown as late).
+// done in the afternoon, and is shown as late). Worked out ONCE, when the
+// practice opens, never again after a tap: re-deciding after every tap made
+// the screen jump to the next session the moment one was finished, so a quick
+// extra tap was counted in the wrong session (founder, 2026-09-29). She moves
+// on herself, with the session tabs.
 function startingSession(counts: Counts | null): Session {
   const suggested = sessionForHour(localHourIn(new Date(), deviceTimeZone()));
   if (!counts || !isSessionDone(counts, suggested)) return suggested;
@@ -33,10 +37,7 @@ function startingSession(counts: Counts | null): Session {
 export default function AffirmationPracticeScreen() {
   const goBack = useGoBack();
   const state = useDaily369();
-  const [picked, setPicked] = useState<Session | null>(null);
-
   const ready = state.status === "ready" ? state : null;
-  const selected = picked ?? startingSession(ready?.day.counts ?? null);
 
   return (
     <>
@@ -54,44 +55,55 @@ export default function AffirmationPracticeScreen() {
         </header>
 
         {!ready ? (
-          <AffirmationSession session={selected} />
+          // Loading, or choosing today's line first.
+          <AffirmationSession session={startingSession(null)} />
         ) : (
-          <>
-            <LineCard />
-
-            {/* A segmented control, like a native one: a soft track with the
-                chosen session lifted out of it in white. */}
-            <div role="tablist" aria-label="Sessions" className="mt-6 grid grid-cols-3 rounded-full bg-card p-1">
-              {SESSIONS.map((session) => {
-                const done = isSessionDone(ready.day.counts, session);
-                const active = session === selected;
-                return (
-                  <button
-                    key={session}
-                    type="button"
-                    role="tab"
-                    aria-selected={active}
-                    onClick={() => setPicked(session)}
-                    className={`flex h-10 items-center justify-center gap-1.5 rounded-full text-[13px] transition-all duration-200 ${
-                      active ? "bg-surface font-medium text-ink shadow-soft" : "text-ink-soft"
-                    }`}
-                  >
-                    {SESSION_LABEL[session]}
-                    <span className={done ? "text-gold" : "text-muted"}>
-                      {done ? "✦" : `${TARGET[session]}×`}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="mt-8">
-              <AffirmationSession key={selected} session={selected} plain />
-            </div>
-          </>
+          <Practice counts={ready.day.counts} />
         )}
       </main>
       <BottomNav />
+    </>
+  );
+}
+
+// The line and the three sessions, once today's line is chosen. Mounted only
+// then, so the session it opens on is picked from her real counts, once.
+function Practice({ counts }: { counts: Counts }) {
+  const [selected, setSelected] = useState<Session>(() => startingSession(counts));
+
+  return (
+    <>
+      <LineCard />
+
+      {/* A segmented control, like a native one: a soft track with the
+          chosen session lifted out of it in white. */}
+      <div role="tablist" aria-label="Sessions" className="mt-6 grid grid-cols-3 rounded-full bg-card p-1">
+        {SESSIONS.map((session) => {
+          const done = isSessionDone(counts, session);
+          const active = session === selected;
+          return (
+            <button
+              key={session}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => setSelected(session)}
+              className={`flex h-10 items-center justify-center gap-1.5 rounded-full text-[13px] transition-all duration-200 ${
+                active ? "bg-surface font-medium text-ink shadow-soft" : "text-ink-soft"
+              }`}
+            >
+              {SESSION_LABEL[session]}
+              <span className={done ? "text-gold" : "text-muted"}>
+                {done ? "✦" : `${TARGET[session]}×`}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-8">
+        <AffirmationSession key={selected} session={selected} plain />
+      </div>
     </>
   );
 }

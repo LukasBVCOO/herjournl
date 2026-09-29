@@ -113,6 +113,40 @@
     }
   }
 
+  /* A finished affirmation session (affirmations/star-burst.tsx): small gold
+     stars fly out from the ring and fade, and a soft gold glow swells behind
+     it once. Each star sets its own --dx, --dy, --spin and delay. */
+  --animate-star-burst: star-burst 1100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-gold-glow: gold-glow 1400ms ease-out both;
+
+  @keyframes star-burst {
+    0% {
+      opacity: 0;
+      transform: translate(0, 0) scale(0.2) rotate(0deg);
+    }
+    18% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(var(--dx), var(--dy)) scale(1) rotate(var(--spin));
+    }
+  }
+
+  @keyframes gold-glow {
+    0% {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+    35% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.15);
+    }
+  }
+
   /* A warm band of light that sweeps once across a card, then waits, then
      does it again — the "once in a while" is the long hold at each end, not
      the sweep itself, which stays quick. */

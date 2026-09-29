@@ -13,7 +13,7 @@ const KINDS = ["sun", "moon", "rising"] as const;
 // placements, not just the new one: Sun and Moon may have shown as reduced
 // placements before, but this is the first time she sees them as part of a
 // complete chart. Same darkened, centered popup style used elsewhere in the
-// app (install-offer-prompt.tsx, notification-offer-prompt.tsx).
+// app (notification-offer-prompt.tsx).
 export default function BirthTimeUpgradeReveal({
   chart,
   onClose,

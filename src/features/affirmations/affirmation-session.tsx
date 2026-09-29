@@ -3,6 +3,7 @@ import { deviceTimeZone, localHourIn } from "@/features/daily-focus";
 import { repeat, retry } from "./daily-369-store";
 import LinePicker from "./line-picker";
 import RingCounter from "./ring-counter";
+import StarBurst from "./star-burst";
 import { isLate, SESSION_LABEL, TARGET, type Session } from "./sessions";
 import { useDaily369 } from "./use-daily-369";
 import WriteCounter from "./write-counter";
@@ -43,6 +44,9 @@ export default function AffirmationSession({
   // repetitions would be too much to keep up.
   const canWrite = session === "morning";
   const [writeMode, setWriteMode] = useState(() => canWrite && readWriteMode());
+  // True from the moment she finishes this session here, so the stars play
+  // then — not every time she opens a session that was already done.
+  const [justFinished, setJustFinished] = useState(false);
 
   if (state.status === "loading") return null;
 
@@ -85,8 +89,9 @@ export default function AffirmationSession({
   const late = doneAt ? isLate(session, localHourIn(new Date(doneAt), deviceTimeZone())) : false;
 
   function rep() {
-    repeat(session);
+    if (repeat(session)) setJustFinished(true);
   }
+  const done = count >= target;
 
   const lateTag = late && (
     <span className="rounded-full bg-card px-2.5 py-0.5 text-[11px] font-medium text-muted">
@@ -112,11 +117,26 @@ export default function AffirmationSession({
         </>
       )}
 
-      <div className={plain ? "" : "mt-5"}>
+      <div className={`relative ${plain ? "" : "mt-5"}`}>
         {writeMode ? (
           <WriteCounter line={day.affirmation.text} count={count} target={target} onRep={rep} />
         ) : (
           <RingCounter count={count} target={target} onTap={rep} />
+        )}
+        {justFinished && <StarBurst />}
+      </div>
+
+      {/* Said out loud for screen readers too, the moment it's finished. */}
+      <div aria-live="polite">
+        {done && (
+          <div className={`mt-4 text-center ${justFinished ? "animate-rise-in [animation-delay:250ms]" : ""}`}>
+            <p className="font-serif text-[22px] leading-tight font-medium text-ink">
+              {SESSION_LABEL[session]} complete <span className="text-gold">✦</span>
+            </p>
+            <p className="mt-1 text-[13px] text-ink-soft">
+              {target} times, said with intention.
+            </p>
+          </div>
         )}
       </div>
 
